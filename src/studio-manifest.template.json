@@ -1,0 +1,44 @@
+{
+  "schema": "ai-studio-app-manifest-v1",
+  "id": "differentiator",
+  "name": {
+    "cs": "Diferenciátor",
+    "en": "Differentiator"
+  },
+  "version": "__APP_VERSION__",
+  "status": {
+    "cs": "Připraveno k řízenému pilotu",
+    "en": "Ready for controlled pilot"
+  },
+  "description": {
+    "cs": "Převádí jeden materiál do pedagogicky smysluplných variant pro různé potřeby žáků.",
+    "en": "Transforms one resource into pedagogically meaningful variants for different learner needs."
+  },
+  "launchUrl": "https://daniel22-dev.github.io/diferenciator/",
+  "manualUrl": "https://daniel22-dev.github.io/diferenciator/manual/",
+  "repository": "daniel22-dev/diferenciator",
+  "icon": "assets/apps/differentiator.png",
+  "accent": "#59e0a5",
+  "tags": [
+    {
+      "cs": "Diferenciace",
+      "en": "Differentiation"
+    },
+    {
+      "cs": "Pracovní listy",
+      "en": "Worksheets"
+    }
+  ],
+  "capabilities": [
+    "differentiation",
+    "worksheets",
+    "quality-check",
+    "pdf"
+  ],
+  "compatibility": {
+    "studioMinVersion": "0.5.1",
+    "materialSchema": "ghrab-material-v1",
+    "studioBridge": "1.1"
+  },
+  "publishedAt": "__BUILD_TIME__"
+}
