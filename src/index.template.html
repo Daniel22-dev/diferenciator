@@ -23,7 +23,13 @@
 <body><!--==SEM_BUILD_VLOZI_BODY_HTML==--><script type="application/ghrab-protected" data-ghrab-protected>/*==SEM_BUILD_VLOZI_JS==*/</script>
 <script type="module" data-ghrab-access-bootstrap>
 const APP_ID = 'differentiator';
-function showAccessBootstrapFailure(title = 'Přístup nelze ověřit', message = 'Centrální přístupová služba není dostupná. Zkontrolujte připojení a otevřete aplikaci znovu přes AI Studio.') {
+function showAccessBootstrapFailure(title, message) {
+  if (!title && navigator.onLine === false) {
+    title = 'Offline režim není podporován';
+    message = 'Diferenciátor vyžaduje připojení k internetu. Ověření přístupu i generování probíhá online; offline režim aplikace nepodporuje.';
+  }
+  title = title || 'Přístup nelze ověřit';
+  message = message || 'Centrální přístupová služba není dostupná. Zkontrolujte připojení a otevřete aplikaci znovu přes AI Studio.';
   document.documentElement.dataset.ghrabAccess = 'denied';
   document.body.style.visibility = 'visible';
   document.body.innerHTML = '<main class="ghrab-access-gate"><div class="ghrab-access-gate-mark">⬡</div><p class="ghrab-access-gate-eyebrow">AI STUDIO GHRAB</p><h1>' + title + '</h1><p>' + message + '</p><div class="ghrab-access-gate-actions"><a class="ghrab-access-gate-primary" href="/AI-Studio-GHRAB/">Otevřít AI Studio</a></div></main>';

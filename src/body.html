@@ -117,7 +117,7 @@
     <div class="thumb" id="thumb"><img id="thumbImg" alt="Náhled nahraného zadání" /></div>
     <div class="upload-status" id="uploadInfo"></div>
     <div class="or">nebo</div>
-    <label class="paste-label" for="pasteText">Vložený text zadání <span class="tip" data-tip="Sem vlož text testu, pracovního listu, data z tabulky nebo export z jiné aplikace. Po načtení ho ještě zkontroluješ v dalším kroku.">?</span></label>
+    <label class="paste-label" for="pasteText">Vložený text zadání <span class="tip" tabindex="0" role="button" aria-expanded="false" data-tip="Sem vlož text testu, pracovního listu, data z tabulky nebo export z jiné aplikace. Po načtení ho ještě zkontroluješ v dalším kroku.">?</span></label>
     <p class="input-helper">Vlož sem text, pokud nechceš nahrávat soubor. Po kliknutí na „Načíst zadání“ vznikne editovatelný přepis.</p>
     <textarea id="pasteText" placeholder="Vlož text zadání, data z tabulky, HTML export nebo text z interaktivního testu"></textarea>
     <div class="privacy-note"><b>Upozornění:</b> běžně vkládej čistý originální test nebo pracovní list. Pokud by materiál náhodou obsahoval jména či citlivé údaje studentů, před nahráním je anonymizuj.</div>
@@ -129,7 +129,7 @@
   <section class="panel pedagogical-panel hide" id="configPanel">
     <p class="step"><b>3</b> Zkontroluj zadání a vyber stupně <span class="step-role ped">Pedagogické nastavení</span></p>
     <label for="baseText">Načtené zadání
-      <span class="tip" data-tip="Tohle je přepis z fotky/PDF/dokumentu. Klidně ho oprav – z opraveného textu se pak dělají všechny verze.">?</span>
+      <span class="tip" tabindex="0" role="button" aria-expanded="false" data-tip="Tohle je přepis z fotky/PDF/dokumentu. Klidně ho oprav – z opraveného textu se pak dělají všechny verze.">?</span>
     </label>
     <textarea id="baseText" style="min-height:150px;font-family:var(--serif)"></textarea>
     <div class="row" style="margin-top:14px">
@@ -138,12 +138,13 @@
     </div>
     <label class="toggle" style="margin-top:8px">
       <input type="checkbox" id="cefr" /> Zapnout CEFR odhad jen u jazykového předmětu <span class="zap-cost">⚡ 1</span>
-      <span class="tip" data-tip="Zapni u angličtiny, španělštiny a dalších jazyků. Appka odhadne aktuální úroveň A1–C2 a odvodí sousední stupně. U nejazykových předmětů nech vypnuté, ať se nespouští zbytečný dotaz na model.">?</span>
+      <span class="tip" tabindex="0" role="button" aria-expanded="false" data-tip="Zapni u angličtiny, španělštiny a dalších jazyků. Appka odhadne aktuální úroveň A1–C2 a odvodí sousední stupně. U nejazykových předmětů nech vypnuté, ať se nespouští zbytečný dotaz na model.">?</span>
     </label>
     <div class="cefr-note" id="cefrNote">CEFR je vypnutý. Zapni ho jen tehdy, když jde o jazykový materiál.</div>
+    <button class="btn ghost small hide" id="cefrRunBtn" type="button" title="Spustí odhad úrovně A1–C2 pro aktuálně načtené zadání.">Odhadnout CEFR úroveň <span class="zap-cost">⚡ 1</span></button>
     <label class="toggle cefr-force-toggle">
       <input type="checkbox" id="cefrForce" /> Vynutit CEFR i u nerozpoznaného jazykového předmětu
-      <span class="tip" data-tip="Použij jen tehdy, když jde opravdu o jazykový materiál, ale aplikace název předmětu nerozpoznala. Například školní zkratka, seminář nebo kombinovaný název.">?</span>
+      <span class="tip" tabindex="0" role="button" aria-expanded="false" data-tip="Použij jen tehdy, když jde opravdu o jazykový materiál, ale aplikace název předmětu nerozpoznala. Například školní zkratka, seminář nebo kombinovaný název.">?</span>
     </label>
     <p class="muted" style="margin:7px 0 0">U jazyků můžeš použít CEFR. U ostatních předmětů jde jen o úroveň obtížnosti.</p>
 
@@ -175,7 +176,7 @@
       <button class="btn" id="genBtn">Vytvořit vybranou verzi <span class="zap-cost">⚡ 1+</span></button>
       <button class="btn set-btn" id="genAllBtn">Vytvořit celou sadu 3 verzí <span class="zap-cost">⚡ 3+</span></button>
     </div>
-    <p class="generation-note">Vybraná verze je rychlá volba pro jeden konkrétní účel. Celá sada vytvoří Jednodušší, Normální i Obtížnější variantu ze stejného zadání. Znak „+“ znamená, že při nedodržené JSON struktuře může aplikace výjimečně použít jeden opravný dotaz navíc pro každou verzi.</p>
+    <p class="generation-note">Vybraná verze je rychlá volba pro jeden konkrétní účel. Celá sada vytvoří Jednodušší, Normální i Obtížnější variantu ze stejného zadání. Při vytváření celé sady vzniknou všechny tři verze ze stejného obsahu a liší se jen mírou opory. Pokud chceš paralelní variantu s jiným obsahem, použij v Pedagogickém zpřesnění volbu „Stejný formát, jiný obsah“. Znak „+“ znamená, že při nedodržené JSON struktuře může aplikace výjimečně použít jeden opravný dotaz navíc pro každou verzi.</p>
     <div class="progress-strip" id="progressStrip" role="status" aria-live="polite"><span class="mini"></span><span id="progressText">Připravuji generování…</span></div>
     <div id="configErr"></div>
   </section>
@@ -189,7 +190,6 @@
       <div class="field"><label for="mClass">Třída</label><input id="mClass" type="text" placeholder="např. 2.B" /></div>
       <div class="field"><label for="mDate">Datum</label><input id="mDate" type="text" placeholder="dd. mm. rrrr" /></div>
     </div>
-    <div id="batchErr"></div>
     <div id="results"></div>
     <div style="margin-top:14px"><button class="btn ghost" id="restartBtn">Nové zadání</button></div>
   </section>

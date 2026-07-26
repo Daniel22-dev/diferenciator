@@ -27,6 +27,11 @@ const TIERS = {
     cefr:"",cefrLbl:""}
 };
 const CEFR_SCALE=["A1","A2","B1","B2","C1","C2"];
+const DEFAULT_TIER_DESCRIPTIONS={
+  support:'— víc opory: slovní banka, nápověda, výběr z možností',
+  core:'— stejná obtížnost; obsah/forma podle pedagogického zpřesnění',
+  extend:'— méně opory, otevřené úlohy, úloha navíc na úsudek'
+};
 function refreshTierBadges(){
   document.querySelectorAll('#results .sheet').forEach(sheet=>{
     const t=TIERS[sheet._tierKey]; if(!t)return;
@@ -43,11 +48,11 @@ function applyCefrLevels(centerLevel){
   const dsS=document.getElementById('dsSupport'), dsC=document.getElementById('dsCore'), dsE=document.getElementById('dsExtend');
   if(idx<0){
     TIERS.support.cefrLbl="";TIERS.core.cefrLbl="";TIERS.extend.cefrLbl="";TIERS.support.cefr="";TIERS.core.cefr="";TIERS.extend.cefr="";
-    if(dsS)dsS.textContent='— víc opory: slovní banka, nápověda, výběr z možností';
-    if(dsC)dsC.textContent='— stejný typ úloh, jiný obsah';
-    if(dsE)dsE.textContent='— méně opory, otevřené úlohy, úloha navíc na úsudek';
+    if(dsS)dsS.textContent=DEFAULT_TIER_DESCRIPTIONS.support;
+    if(dsC)dsC.textContent=DEFAULT_TIER_DESCRIPTIONS.core;
+    if(dsE)dsE.textContent=DEFAULT_TIER_DESCRIPTIONS.extend;
     const lvl0=$('#levelDetect'); if(lvl0)lvl0.classList.remove('show');
-    refreshTierBadges();
+    refreshTierBadges();updateCefrRunButton();
     return;
   }
   const below=CEFR_SCALE[Math.max(0,idx-1)], at=CEFR_SCALE[idx], above=CEFR_SCALE[Math.min(CEFR_SCALE.length-1,idx+1)];
@@ -57,9 +62,14 @@ function applyCefrLevels(centerLevel){
   const lvl=$('#levelDetect');
   if(lvl){lvl.classList.add('show');lvl.textContent='Odhadnutá úroveň zadání: '+at+' → Jednodušší '+below+' · Normální '+at+' · Obtížnější '+above;}
   if(dsS)dsS.textContent='— víc opory, cílová úroveň '+below;
-  if(dsC)dsC.textContent='— stejný typ úloh, jiný obsah, úroveň '+at;
+  if(dsC)dsC.textContent='— stejná obtížnost, úroveň '+at+'; obsah/forma podle pedagogického zpřesnění';
   if(dsE)dsE.textContent='— méně opory, úloha navíc, úroveň '+above;
-  refreshTierBadges();
+  refreshTierBadges();updateCefrRunButton();
+}
+function updateCefrRunButton(){
+  const btn=document.getElementById('cefrRunBtn'),cefr=document.getElementById('cefr');if(!btn)return;
+  const showBtn=!!(cefr&&cefr.checked&&subjectAllowsCefr()&&!TIERS.core.cefrLbl);
+  btn.classList.toggle('hide',!showBtn);
 }
 
 let cefrBusy=false;
@@ -75,7 +85,7 @@ async function detectCefrForBase(text){
   cefrBusy=true;setCefrNote('Odhaduji CEFR úroveň…','busy');
   try{
     const forcedNote=isCefrForced()?'CEFR je ručně vynucený, protože název předmětu nemusel být rozpoznán. Přesto vrať NEPLATÍ, pokud materiál ve skutečnosti není jazykový. ':'';
-    const lvlRaw=await callGemini([{text:forcedNote+"Urči jazykovou úroveň podle CEFR (A1, A2, B1, B2, C1 nebo C2) tohoto materiálu pro výuku jazyka. Pokud materiál NENÍ jazykový (např. matematika, dějepis, fyzika v rodném jazyce), odpověz přesně slovem NEPLATÍ. Odpověz POUZE jedním z těchto kódů, nic jiného: A1 A2 B1 B2 C1 C2 NEPLATÍ\n\nMATERIÁL:\n"+base}]);
+    const lvlRaw=await callGemini([{text:forcedNote+"Urči jazykovou úroveň podle CEFR (A1, A2, B1, B2, C1 nebo C2) tohoto materiálu pro výuku jazyka. Pokud materiál NENÍ jazykový (např. matematika, dějepis, fyzika v rodném jazyce), odpověz přesně slovem NEPLATÍ. Odpověz POUZE jedním z těchto kódů, nic jiného: A1 A2 B1 B2 C1 C2 NEPLATÍ\n\nMATERIÁL:\n"+base}],{thinking:THINKING_CHEAP});
     const raw=String(lvlRaw||'').trim().toUpperCase();
     const lvl=raw.match(/A1|A2|B1|B2|C1|C2/);
     applyCefrLevels(lvl?lvl[0]:null);
@@ -112,11 +122,11 @@ function syncCefrHintFromSubject(){
   const forced=isCefrForced();
   if(cefr.checked && subject && !isLanguage && !forced){
     cefr.checked=false;saveCefrPreference(false);applyCefrLevels(null);
-    setCefrNote('CEFR byl vypnutý: předmět nevypadá jako jazykový. Použijí se jen úrovně obtížnosti. Pokud jde opravdu o jazyk, zapni ruční vynucení CEFR.','warn');
+    setCefrNote('CEFR byl vypnutý: předmět nevypadá jako jazykový. Použijí se jen úrovně obtížnosti. Pokud jde opravdu o jazyk, zapni ruční vynucení CEFR.','warn');updateCefrRunButton();
     return;
   }
   if(cefr.checked && forced && subject && !isLanguage){
-    setCefrNote('CEFR je ručně vynucený. Použij to jen u jazykového materiálu s nerozpoznaným názvem předmětu.','warn');
+    setCefrNote('CEFR je ručně vynucený. Použij to jen u jazykového materiálu s nerozpoznaným názvem předmětu.','warn');updateCefrRunButton();
     return;
   }
   if(!cefr.checked){
@@ -124,6 +134,7 @@ function syncCefrHintFromSubject(){
     else if(forced)setCefrNote('CEFR je vypnutý, ale ruční vynucení je připravené. Zapni CEFR jen pokud jde skutečně o jazykový materiál.','warn');
     else setCefrNote('CEFR je vypnutý. U nejazykových předmětů aplikace používá jen úrovně obtížnosti.');
   }
+  updateCefrRunButton();
 }
 function restoreCefrPreference(){
   const shouldRestore=loadCefrPreference();
@@ -151,13 +162,17 @@ function getAdvancedOptions(){return {
   teacherInstruction:($('#advTeacherInstruction')?$('#advTeacherInstruction').value.trim():'')
 }}
 function resetAdvancedSettings(){['advTargetGroup','advWorkTime','advLearningGoal','advSupportType','advTeacherInstruction'].forEach(id=>{const el=$(id);if(el)el.value=''});const variant=$('#advVariantMode');if(variant)variant.value='auto';const mode=$('#advStructureMode');if(mode)mode.value='auto';const force=$('#cefrForce');if(force)force.checked=false;const det=$('#advancedSettings');if(det)det.open=false}
-function variantModePromptLine(key){
+function variantModePromptLine(key,batch=1){
   const a=getAdvancedOptions();
   const mode=a.variantMode||'auto';
   if(mode==='same_content_diff_difficulty')return 'Režim nové verze: stejný obsah, jiná obtížnost. Zachovej tematický obsah, učivo, konkrétní příklady, data, čísla, texty a výukový cíl co nejvíce; měň hlavně míru opory, složitost formulací, počet mezikroků, typ nápovědy a požadovanou hloubku odpovědi podle zvolené úrovně.';
   if(mode==='same_format_new_content')return 'Režim nové verze: stejný formát, jiný obsah. Vytvoř paralelní variantu: zachovej formát, počet úloh, typy úloh, pořadí, bodovatelnost a srovnatelnou obtížnost podle zvolené úrovně, ale změň konkrétní obsah, věty, příklady, data nebo kontext tak, aby nevznikla kopie původního testu.';
   if(mode==='same_content_same_format')return 'Režim nové verze: stejný obsah i formát. Zachovej obsah, formát, pořadí, počet položek a typ odpovědí; proveď jen nezbytné úpravy formulací, míry opory, nápovědy, členění a nároků na odpověď podle zvolené úrovně.';
   if(mode==='same_goal_flexible')return 'Režim nové verze: stejný výukový cíl, volnější varianta. Zachovej hlavní výukový cíl, téma a ověřované dovednosti, ale můžeš změnit konkrétní obsah i strukturu, pokud výsledná verze zůstane pedagogicky srovnatelná a použitelná pro zvolenou úroveň.';
+  if(batch>1){
+    if(key==='core')return 'Režim nové verze: automaticky. U Normální verze zachovej původní obsah a strukturu a ponech i stejnou obtížnost; jde o referenční variantu sady.';
+    return 'Režim nové verze: automaticky. Při tvorbě celé sady zachovej původní obsah a strukturu co nejvíce a měň hlavně míru opory, složitost formulací, počet mezikroků a hloubku odpovědi podle zvolené úrovně.';
+  }
   if(key==='core')return 'Režim nové verze: automaticky. U Normální verze vytvoř paralelní variantu se stejnou obtížností: zachovej typ úloh, formát odpovědí, počet položek, pořadí a strukturu, ale změň konkrétní obsah, aby vznikla nová varianta, ne kopie původního materiálu.';
   return 'Režim nové verze: automaticky. U Jednodušší/Obtížnější verze zachovej původní obsah a strukturu co nejvíce a měň hlavně míru opory, složitost formulací, počet mezikroků a hloubku odpovědi podle zvolené úrovně.';
 }
@@ -287,7 +302,7 @@ function importProjectFile(file){
 }
 function makeMarkdownDocument(sheet){
   const tier=TIERS[sheet._tierKey]||{name:'Verze'};
-  const parts=['# '+tier.name+' verze'];
+  const parts=['> UČITELSKÝ SOUBOR — obsahuje řešení a poznámky. Nedávat studentům.','# '+tier.name+' verze'];
   const meta=[];
   if($('#mSubject')&&$('#mSubject').value.trim())meta.push('**Předmět:** '+$('#mSubject').value.trim());
   if($('#mTopic')&&$('#mTopic').value.trim())meta.push('**Téma:** '+$('#mTopic').value.trim());
@@ -302,7 +317,8 @@ function makeMarkdownDocument(sheet){
 }
 function exportSheetMarkdown(sheet,btn){
   const tier=TIERS[sheet._tierKey]||{name:'verze'};
-  const name=filenameSafe(($('#mTopic')&&$('#mTopic').value.trim())||($('#mSubject')&&$('#mSubject').value.trim())||tier.name||'pracovni-list')+'.md';
+  const base=filenameSafe(($('#mTopic')&&$('#mTopic').value.trim())||($('#mSubject')&&$('#mSubject').value.trim())||tier.name||'pracovni-list');
+  const name=base+'-ucitelsky.md';
   downloadTextFile(name,makeMarkdownDocument(sheet),'text/markdown;charset=utf-8');
   if(btn){const old=btn.textContent;btn.textContent='Exportováno';setTimeout(()=>btn.textContent=old,1400)}
 }
@@ -318,14 +334,14 @@ function openDataManagement(){updateDataSummary();$('#dataOverlay').classList.ad
 function closeDataManagement(){$('#dataOverlay').classList.remove('show')}
 function clearPreferenceData(){
   ['dpl_guide_seen',CEFR_PREF_SK,MODEL_SK,THEME_SK].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
-  resetAdvancedSettings();loadModel();loadTheme();restoreCefrPreference();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
+  resetAdvancedSettings();loadModel();loadTheme();restoreCefrPreference();closeDataManagement();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
 }
 function clearWorkingData(){
   uploaded=null;if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
   $('#pasteText').value='';$('#baseText').value='';$('#subject').value='';$('#mSubject').value='';$('#mTopic').value='';$('#mClass').value='';$('#mDate').value='';
   resetAdvancedSettings();$('#results').innerHTML='';hide($('#resultsPanel'));hide($('#configPanel'));show($('#inputPanel'));
   const fc=$('#filechip');if(fc)fc.classList.remove('show');const th=$('#thumb');if(th)th.classList.remove('show');setUploadInfo('');
-  setStatus('statusInput','čeká na zadání','');setStatus('statusFlow','připraveno','ok');showMessage('Pracovní data vyčištěna','Aktuální zadání a výstupy byly vyčištěny. API klíč ani uložené preference se nesmazaly.');updateDataSummary();
+  setStatus('statusInput','čeká na zadání','');setStatus('statusFlow','připraveno','ok');closeDataManagement();showMessage('Pracovní data vyčištěna','Aktuální zadání a výstupy byly vyčištěny. API klíč ani uložené preference se nesmazaly.');updateDataSummary();
 }
 
 $('#foot').innerHTML='<div class="footer-tools"><div class="tools-wrap"><button class="footer-tools-btn" id="footerToolsBtn" type="button" aria-expanded="false" aria-controls="footerToolsMenu">Nástroje a nápověda ▴</button><div class="footer-tools-menu" id="footerToolsMenu"><button id="exportProjectBtn" type="button" title="Uloží rozpracovaný stav bez API klíče do souboru JSON">💾 Exportovat projekt</button><button id="importProjectBtn" type="button" title="Načte dříve exportovaný projekt">📂 Načíst projekt</button><button id="dataManageBtn" type="button" title="Správa lokálních dat v tomto prohlížeči">🧹 Správa dat</button><button class="test-toggle" id="testToggle" type="button" title="Otevře interní testovací nástroj" aria-expanded="false">🧪 Testy</button><button id="changelogBtn" type="button" title="Zobrazí poslední změny v aplikaci">📝 Změny</button><button id="helpBtn" type="button">❔ Jak to funguje?</button></div></div><div class="footer-tools-hint">Nápověda, projekty, správa dat a release testy jsou dostupné tady.</div></div><div class="ownerline"><strong>Vlastník aplikace:</strong> Daniel Baláž · Gymnázium, Ostrava-Hrabůvka</div><div class="legal">© 2026 Daniel Baláž. Všechna práva vyhrazena.</div>';
@@ -378,7 +394,7 @@ $('#importProjectBtn').addEventListener('click',()=>projectImportInput.click());
 $('#dataManageBtn').addEventListener('click',openDataManagement);
 $('#dataClose').addEventListener('click',closeDataManagement);
 $('#dataOverlay').addEventListener('click',e=>{if(e.target.id==='dataOverlay')closeDataManagement()});
-$('#dataClearKey').addEventListener('click',()=>{clearKey();updateDataSummary();showMessage('API klíč smazán','Klíč byl odstraněn z relace i z trvalého úložiště tohoto prohlížeče.')});
+$('#dataClearKey').addEventListener('click',()=>{clearKey();updateDataSummary();closeDataManagement();showMessage('API klíč smazán','Klíč byl odstraněn z relace i z trvalého úložiště tohoto prohlížeče.')});
 $('#dataClearPrefs').addEventListener('click',clearPreferenceData);
 
 

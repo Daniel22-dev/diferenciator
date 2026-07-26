@@ -216,7 +216,7 @@
   .btn.tiny.soft{background:#FCFBF7}
   .btn.tiny:hover{transform:translateY(-1px);opacity:1;box-shadow:0 4px 12px rgba(34,48,63,.10)}
   .preview-modal{max-width:760px}
-  .print-preview{max-height:58vh;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#FCFBF7;padding:16px;margin:12px 0;font-family:var(--serif);white-space:pre-wrap;line-height:1.6}
+  .print-preview{max-height:58vh;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#FCFBF7;padding:16px;margin:12px 0;font-family:var(--serif);white-space:normal;line-height:1.6}
   .modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px}
   @media(max-width:980px){
     .app-shell{display:block}
@@ -254,22 +254,29 @@
 
 
   #printArea{display:none}
+  /* Sdílené formátování tiskového výstupu i jeho náhledu */
+  #printArea .pa-head,.print-preview .pa-head{display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:12px}
+  #printArea .pa-logo,.print-preview .pa-logo{height:46px;width:auto;flex:0 0 auto}
+  #printArea .pa-school,.print-preview .pa-school{font-family:var(--sans);font-size:12.5px;font-weight:700;line-height:1.3;min-width:0}
+  #printArea .pa-school small,.print-preview .pa-school small{display:block;font-weight:500;font-size:11.5px;opacity:.75}
+  #printArea .pa-meta,.print-preview .pa-meta{font-family:var(--sans);font-size:13px;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap}
+  #printArea .pa-keytag,.print-preview .pa-keytag{font-family:var(--sans);font-size:12px;font-weight:700;color:#8A3324;border:1px solid #C0392B;border-radius:6px;padding:5px 9px;margin:0 0 12px;display:inline-block}
+  #printArea h2,.print-preview h2{font-family:var(--sans);font-size:18px;margin:0 0 14px}
+  #printArea .pa-body,.print-preview .pa-body{font-size:15px;line-height:1.6}
+  #printArea .pa-ex,.print-preview .pa-ex{white-space:pre-wrap;margin:0 0 16px}
+  #printArea .pa-body b,.print-preview .pa-body b{font-family:var(--sans)}
   @page{margin:18mm 16mm 16mm 16mm}
   @media print{
-    body.do-print .wrap,body.do-print .overlay{display:none !important}
+    body.do-print > *:not(#printArea){display:none !important}
     body.do-print #printArea{display:block}
     #printArea{font-family:var(--serif);color:#000}
-    #printArea .pa-head{display:flex;align-items:center;gap:12px;border-bottom:2px solid #222;padding-bottom:10px;margin-bottom:12px}
-    #printArea .pa-logo{height:46px;width:auto;flex:0 0 auto}
-    #printArea .pa-school{font-family:var(--sans);font-size:12.5px;font-weight:700;color:#222;line-height:1.3;min-width:0}
-    #printArea .pa-school small{display:block;font-weight:500;color:#555;font-size:11.5px}
-    #printArea .pa-meta{font-family:var(--sans);font-size:13px;color:#333;border-bottom:1px solid #999;padding-bottom:8px;margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap}
-    #printArea .pa-keytag{font-family:var(--sans);font-size:12px;font-weight:700;color:#8A3324;border:1px solid #C0392B;border-radius:6px;padding:5px 9px;margin:0 0 12px;display:inline-block}
-    #printArea h2{font-family:var(--sans);font-size:18px;margin:0 0 14px;break-after:avoid}
-    #printArea .pa-body{font-size:15px;line-height:1.6}
+    #printArea .pa-head{border-bottom-color:#222}
+    #printArea .pa-school{color:#222}
+    #printArea .pa-school small{color:#555;opacity:1}
+    #printArea .pa-meta{color:#333;border-bottom-color:#999}
+    #printArea h2{break-after:avoid}
     /* každé cvičení = jeden blok, který se nesmí rozpůlit přes stránku */
-    #printArea .pa-ex{break-inside:avoid;page-break-inside:avoid;white-space:pre-wrap;margin:0 0 16px}
-    #printArea .pa-body b{font-family:var(--sans)}
+    #printArea .pa-ex{break-inside:avoid;page-break-inside:avoid}
   }
 
   .qualitybox{display:none;border-top:1px dashed var(--line);background:#FBFAF5;padding:14px 18px;font-family:var(--sans);font-size:13.5px;white-space:pre-wrap;color:var(--ink)}
@@ -794,6 +801,7 @@
   .sheet .body{padding-top:8px}
   .teacher-kicker{display:inline-flex;align-items:center;margin-right:7px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:999px;padding:2px 7px;font:850 10px var(--sans);letter-spacing:.06em;text-transform:uppercase;vertical-align:1px}
   .keybox,.qualitybox,.structurebox{border-top:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
+  body.dark .keybox,body.dark .qualitybox,body.dark .structurebox{box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
   .keybox{background:#FFFDF7}
   .qualitybox{background:#FBFAF5}
   .structurebox{background:var(--extend-bg)}
@@ -872,7 +880,7 @@
   body.dark .teacher-confirm{background:#1d2732;border-color:#46576a;color:#eef3f7}
 
 /* AI Studio GHRAB handoff */
-.studio-import-banner{margin:10px auto;max-width:1180px;border:1px solid rgba(80,232,255,.48);background:linear-gradient(135deg,rgba(5,29,43,.96),rgba(17,22,45,.96));color:#eefcff;border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 12px 32px rgba(0,0,0,.22)}.studio-import-banner span{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}.studio-import-banner small{opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.studio-import-banner a{color:#75ecff;font-weight:800;text-decoration:none}.studio-import-banner button{border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer}@media(max-width:720px){.studio-import-banner{margin:8px;flex-wrap:wrap}.studio-import-banner a{width:100%}}
+.studio-import-banner{margin:10px 0;border:1px solid var(--line);border-left:4px solid var(--core);background:var(--card);color:var(--ink);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}.studio-import-banner span{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}.studio-import-banner small{color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.studio-import-banner a{color:var(--core);font-weight:800;text-decoration:none}.studio-import-banner button{border:0;background:transparent;color:var(--ink);font-size:22px;cursor:pointer}body.dark .studio-import-banner{background:#172030;border-color:#344252;border-left-color:var(--core);box-shadow:0 12px 32px rgba(0,0,0,.24)}@media(max-width:720px){.studio-import-banner{margin:8px 0;flex-wrap:wrap}.studio-import-banner a{width:100%}}
 
 /* === GHRAB UNIFIED SCHOOL IDENTITY v1 === */
 .school-brand-lockup{display:flex;align-items:center;gap:14px;min-width:0;text-align:left}
@@ -907,3 +915,5 @@ body.modal-open{overflow:hidden}
 a.manual-launch-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:inherit;position:relative}
 a.manual-launch-btn::after{content:"";position:absolute;inset:-3px;border-radius:inherit;border:1px solid color-mix(in srgb,var(--acc, var(--accent, #65d9ff)) 44%,transparent);pointer-events:none;opacity:.75}
 a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacity:1;box-shadow:0 0 0 3px color-mix(in srgb,var(--acc, var(--accent, #65d9ff)) 12%,transparent)}
+
+.tip:focus-visible{outline:3px solid color-mix(in srgb,var(--core) 45%,transparent);outline-offset:3px}

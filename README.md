@@ -2,7 +2,7 @@
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.3
+- **Verze:** 1.3.4
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž

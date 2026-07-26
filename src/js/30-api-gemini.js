@@ -1,4 +1,5 @@
 const MODEL_DEFAULT="gemini-3.6-flash", FALLBACK_MODELS=["gemini-3.5-flash-lite"];
+const THINKING_DEFAULT='medium',THINKING_CHEAP='minimal';
 let geminiApiKey="", geminiKeyScope="", geminiModel=MODEL_DEFAULT;
 
 function cleanKey(s){return String(s||"").replace(/[^\x21-\x7E]/g,"")}
@@ -89,7 +90,7 @@ function hasApiKey(){return !!cleanKey(geminiApiKey)}
 function requireApiKeyForAction(actionLabel){
   if(hasApiKey())return true;
   const label=actionLabel||'tuto akci';
-  const msg='Bez API klíče nejde spustit '+label+'. Vlož klíč nahoře v panelu „Klíč k API“ a použij ho pro relaci. Výstup se bez klíče nezačne vytvářet.';
+  const msg='Bez API klíče nejde spustit '+label+'. Vlož klíč v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“. Výstup se bez klíče nezačne vytvářet.';
   const api=$('#apiPanel'), apiStep=$('#apiStepPanel');
   if(api)api.classList.add('open');
   updateApiToggleText();
@@ -142,25 +143,27 @@ function assertInlineRequestSize(body){const bytes=utf8Bytes(JSON.stringify(body
 function makeAppError(message,code){const e=new Error(message);e.code=code||"APP";return e}
 function friendlyApiMessage(e){
   if(!e)return "Neznámá chyba.";
-  if(e.code==="MISSING_KEY")return "Chybí API klíč. Vlož ho nahoře v panelu „Klíč k API“ a použij ho pro relaci.";
+  if(e.code==="MISSING_KEY")return "Chybí API klíč. Vlož ho v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“.";
   if(e.name==="AbortError"||e.code==="TIMEOUT")return "Model neodpověděl včas. Zkus akci spustit znovu.";
   if(e.code==="TEXT_TOO_LONG"||e.code==="FILE_TOO_LARGE"||e.code==="REQUEST_TOO_LARGE"||e.code==="TOO_MANY_IMAGES")return e.message;
   if(e.code==="INCOMPLETE_RESPONSE")return "Model odpověď nedokončil, takže ji appka raději nepoužila. Zkrať zadání, vyber méně verzí nebo to spusť znovu.";
   if(e.code==="SAFETY_STOP")return "Model odpověď zastavil bezpečnostním filtrem. Uprav zadání nebo zkus vložit jen čistý text úloh.";
   if(e.quota)return "Kvóta nebo limit API je vyčerpaný. Zkus to později nebo přepni model.";
   if(e.status===401||e.status===403)return "API klíč není platný nebo nemá oprávnění. Zkontroluj klíč v panelu nahoře.";
+  if(e.status===404)return "Zvolený model není dostupný. Přepni model v panelu nastavení nebo to zkus později.";
   if(e.status===400)return "Gemini odmítlo požadavek. Zkontroluj délku nebo obsah vstupu.";
   if(e.status>=500)return "Služba Gemini má dočasný problém. Zkus to znovu.";
   return e.message||"Nepovedlo se spojit s modelem.";
 }
 /* callGemini je záměrně přiřaditelná proměnná (ne deklarace funkce), aby ji interní testovací režim mohl dočasně nahradit mockem a poté čistě vrátit zpět. */
 let callGemini = async function callGeminiImpl(parts,opts={}){
-  if(!geminiApiKey)throw makeAppError("Chybí klíč k API. Vlož ho v „Klíč k API“ nahoře a zvol „Použít jen pro relaci“.","MISSING_KEY");
+  if(!geminiApiKey)throw makeAppError("Chybí klíč k API. Vlož ho v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“.","MISSING_KEY");
   const models=[geminiModel,...FALLBACK_MODELS.filter(m=>m!==geminiModel)];
-  const shouldFallback=e=>!!(e&&(e.quota||e.status===429||e.status===503||e.status===500));
-  const tryModel=async(model)=>{
+  const shouldFallback=e=>!!(e&&(e.quota||e.status===429||e.status===503||e.status===500||e.status===404));
+  const tryModel=async(model,withThinking=true)=>{
     const url="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
-    const generationConfig={maxOutputTokens:32768,thinkingConfig:{thinkingLevel:'low'}};
+    const generationConfig={maxOutputTokens:60000};
+    if(withThinking)generationConfig.thinkingConfig={thinkingLevel:(opts&&opts.thinking)||THINKING_DEFAULT};
     if(opts&&opts.json)generationConfig.responseMimeType='application/json';
     if(opts&&opts.schema)generationConfig.responseSchema=opts.schema;
     const body={contents:[{role:"user",parts}],generationConfig};
@@ -179,7 +182,9 @@ let callGemini = async function callGeminiImpl(parts,opts={}){
       const st=(data&&data.error&&data.error.status)?String(data.error.status):"";
       const quota=res.status===429||/RESOURCE_EXHAUSTED/i.test(st);
       const msg=(data&&data.error&&data.error.message)?data.error.message:("HTTP "+res.status);
-      const e=new Error(msg);e.quota=quota;e.status=res.status;e.model=model;throw e;
+      const e=new Error(msg);e.quota=quota;e.status=res.status;e.model=model;
+      if(withThinking&&res.status===400&&/thinking/i.test(msg))return tryModel(model,false);
+      throw e;
     }
     const cand=data.candidates&&data.candidates[0];
     const finish=cand&&cand.finishReason;
@@ -286,6 +291,7 @@ $('#cefr').addEventListener('change',async()=>{
   saveCefrPreference(c.checked);
   if(c.checked)await detectCefrForBase($('#baseText').value.trim());
   else {applyCefrLevels(null);setCefrNote('CEFR je vypnutý. U nejazykových předmětů aplikace používá jen úrovně obtížnosti.')}
+  updateCefrRunButton();
 });
 const cefrForceEl=$('#cefrForce');
 if(cefrForceEl)cefrForceEl.addEventListener('change',async()=>{
@@ -294,14 +300,16 @@ if(cefrForceEl)cefrForceEl.addEventListener('change',async()=>{
   if(c&&c.checked&&subjectAllowsCefr())await detectCefrForBase($('#baseText').value.trim());
 });
 $('#subject').addEventListener('change',syncCefrHintFromSubject);
-restoreCefrPreference();
+const cefrRunBtn=$('#cefrRunBtn');if(cefrRunBtn)cefrRunBtn.addEventListener('click',()=>detectCefrForBase($('#baseText').value.trim()));
+restoreCefrPreference();updateCefrRunButton();
 
+function setTipOpen(t,open){t.classList.toggle('open',!!open);t.setAttribute('aria-expanded',open?'true':'false')}
+function toggleTip(t){document.querySelectorAll('.tip.open').forEach(o=>{if(o!==t)setTipOpen(o,false)});setTipOpen(t,!t.classList.contains('open'))}
 document.querySelectorAll('.tip').forEach(t=>{
-  t.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();
-    document.querySelectorAll('.tip.open').forEach(o=>{if(o!==t)o.classList.remove('open')});
-    t.classList.toggle('open')});
+  t.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toggleTip(t)});
+  t.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();toggleTip(t)}else if(e.key==='Escape')setTipOpen(t,false)});
 });
-document.addEventListener('click',()=>document.querySelectorAll('.tip.open').forEach(o=>o.classList.remove('open')));
+document.addEventListener('click',()=>document.querySelectorAll('.tip.open').forEach(o=>setTipOpen(o,false)));
 
 function fileToDataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('Soubor se nepodařilo načíst.'));r.readAsDataURL(file)})}
 function dataUrlToBase64(dataUrl){return String(dataUrl||'').split(',')[1]||''}
@@ -543,7 +551,7 @@ $('#extractBtn').addEventListener('click',async()=>{
     $('#baseText').value=pasted;
     if($('#cefr')&&$('#cefr').checked&&subjectAllowsCefr()){
       applyCefrLevels(null);
-      setCefrNote('Ručně vložený čistý text byl načten bez AI přepisu. CEFR odhad se kvůli úspoře dotazu nespouští automaticky; můžeš ho spustit vypnutím a opětovným zapnutím CEFR.','warn');
+      setCefrNote('Ručně vložený čistý text byl načten bez AI přepisu. CEFR odhad se kvůli úspoře dotazu nespouští automaticky; použij tlačítko „Odhadnout CEFR úroveň“.','warn');updateCefrRunButton();
     } else {
       if($('#cefr')&&$('#cefr').checked&&!subjectAllowsCefr()){$('#cefr').checked=false;saveCefrPreference(false);applyCefrLevels(null)}
       syncCefrHintFromSubject();
@@ -553,8 +561,8 @@ $('#extractBtn').addEventListener('click',async()=>{
     $('#configPanel').scrollIntoView({behavior:'smooth',block:'start'});
     return;
   }
-  if(!requireApiKeyForAction('načtení souboru')){errBox($('#inputErr'),'Bez API klíče se soubor nezačne zpracovávat. Vlož klíč nahoře a použij ho pro relaci.');return}
-  const btn=$('#extractBtn');btn.disabled=true;btn.innerHTML='<span class="mini"></span> Načítám zadání…';setStatus('statusFlow','načítám zadání','busy');
+  if(!requireApiKeyForAction('načtení souboru')){errBox($('#inputErr'),'Bez API klíče se soubor nezačne zpracovávat. Vlož klíč v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“.');return}
+  const btn=$('#extractBtn'),extractLabel=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="mini"></span> Načítám zadání…';setStatus('statusFlow','načítám zadání','busy');
   const prompt="Toto je zadání školního testu, pracovního listu nebo učebního materiálu libovolného předmětu. Přepiš jeho obsah do čistého, čitelného textu. Zachovej přesně původní jazyk nebo kombinaci jazyků u každé části; nic nepřekládej jen proto, že aplikace má české UI. Zachovej odbornou terminologii, matematický/chemický/fyzikální zápis, jednotky, značky, symboly, tabulkové údaje a číslování. U českých pasáží oprav jen zjevné OCR překlepy, ale výsledná čeština musí být gramaticky, stylisticky i lexikálně bezchybná. Na první řádek dej téma/nadpis, pak očíslované úlohy s plným zněním. Obsah zachovej věrně, nic nepřidávej a nevymýšlej nové úlohy. Pokud jde o více fotek, zpracuj je v pořadí nahrání jako pokračování jednoho materiálu. Odpověz POUZE přepsaným zadáním, bez úvodu a komentáře.";
   let parts;
   try{
@@ -579,7 +587,7 @@ $('#extractBtn').addEventListener('click',async()=>{
     hide($('#inputPanel'));show($('#configPanel'));
     $('#configPanel').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(err){setStatus('statusFlow','chyba načtení','warn');errBox($('#inputErr'),friendlyApiMessage(err))}
-  finally{btn.disabled=false;btn.textContent='Načíst zadání'}
+  finally{btn.disabled=false;btn.innerHTML=extractLabel}
 });
 
 document.querySelectorAll('.tierpick').forEach(p=>{const cb=p.querySelector('input');const s=()=>p.classList.toggle('on',cb.checked);cb.addEventListener('change',s);s()});
@@ -603,12 +611,12 @@ function metaLine(isKey){
   return '<div class="pa-meta">'+parts.join('')+'</div>';
 }
 /* Rozdělí vyrenderovaný list na samostatné bloky cvičení.
-   Každé cvičení začíná řádkem typu "1 ", "2)", "Cvičení 3", "Exercise 4", "Úloha 5".
+   Každé cvičení začíná řádkem typu "1.", "2)", "Cvičení 3", "Exercise 4", "Úloha 5".
    Bloky se v tisku nesmí rozpůlit (CSS .pa-ex { break-inside:avoid }). */
 function buildPrintBody(text){
   const lines=String(text||'').split(/\r?\n/);
   // Odsazené číslované možnosti jsou podpoložky, ne nové úlohy; čtyřciferný letopočet také nový blok nezakládá.
-  const reStart=/^(?:(?:cvičení|úloha|exercise|task|part)\s*)?\d{1,2}[.):]?\s+\S/i;
+  const reStart=/^(?:(?:cvičení|úloha|exercise|task|part)\s*\d{1,2}[.):]?\s+\S|\d{1,2}[.):]\s+\S)/i;
   const blocks=[];let cur=[];
   for(const ln of lines){
     if(reStart.test(ln)&&cur.length){blocks.push(cur.join('\n'));cur=[ln]}

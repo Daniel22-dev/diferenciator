@@ -65,7 +65,7 @@ const TestSystem={
     try{this.runProjectRoundtripTest();}catch(e){this.log(e.message)}
     try{await this.runMockGeneration();}catch(e){this.log(e.message)}
     try{await this.runBatchAndTransactionTests();}catch(e){this.log(e.message)}
-    try{this.runAuditRegressionTests();}catch(e){this.log(e.message)}
+    try{await this.runAuditRegressionTests();}catch(e){this.log(e.message)}
     try{this.runPdfFlowTest();}catch(e){this.log(e.message)}
     try{this.runLayoutTest();}catch(e){this.log(e.message)}
     try{this.runNativeDialogScan();}catch(e){this.log(e.message)}
@@ -74,12 +74,13 @@ const TestSystem={
     this.add(failed?'warn':'ok','Souhrn testů',failed?('Dokončeno s počtem chyb: '+failed+' · release nepouštět.'):('Všechny interní testy prošly · release gate OK.'));
   },
   runSmokeUi(){
-    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','messageOverlay','advVariantMode','advLearningGoal','printTeacherConfirmed'];
+    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','messageOverlay','advVariantMode','advLearningGoal','printTeacherConfirmed','cefrRunBtn'];
     ids.forEach(id=>this.assert(!!$('#'+id),'UI prvek: '+id,'Nalezen','Chybí prvek #'+id));
     this.assert(document.querySelectorAll('#tiers input[type="radio"]').length===3,'Výběr úrovně','K dispozici jsou 3 úrovně','Počet úrovní není 3');
     const checked=document.querySelector('#tiers input[type="radio"]:checked');
     this.assert(checked&&checked.dataset&&checked.dataset.tier==='core','Výchozí úroveň','Výchozí volba je Normální','Výchozí volba není Normální');
     this.assert(!!document.querySelector('.privacy-note'),'Upozornění na anonymizaci','Krátké upozornění je u vstupu přítomné','Chybí upozornění u vstupu');
+    this.assert(!!document.querySelector('#extractBtn .zap-cost'),'Štítek spotřeby načtení','Tlačítko Načíst zadání obsahuje štítek spotřeby','U tlačítka Načíst zadání chybí štítek spotřeby');
   },
   runParserTests(){
     const parsed=parseWorksheetResponse(this.sampleStructured());
@@ -92,6 +93,9 @@ const TestSystem={
     this.assert(!fallbackValidation.ok,'Fallback kontrola','Nestrukturovaný výstup je označen k ověření','Fallback měl být označen jako varování');
     const prompt=makePromptForTier('core',this.demoBase);
     this.assert(prompt.includes('VNITŘNÍ STRUKTURA VÝSTUPU')&&prompt.includes('worksheet_title')&&prompt.includes('answer_key'),'Prompt pro JSON schéma','Prompt výslovně vyžaduje JSON strukturu','Prompt neobsahuje očekávané JSON schéma');
+    const batchPrompt=makePromptForTier('core',this.demoBase,3),singlePrompt=makePromptForTier('core',this.demoBase,1);
+    this.assert(!/změň konkrétní obsah/i.test(batchPrompt)&&/referenční variantu sady/i.test(batchPrompt),'Jednotné pravidlo celé sady','Normální verze v sadě zachovává stejný obsah a obtížnost','Normální verze sady stále žádá jiný obsah');
+    this.assert(/změň konkrétní obsah/i.test(singlePrompt),'Samostatná normální varianta','Jedna Normální verze může vytvořit paralelní obsah','Samostatná Normální verze ztratila pravidlo jiného obsahu');
   },
   runCefrTests(){
     const old=$('#subject')?$('#subject').value:'';
@@ -130,13 +134,17 @@ const TestSystem={
     };
     return ()=>{callGemini=original};
   },
-  runAuditRegressionTests(){
+  async runAuditRegressionTests(){
     this.assert(['Anglický jazyk','Německý jazyk','Ruský jazyk','Italský jazyk','Konverzace v anglickém jazyce'].every(looksLikeLanguageSubject)
       && !['Matematika','Dějepis','Informatika','Český jazyk'].some(looksLikeLanguageSubject),
       'Rozpoznání jazykového předmětu','Úřední názvy typu „Anglický jazyk“ projdou, nejazykové předměty ne.','Jazykový předmět není rozpoznán podle přídavného jména');
-    this.assert(buildPrintBody('Úvodní text\n1. První úloha\n   1. možnost A\n   2. možnost B\n2. Druhá úloha\n1989 byl rok revoluce.').split('<div class="pa-ex">').length-1===3,
-      'Dělení tisku na cvičení','Odsazené podpoložky a letopočty nezakládají nový tiskový blok.','Tisk se dělí na příliš mnoho bloků');
+    this.assert(buildPrintBody('Úvodní text\n12 hodin práce\n1. První úloha\n2. Druhá úloha').split('<div class="pa-ex">').length-1===3,
+      'Dělení tisku na cvičení','Běžný řádek začínající číslem nevytvoří blok; úvod a dvě úlohy zůstanou tři logické části.','Tisk chybně považuje „12 hodin práce“ za novou úlohu');
     this.assert(/Ostrava-Hrab/.test(printHead()),'Školní identita v PDF','Hlavička tištěného listu uvádí plný název školy.','Hlavička PDF uvádí jen obecné „Gymnázium“');
+    this.assert(/chybu v úloze 3/.test(renderQualityAudit('Opravit chybu v úloze 3')),'Audit bez dvojtečky','Kontrola kvality nezahodí začátek řádku bez dvojtečky.','Kontrola kvality ořízla skutečný obsah řádku');
+    const editSheet=makeSheet('core',false);editSheet._text='**Nadpis**\n\n1. Úloha';editSheet._key='1. Řešení';editSheet._quality='OK: vše sedí';editSheet._parts={title:'Nadpis',instructions:'',tasks:editSheet._text,answerKey:editSheet._key,teacherNote:'Poznámka'};editSheet.querySelector('.body').innerHTML=render(editSheet._text);renderTeacherNote(editSheet);const editBtn=document.createElement('button');toggleEdit(editSheet,editBtn);toggleEdit(editSheet,editBtn);
+    this.assert(editSheet._text==='**Nadpis**\n\n1. Úloha'&&editSheet._key==='1. Řešení'&&editSheet._quality==='OK: vše sedí'&&!!editSheet.querySelector('.body b'),'Prázdná editace zachová data','Tučné markery, řešení i kontrola kvality zůstaly beze změny.','Pouhé otevření editace poškodilo text nebo učitelská data');
+    const dataOverlay=$('#dataOverlay'),messageOverlay=$('#messageOverlay');if(dataOverlay&&messageOverlay){dataOverlay.classList.add('show');await new Promise(r=>setTimeout(r,0));messageOverlay.classList.add('show');await new Promise(r=>setTimeout(r,0));document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await new Promise(r=>setTimeout(r,0));this.assert(!messageOverlay.classList.contains('show')&&dataOverlay.classList.contains('show'),'Zásobník dialogů','Escape zavře naposledy otevřené potvrzení a ponechá spodní dialog.','Escape zavřel nesprávný dialog');dataOverlay.classList.remove('show');messageOverlay.classList.remove('show');await new Promise(r=>setTimeout(r,0));}
     const oldSupport=TIERS.support.cefrLbl,oldCore=TIERS.core.cefrLbl,oldExtend=TIERS.extend.cefrLbl;
     const probe=makeSheet('core',false);$('#results').appendChild(probe);applyCefrLevels('B1');
     this.assert(probe.querySelector('.level-badge')&&probe.querySelector('.level-badge').textContent==='B1','Živý CEFR štítek','CEFR změna se propsala i do již vytvořené karty.','CEFR štítek na hotové kartě zůstal zastaralý');
@@ -219,6 +227,7 @@ const TestSystem={
       this.assert(results.firstElementChild===preserved&&preserved._text==='PŮVODNÍ HOTOVÁ VERZE','Transakční generování','Při úplném výpadku API zůstane předchozí výstup zachovaný','Neúspěšné generování smazalo předchozí práci');
       const fakeBtn=document.createElement('button');fakeBtn.innerHTML='Regenerovat';await regenerateSheet(preserved,fakeBtn);
       this.assert(preserved._text==='PŮVODNÍ HOTOVÁ VERZE'&&preserved._key==='PŮVODNÍ KLÍČ','Bezpečná regenerace','Při chybě regenerace se obnoví text, klíč i učitelská data','Chybná regenerace poškodila hotovou verzi');
+      this.assert(!document.getElementById('progressStrip').classList.contains('show')&&!document.getElementById('statusFlow').classList.contains('busy'),'Ukončení regenerace','Po neúspěšné regeneraci nezůstane průběh ani stav viset v režimu Generuji.','Regenerace nechala aktivní indikaci průběhu');
       callGemini=workingMock;if($('#messageOverlay'))$('#messageOverlay').classList.remove('show');
     }finally{
       restoreMock();geminiApiKey=oldKey;geminiKeyScope=oldScope;updateKeyStatus();$('#baseText').value=oldBase;if(results)results.replaceChildren(...oldNodes);if(progressSnapshot&&progress){progress.innerHTML=progressSnapshot.html;progress.className=progressSnapshot.cls}if(statusSnapshot&&status){status.innerHTML=statusSnapshot.html;status.className=statusSnapshot.cls}if(bannerSnapshot&&banner){banner.className=bannerSnapshot.cls;$('#resultSummary').textContent=bannerSnapshot.summary}if(resultsPanel)resultsPanel.classList.toggle('hide',!!resultsPanelHidden);if(configErr)configErr.innerHTML=configErrHtml;if($('#messageOverlay'))$('#messageOverlay').classList.remove('show');
@@ -268,6 +277,7 @@ const TestSystem={
     sheet._quality='OK: Ručně zkontrolováno.';
     requestPdfForSheet(sheet,'PDF test',sheet._text);
     this.assert($('#printOverlay')&&$('#printOverlay').classList.contains('show'),'PDF po kontrole','Po kontrole se otevřel náhled PDF','Náhled PDF se neotevřel');
+    this.assert(!!document.querySelector('#printPreview .pa-body'),'Struktura náhledu PDF','Náhled používá stejný obal těla jako tisk','V náhledu PDF chybí .pa-body');
     this.assert($('#printConfirm')&&$('#printConfirm').disabled,'Povinná učitelská kontrola','Tisk je do potvrzení učitele zablokovaný','Tisk nebyl zablokovaný před potvrzením');
     if($('#printTeacherConfirmed')){$('#printTeacherConfirmed').checked=true;$('#printTeacherConfirmed').dispatchEvent(new Event('change'));}
     this.assert($('#printConfirm')&&!$('#printConfirm').disabled,'Odemčení PDF','Potvrzení učitele odemklo tisk/PDF','Potvrzení učitele tisk neodemklo');
@@ -285,6 +295,7 @@ const TestSystem={
     this.assert(!!$('#helpTopBtn'),'Horní nápověda','Nápověda je dostupná i v horní liště','Chybí horní tlačítko nápovědy');
     this.assert(!!document.querySelector('.formats-compact'),'Kompaktní formáty','Mobilní zobrazení má kompaktní řádek podporovaných formátů','Chybí kompaktní mobilní popis formátů');
     this.assert(/Kontrola[\s\S]*Řešení[\s\S]*PDF/.test($('#resultBanner')?$('#resultBanner').textContent:''),'Výsledkový postup','Banner vede uživatele v pořadí Kontrola → Řešení → PDF','Doporučený postup ve výsledku není sjednocený');
+    const apiSource=String(callGemini);this.assert(apiSource.includes('404')&&!apiSource.includes("thinkingLevel:'low'"),'Odolnost modelového API','Fallback pokrývá 404 a kód nepoužívá pevnou úroveň low','Nastavení modelů neodpovídá release pravidlům');
   },
   runNativeDialogScan(){
     const forbidden=['al'+'ert','pro'+'mpt'];

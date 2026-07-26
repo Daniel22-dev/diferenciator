@@ -1,10 +1,11 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.3',
+  version: '1.3.4',
   date: '2026-07-26',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    "1.3.4: opravena zaseknutá indikace průběhu po regeneraci, náhled PDF nyní odpovídá výslednému dokumentu, do tisku se už nedostanou provozní proužky, editace listu zachovává tučné formátování i hotové řešení, kontrola kvality přestala ořezávat text, sada tří verzí vzniká podle jednoho pravidla, aktualizováno nastavení modelů Gemini a doplněn návrat z manuálu.",
     "1.3.3: ochrana hotových verzí před přepsáním a potvrzení před smazáním práce, viditelný průběh generování, správné rozpoznání úředních názvů jazykových předmětů, přesnější dělení tisku, plná školní identita v PDF, živé CEFR štítky, aktuální modely Gemini a zpřesněné informace o práci s daty.",
     "1.3.2: interaktivní manuál byl ověřen proti aktuálním funkcím a při otevření z aplikace uvnitř AI Studia zůstává ve stejném pracovním rámci; nová PWA cache vynutí načtení opravy.",
     "1.3.1: jednotná GHRAB QA 1.0.1 — reprodukovatelný release, bezpečnostní a PWA brány, skutečná Chromium galerie a verdikt vázaný na SHA-256 buildu.",

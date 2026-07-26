@@ -236,7 +236,7 @@
   .btn.tiny.soft{background:#FCFBF7}
   .btn.tiny:hover{transform:translateY(-1px);opacity:1;box-shadow:0 4px 12px rgba(34,48,63,.10)}
   .preview-modal{max-width:760px}
-  .print-preview{max-height:58vh;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#FCFBF7;padding:16px;margin:12px 0;font-family:var(--serif);white-space:pre-wrap;line-height:1.6}
+  .print-preview{max-height:58vh;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#FCFBF7;padding:16px;margin:12px 0;font-family:var(--serif);white-space:normal;line-height:1.6}
   .modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px}
   @media(max-width:980px){
     .app-shell{display:block}
@@ -274,22 +274,29 @@
 
 
   #printArea{display:none}
+  /* Sdílené formátování tiskového výstupu i jeho náhledu */
+  #printArea .pa-head,.print-preview .pa-head{display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:12px}
+  #printArea .pa-logo,.print-preview .pa-logo{height:46px;width:auto;flex:0 0 auto}
+  #printArea .pa-school,.print-preview .pa-school{font-family:var(--sans);font-size:12.5px;font-weight:700;line-height:1.3;min-width:0}
+  #printArea .pa-school small,.print-preview .pa-school small{display:block;font-weight:500;font-size:11.5px;opacity:.75}
+  #printArea .pa-meta,.print-preview .pa-meta{font-family:var(--sans);font-size:13px;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap}
+  #printArea .pa-keytag,.print-preview .pa-keytag{font-family:var(--sans);font-size:12px;font-weight:700;color:#8A3324;border:1px solid #C0392B;border-radius:6px;padding:5px 9px;margin:0 0 12px;display:inline-block}
+  #printArea h2,.print-preview h2{font-family:var(--sans);font-size:18px;margin:0 0 14px}
+  #printArea .pa-body,.print-preview .pa-body{font-size:15px;line-height:1.6}
+  #printArea .pa-ex,.print-preview .pa-ex{white-space:pre-wrap;margin:0 0 16px}
+  #printArea .pa-body b,.print-preview .pa-body b{font-family:var(--sans)}
   @page{margin:18mm 16mm 16mm 16mm}
   @media print{
-    body.do-print .wrap,body.do-print .overlay{display:none !important}
+    body.do-print > *:not(#printArea){display:none !important}
     body.do-print #printArea{display:block}
     #printArea{font-family:var(--serif);color:#000}
-    #printArea .pa-head{display:flex;align-items:center;gap:12px;border-bottom:2px solid #222;padding-bottom:10px;margin-bottom:12px}
-    #printArea .pa-logo{height:46px;width:auto;flex:0 0 auto}
-    #printArea .pa-school{font-family:var(--sans);font-size:12.5px;font-weight:700;color:#222;line-height:1.3;min-width:0}
-    #printArea .pa-school small{display:block;font-weight:500;color:#555;font-size:11.5px}
-    #printArea .pa-meta{font-family:var(--sans);font-size:13px;color:#333;border-bottom:1px solid #999;padding-bottom:8px;margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap}
-    #printArea .pa-keytag{font-family:var(--sans);font-size:12px;font-weight:700;color:#8A3324;border:1px solid #C0392B;border-radius:6px;padding:5px 9px;margin:0 0 12px;display:inline-block}
-    #printArea h2{font-family:var(--sans);font-size:18px;margin:0 0 14px;break-after:avoid}
-    #printArea .pa-body{font-size:15px;line-height:1.6}
+    #printArea .pa-head{border-bottom-color:#222}
+    #printArea .pa-school{color:#222}
+    #printArea .pa-school small{color:#555;opacity:1}
+    #printArea .pa-meta{color:#333;border-bottom-color:#999}
+    #printArea h2{break-after:avoid}
     /* každé cvičení = jeden blok, který se nesmí rozpůlit přes stránku */
-    #printArea .pa-ex{break-inside:avoid;page-break-inside:avoid;white-space:pre-wrap;margin:0 0 16px}
-    #printArea .pa-body b{font-family:var(--sans)}
+    #printArea .pa-ex{break-inside:avoid;page-break-inside:avoid}
   }
 
   .qualitybox{display:none;border-top:1px dashed var(--line);background:#FBFAF5;padding:14px 18px;font-family:var(--sans);font-size:13.5px;white-space:pre-wrap;color:var(--ink)}
@@ -814,6 +821,7 @@
   .sheet .body{padding-top:8px}
   .teacher-kicker{display:inline-flex;align-items:center;margin-right:7px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:999px;padding:2px 7px;font:850 10px var(--sans);letter-spacing:.06em;text-transform:uppercase;vertical-align:1px}
   .keybox,.qualitybox,.structurebox{border-top:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
+  body.dark .keybox,body.dark .qualitybox,body.dark .structurebox{box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
   .keybox{background:#FFFDF7}
   .qualitybox{background:#FBFAF5}
   .structurebox{background:var(--extend-bg)}
@@ -892,7 +900,7 @@
   body.dark .teacher-confirm{background:#1d2732;border-color:#46576a;color:#eef3f7}
 
 /* AI Studio GHRAB handoff */
-.studio-import-banner{margin:10px auto;max-width:1180px;border:1px solid rgba(80,232,255,.48);background:linear-gradient(135deg,rgba(5,29,43,.96),rgba(17,22,45,.96));color:#eefcff;border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 12px 32px rgba(0,0,0,.22)}.studio-import-banner span{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}.studio-import-banner small{opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.studio-import-banner a{color:#75ecff;font-weight:800;text-decoration:none}.studio-import-banner button{border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer}@media(max-width:720px){.studio-import-banner{margin:8px;flex-wrap:wrap}.studio-import-banner a{width:100%}}
+.studio-import-banner{margin:10px 0;border:1px solid var(--line);border-left:4px solid var(--core);background:var(--card);color:var(--ink);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}.studio-import-banner span{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}.studio-import-banner small{color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.studio-import-banner a{color:var(--core);font-weight:800;text-decoration:none}.studio-import-banner button{border:0;background:transparent;color:var(--ink);font-size:22px;cursor:pointer}body.dark .studio-import-banner{background:#172030;border-color:#344252;border-left-color:var(--core);box-shadow:0 12px 32px rgba(0,0,0,.24)}@media(max-width:720px){.studio-import-banner{margin:8px 0;flex-wrap:wrap}.studio-import-banner a{width:100%}}
 
 /* === GHRAB UNIFIED SCHOOL IDENTITY v1 === */
 .school-brand-lockup{display:flex;align-items:center;gap:14px;min-width:0;text-align:left}
@@ -927,6 +935,8 @@ body.modal-open{overflow:hidden}
 a.manual-launch-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:inherit;position:relative}
 a.manual-launch-btn::after{content:"";position:absolute;inset:-3px;border-radius:inherit;border:1px solid color-mix(in srgb,var(--acc, var(--accent, #65d9ff)) 44%,transparent);pointer-events:none;opacity:.75}
 a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacity:1;box-shadow:0 0 0 3px color-mix(in srgb,var(--acc, var(--accent, #65d9ff)) 12%,transparent)}
+
+.tip:focus-visible{outline:3px solid color-mix(in srgb,var(--core) 45%,transparent);outline-offset:3px}
 </style>
 </head>
 <body>
@@ -1048,7 +1058,7 @@ a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacit
     <div class="thumb" id="thumb"><img id="thumbImg" alt="Náhled nahraného zadání" /></div>
     <div class="upload-status" id="uploadInfo"></div>
     <div class="or">nebo</div>
-    <label class="paste-label" for="pasteText">Vložený text zadání <span class="tip" data-tip="Sem vlož text testu, pracovního listu, data z tabulky nebo export z jiné aplikace. Po načtení ho ještě zkontroluješ v dalším kroku.">?</span></label>
+    <label class="paste-label" for="pasteText">Vložený text zadání <span class="tip" tabindex="0" role="button" aria-expanded="false" data-tip="Sem vlož text testu, pracovního listu, data z tabulky nebo export z jiné aplikace. Po načtení ho ještě zkontroluješ v dalším kroku.">?</span></label>
     <p class="input-helper">Vlož sem text, pokud nechceš nahrávat soubor. Po kliknutí na „Načíst zadání“ vznikne editovatelný přepis.</p>
     <textarea id="pasteText" placeholder="Vlož text zadání, data z tabulky, HTML export nebo text z interaktivního testu"></textarea>
     <div class="privacy-note"><b>Upozornění:</b> běžně vkládej čistý originální test nebo pracovní list. Pokud by materiál náhodou obsahoval jména či citlivé údaje studentů, před nahráním je anonymizuj.</div>
@@ -1060,7 +1070,7 @@ a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacit
   <section class="panel pedagogical-panel hide" id="configPanel">
     <p class="step"><b>3</b> Zkontroluj zadání a vyber stupně <span class="step-role ped">Pedagogické nastavení</span></p>
     <label for="baseText">Načtené zadání
-      <span class="tip" data-tip="Tohle je přepis z fotky/PDF/dokumentu. Klidně ho oprav – z opraveného textu se pak dělají všechny verze.">?</span>
+      <span class="tip" tabindex="0" role="button" aria-expanded="false" data-tip="Tohle je přepis z fotky/PDF/dokumentu. Klidně ho oprav – z opraveného textu se pak dělají všechny verze.">?</span>
     </label>
     <textarea id="baseText" style="min-height:150px;font-family:var(--serif)"></textarea>
     <div class="row" style="margin-top:14px">
@@ -1069,12 +1079,13 @@ a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacit
     </div>
     <label class="toggle" style="margin-top:8px">
       <input type="checkbox" id="cefr" /> Zapnout CEFR odhad jen u jazykového předmětu <span class="zap-cost">⚡ 1</span>
-      <span class="tip" data-tip="Zapni u angličtiny, španělštiny a dalších jazyků. Appka odhadne aktuální úroveň A1–C2 a odvodí sousední stupně. U nejazykových předmětů nech vypnuté, ať se nespouští zbytečný dotaz na model.">?</span>
+      <span class="tip" tabindex="0" role="button" aria-expanded="false" data-tip="Zapni u angličtiny, španělštiny a dalších jazyků. Appka odhadne aktuální úroveň A1–C2 a odvodí sousední stupně. U nejazykových předmětů nech vypnuté, ať se nespouští zbytečný dotaz na model.">?</span>
     </label>
     <div class="cefr-note" id="cefrNote">CEFR je vypnutý. Zapni ho jen tehdy, když jde o jazykový materiál.</div>
+    <button class="btn ghost small hide" id="cefrRunBtn" type="button" title="Spustí odhad úrovně A1–C2 pro aktuálně načtené zadání.">Odhadnout CEFR úroveň <span class="zap-cost">⚡ 1</span></button>
     <label class="toggle cefr-force-toggle">
       <input type="checkbox" id="cefrForce" /> Vynutit CEFR i u nerozpoznaného jazykového předmětu
-      <span class="tip" data-tip="Použij jen tehdy, když jde opravdu o jazykový materiál, ale aplikace název předmětu nerozpoznala. Například školní zkratka, seminář nebo kombinovaný název.">?</span>
+      <span class="tip" tabindex="0" role="button" aria-expanded="false" data-tip="Použij jen tehdy, když jde opravdu o jazykový materiál, ale aplikace název předmětu nerozpoznala. Například školní zkratka, seminář nebo kombinovaný název.">?</span>
     </label>
     <p class="muted" style="margin:7px 0 0">U jazyků můžeš použít CEFR. U ostatních předmětů jde jen o úroveň obtížnosti.</p>
 
@@ -1106,7 +1117,7 @@ a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacit
       <button class="btn" id="genBtn">Vytvořit vybranou verzi <span class="zap-cost">⚡ 1+</span></button>
       <button class="btn set-btn" id="genAllBtn">Vytvořit celou sadu 3 verzí <span class="zap-cost">⚡ 3+</span></button>
     </div>
-    <p class="generation-note">Vybraná verze je rychlá volba pro jeden konkrétní účel. Celá sada vytvoří Jednodušší, Normální i Obtížnější variantu ze stejného zadání. Znak „+“ znamená, že při nedodržené JSON struktuře může aplikace výjimečně použít jeden opravný dotaz navíc pro každou verzi.</p>
+    <p class="generation-note">Vybraná verze je rychlá volba pro jeden konkrétní účel. Celá sada vytvoří Jednodušší, Normální i Obtížnější variantu ze stejného zadání. Při vytváření celé sady vzniknou všechny tři verze ze stejného obsahu a liší se jen mírou opory. Pokud chceš paralelní variantu s jiným obsahem, použij v Pedagogickém zpřesnění volbu „Stejný formát, jiný obsah“. Znak „+“ znamená, že při nedodržené JSON struktuře může aplikace výjimečně použít jeden opravný dotaz navíc pro každou verzi.</p>
     <div class="progress-strip" id="progressStrip" role="status" aria-live="polite"><span class="mini"></span><span id="progressText">Připravuji generování…</span></div>
     <div id="configErr"></div>
   </section>
@@ -1120,7 +1131,6 @@ a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacit
       <div class="field"><label for="mClass">Třída</label><input id="mClass" type="text" placeholder="např. 2.B" /></div>
       <div class="field"><label for="mDate">Datum</label><input id="mDate" type="text" placeholder="dd. mm. rrrr" /></div>
     </div>
-    <div id="batchErr"></div>
     <div id="results"></div>
     <div style="margin-top:14px"><button class="btn ghost" id="restartBtn">Nové zadání</button></div>
   </section>
@@ -1285,11 +1295,12 @@ a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacit
 
 <script type="application/ghrab-protected" data-ghrab-protected>
 const RELEASE = Object.freeze({
-  version: '1.3.3',
+  version: '1.3.4',
   date: '2026-07-26',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    "1.3.4: opravena zaseknutá indikace průběhu po regeneraci, náhled PDF nyní odpovídá výslednému dokumentu, do tisku se už nedostanou provozní proužky, editace listu zachovává tučné formátování i hotové řešení, kontrola kvality přestala ořezávat text, sada tří verzí vzniká podle jednoho pravidla, aktualizováno nastavení modelů Gemini a doplněn návrat z manuálu.",
     "1.3.3: ochrana hotových verzí před přepsáním a potvrzení před smazáním práce, viditelný průběh generování, správné rozpoznání úředních názvů jazykových předmětů, přesnější dělení tisku, plná školní identita v PDF, živé CEFR štítky, aktuální modely Gemini a zpřesněné informace o práci s daty.",
     "1.3.2: interaktivní manuál byl ověřen proti aktuálním funkcím a při otevření z aplikace uvnitř AI Studia zůstává ve stejném pracovním rámci; nová PWA cache vynutí načtení opravy.",
     "1.3.1: jednotná GHRAB QA 1.0.1 — reprodukovatelný release, bezpečnostní a PWA brány, skutečná Chromium galerie a verdikt vázaný na SHA-256 buildu.",
@@ -1392,6 +1403,11 @@ const TIERS = {
     cefr:"",cefrLbl:""}
 };
 const CEFR_SCALE=["A1","A2","B1","B2","C1","C2"];
+const DEFAULT_TIER_DESCRIPTIONS={
+  support:'— víc opory: slovní banka, nápověda, výběr z možností',
+  core:'— stejná obtížnost; obsah/forma podle pedagogického zpřesnění',
+  extend:'— méně opory, otevřené úlohy, úloha navíc na úsudek'
+};
 function refreshTierBadges(){
   document.querySelectorAll('#results .sheet').forEach(sheet=>{
     const t=TIERS[sheet._tierKey]; if(!t)return;
@@ -1408,11 +1424,11 @@ function applyCefrLevels(centerLevel){
   const dsS=document.getElementById('dsSupport'), dsC=document.getElementById('dsCore'), dsE=document.getElementById('dsExtend');
   if(idx<0){
     TIERS.support.cefrLbl="";TIERS.core.cefrLbl="";TIERS.extend.cefrLbl="";TIERS.support.cefr="";TIERS.core.cefr="";TIERS.extend.cefr="";
-    if(dsS)dsS.textContent='— víc opory: slovní banka, nápověda, výběr z možností';
-    if(dsC)dsC.textContent='— stejný typ úloh, jiný obsah';
-    if(dsE)dsE.textContent='— méně opory, otevřené úlohy, úloha navíc na úsudek';
+    if(dsS)dsS.textContent=DEFAULT_TIER_DESCRIPTIONS.support;
+    if(dsC)dsC.textContent=DEFAULT_TIER_DESCRIPTIONS.core;
+    if(dsE)dsE.textContent=DEFAULT_TIER_DESCRIPTIONS.extend;
     const lvl0=$('#levelDetect'); if(lvl0)lvl0.classList.remove('show');
-    refreshTierBadges();
+    refreshTierBadges();updateCefrRunButton();
     return;
   }
   const below=CEFR_SCALE[Math.max(0,idx-1)], at=CEFR_SCALE[idx], above=CEFR_SCALE[Math.min(CEFR_SCALE.length-1,idx+1)];
@@ -1422,9 +1438,14 @@ function applyCefrLevels(centerLevel){
   const lvl=$('#levelDetect');
   if(lvl){lvl.classList.add('show');lvl.textContent='Odhadnutá úroveň zadání: '+at+' → Jednodušší '+below+' · Normální '+at+' · Obtížnější '+above;}
   if(dsS)dsS.textContent='— víc opory, cílová úroveň '+below;
-  if(dsC)dsC.textContent='— stejný typ úloh, jiný obsah, úroveň '+at;
+  if(dsC)dsC.textContent='— stejná obtížnost, úroveň '+at+'; obsah/forma podle pedagogického zpřesnění';
   if(dsE)dsE.textContent='— méně opory, úloha navíc, úroveň '+above;
-  refreshTierBadges();
+  refreshTierBadges();updateCefrRunButton();
+}
+function updateCefrRunButton(){
+  const btn=document.getElementById('cefrRunBtn'),cefr=document.getElementById('cefr');if(!btn)return;
+  const showBtn=!!(cefr&&cefr.checked&&subjectAllowsCefr()&&!TIERS.core.cefrLbl);
+  btn.classList.toggle('hide',!showBtn);
 }
 
 let cefrBusy=false;
@@ -1440,7 +1461,7 @@ async function detectCefrForBase(text){
   cefrBusy=true;setCefrNote('Odhaduji CEFR úroveň…','busy');
   try{
     const forcedNote=isCefrForced()?'CEFR je ručně vynucený, protože název předmětu nemusel být rozpoznán. Přesto vrať NEPLATÍ, pokud materiál ve skutečnosti není jazykový. ':'';
-    const lvlRaw=await callGemini([{text:forcedNote+"Urči jazykovou úroveň podle CEFR (A1, A2, B1, B2, C1 nebo C2) tohoto materiálu pro výuku jazyka. Pokud materiál NENÍ jazykový (např. matematika, dějepis, fyzika v rodném jazyce), odpověz přesně slovem NEPLATÍ. Odpověz POUZE jedním z těchto kódů, nic jiného: A1 A2 B1 B2 C1 C2 NEPLATÍ\n\nMATERIÁL:\n"+base}]);
+    const lvlRaw=await callGemini([{text:forcedNote+"Urči jazykovou úroveň podle CEFR (A1, A2, B1, B2, C1 nebo C2) tohoto materiálu pro výuku jazyka. Pokud materiál NENÍ jazykový (např. matematika, dějepis, fyzika v rodném jazyce), odpověz přesně slovem NEPLATÍ. Odpověz POUZE jedním z těchto kódů, nic jiného: A1 A2 B1 B2 C1 C2 NEPLATÍ\n\nMATERIÁL:\n"+base}],{thinking:THINKING_CHEAP});
     const raw=String(lvlRaw||'').trim().toUpperCase();
     const lvl=raw.match(/A1|A2|B1|B2|C1|C2/);
     applyCefrLevels(lvl?lvl[0]:null);
@@ -1477,11 +1498,11 @@ function syncCefrHintFromSubject(){
   const forced=isCefrForced();
   if(cefr.checked && subject && !isLanguage && !forced){
     cefr.checked=false;saveCefrPreference(false);applyCefrLevels(null);
-    setCefrNote('CEFR byl vypnutý: předmět nevypadá jako jazykový. Použijí se jen úrovně obtížnosti. Pokud jde opravdu o jazyk, zapni ruční vynucení CEFR.','warn');
+    setCefrNote('CEFR byl vypnutý: předmět nevypadá jako jazykový. Použijí se jen úrovně obtížnosti. Pokud jde opravdu o jazyk, zapni ruční vynucení CEFR.','warn');updateCefrRunButton();
     return;
   }
   if(cefr.checked && forced && subject && !isLanguage){
-    setCefrNote('CEFR je ručně vynucený. Použij to jen u jazykového materiálu s nerozpoznaným názvem předmětu.','warn');
+    setCefrNote('CEFR je ručně vynucený. Použij to jen u jazykového materiálu s nerozpoznaným názvem předmětu.','warn');updateCefrRunButton();
     return;
   }
   if(!cefr.checked){
@@ -1489,6 +1510,7 @@ function syncCefrHintFromSubject(){
     else if(forced)setCefrNote('CEFR je vypnutý, ale ruční vynucení je připravené. Zapni CEFR jen pokud jde skutečně o jazykový materiál.','warn');
     else setCefrNote('CEFR je vypnutý. U nejazykových předmětů aplikace používá jen úrovně obtížnosti.');
   }
+  updateCefrRunButton();
 }
 function restoreCefrPreference(){
   const shouldRestore=loadCefrPreference();
@@ -1516,13 +1538,17 @@ function getAdvancedOptions(){return {
   teacherInstruction:($('#advTeacherInstruction')?$('#advTeacherInstruction').value.trim():'')
 }}
 function resetAdvancedSettings(){['advTargetGroup','advWorkTime','advLearningGoal','advSupportType','advTeacherInstruction'].forEach(id=>{const el=$(id);if(el)el.value=''});const variant=$('#advVariantMode');if(variant)variant.value='auto';const mode=$('#advStructureMode');if(mode)mode.value='auto';const force=$('#cefrForce');if(force)force.checked=false;const det=$('#advancedSettings');if(det)det.open=false}
-function variantModePromptLine(key){
+function variantModePromptLine(key,batch=1){
   const a=getAdvancedOptions();
   const mode=a.variantMode||'auto';
   if(mode==='same_content_diff_difficulty')return 'Režim nové verze: stejný obsah, jiná obtížnost. Zachovej tematický obsah, učivo, konkrétní příklady, data, čísla, texty a výukový cíl co nejvíce; měň hlavně míru opory, složitost formulací, počet mezikroků, typ nápovědy a požadovanou hloubku odpovědi podle zvolené úrovně.';
   if(mode==='same_format_new_content')return 'Režim nové verze: stejný formát, jiný obsah. Vytvoř paralelní variantu: zachovej formát, počet úloh, typy úloh, pořadí, bodovatelnost a srovnatelnou obtížnost podle zvolené úrovně, ale změň konkrétní obsah, věty, příklady, data nebo kontext tak, aby nevznikla kopie původního testu.';
   if(mode==='same_content_same_format')return 'Režim nové verze: stejný obsah i formát. Zachovej obsah, formát, pořadí, počet položek a typ odpovědí; proveď jen nezbytné úpravy formulací, míry opory, nápovědy, členění a nároků na odpověď podle zvolené úrovně.';
   if(mode==='same_goal_flexible')return 'Režim nové verze: stejný výukový cíl, volnější varianta. Zachovej hlavní výukový cíl, téma a ověřované dovednosti, ale můžeš změnit konkrétní obsah i strukturu, pokud výsledná verze zůstane pedagogicky srovnatelná a použitelná pro zvolenou úroveň.';
+  if(batch>1){
+    if(key==='core')return 'Režim nové verze: automaticky. U Normální verze zachovej původní obsah a strukturu a ponech i stejnou obtížnost; jde o referenční variantu sady.';
+    return 'Režim nové verze: automaticky. Při tvorbě celé sady zachovej původní obsah a strukturu co nejvíce a měň hlavně míru opory, složitost formulací, počet mezikroků a hloubku odpovědi podle zvolené úrovně.';
+  }
   if(key==='core')return 'Režim nové verze: automaticky. U Normální verze vytvoř paralelní variantu se stejnou obtížností: zachovej typ úloh, formát odpovědí, počet položek, pořadí a strukturu, ale změň konkrétní obsah, aby vznikla nová varianta, ne kopie původního materiálu.';
   return 'Režim nové verze: automaticky. U Jednodušší/Obtížnější verze zachovej původní obsah a strukturu co nejvíce a měň hlavně míru opory, složitost formulací, počet mezikroků a hloubku odpovědi podle zvolené úrovně.';
 }
@@ -1652,7 +1678,7 @@ function importProjectFile(file){
 }
 function makeMarkdownDocument(sheet){
   const tier=TIERS[sheet._tierKey]||{name:'Verze'};
-  const parts=['# '+tier.name+' verze'];
+  const parts=['> UČITELSKÝ SOUBOR — obsahuje řešení a poznámky. Nedávat studentům.','# '+tier.name+' verze'];
   const meta=[];
   if($('#mSubject')&&$('#mSubject').value.trim())meta.push('**Předmět:** '+$('#mSubject').value.trim());
   if($('#mTopic')&&$('#mTopic').value.trim())meta.push('**Téma:** '+$('#mTopic').value.trim());
@@ -1667,7 +1693,8 @@ function makeMarkdownDocument(sheet){
 }
 function exportSheetMarkdown(sheet,btn){
   const tier=TIERS[sheet._tierKey]||{name:'verze'};
-  const name=filenameSafe(($('#mTopic')&&$('#mTopic').value.trim())||($('#mSubject')&&$('#mSubject').value.trim())||tier.name||'pracovni-list')+'.md';
+  const base=filenameSafe(($('#mTopic')&&$('#mTopic').value.trim())||($('#mSubject')&&$('#mSubject').value.trim())||tier.name||'pracovni-list');
+  const name=base+'-ucitelsky.md';
   downloadTextFile(name,makeMarkdownDocument(sheet),'text/markdown;charset=utf-8');
   if(btn){const old=btn.textContent;btn.textContent='Exportováno';setTimeout(()=>btn.textContent=old,1400)}
 }
@@ -1683,14 +1710,14 @@ function openDataManagement(){updateDataSummary();$('#dataOverlay').classList.ad
 function closeDataManagement(){$('#dataOverlay').classList.remove('show')}
 function clearPreferenceData(){
   ['dpl_guide_seen',CEFR_PREF_SK,MODEL_SK,THEME_SK].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
-  resetAdvancedSettings();loadModel();loadTheme();restoreCefrPreference();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
+  resetAdvancedSettings();loadModel();loadTheme();restoreCefrPreference();closeDataManagement();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
 }
 function clearWorkingData(){
   uploaded=null;if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
   $('#pasteText').value='';$('#baseText').value='';$('#subject').value='';$('#mSubject').value='';$('#mTopic').value='';$('#mClass').value='';$('#mDate').value='';
   resetAdvancedSettings();$('#results').innerHTML='';hide($('#resultsPanel'));hide($('#configPanel'));show($('#inputPanel'));
   const fc=$('#filechip');if(fc)fc.classList.remove('show');const th=$('#thumb');if(th)th.classList.remove('show');setUploadInfo('');
-  setStatus('statusInput','čeká na zadání','');setStatus('statusFlow','připraveno','ok');showMessage('Pracovní data vyčištěna','Aktuální zadání a výstupy byly vyčištěny. API klíč ani uložené preference se nesmazaly.');updateDataSummary();
+  setStatus('statusInput','čeká na zadání','');setStatus('statusFlow','připraveno','ok');closeDataManagement();showMessage('Pracovní data vyčištěna','Aktuální zadání a výstupy byly vyčištěny. API klíč ani uložené preference se nesmazaly.');updateDataSummary();
 }
 
 $('#foot').innerHTML='<div class="footer-tools"><div class="tools-wrap"><button class="footer-tools-btn" id="footerToolsBtn" type="button" aria-expanded="false" aria-controls="footerToolsMenu">Nástroje a nápověda ▴</button><div class="footer-tools-menu" id="footerToolsMenu"><button id="exportProjectBtn" type="button" title="Uloží rozpracovaný stav bez API klíče do souboru JSON">💾 Exportovat projekt</button><button id="importProjectBtn" type="button" title="Načte dříve exportovaný projekt">📂 Načíst projekt</button><button id="dataManageBtn" type="button" title="Správa lokálních dat v tomto prohlížeči">🧹 Správa dat</button><button class="test-toggle" id="testToggle" type="button" title="Otevře interní testovací nástroj" aria-expanded="false">🧪 Testy</button><button id="changelogBtn" type="button" title="Zobrazí poslední změny v aplikaci">📝 Změny</button><button id="helpBtn" type="button">❔ Jak to funguje?</button></div></div><div class="footer-tools-hint">Nápověda, projekty, správa dat a release testy jsou dostupné tady.</div></div><div class="ownerline"><strong>Vlastník aplikace:</strong> Daniel Baláž · Gymnázium, Ostrava-Hrabůvka</div><div class="legal">© 2026 Daniel Baláž. Všechna práva vyhrazena.</div>';
@@ -1743,7 +1770,7 @@ $('#importProjectBtn').addEventListener('click',()=>projectImportInput.click());
 $('#dataManageBtn').addEventListener('click',openDataManagement);
 $('#dataClose').addEventListener('click',closeDataManagement);
 $('#dataOverlay').addEventListener('click',e=>{if(e.target.id==='dataOverlay')closeDataManagement()});
-$('#dataClearKey').addEventListener('click',()=>{clearKey();updateDataSummary();showMessage('API klíč smazán','Klíč byl odstraněn z relace i z trvalého úložiště tohoto prohlížeče.')});
+$('#dataClearKey').addEventListener('click',()=>{clearKey();updateDataSummary();closeDataManagement();showMessage('API klíč smazán','Klíč byl odstraněn z relace i z trvalého úložiště tohoto prohlížeče.')});
 $('#dataClearPrefs').addEventListener('click',clearPreferenceData);
 
 
@@ -1770,7 +1797,7 @@ function setResultSummary(count){
 const KEY_SK="dpl_gemini_key", KEY_SESSION_SK="dpl_gemini_key_session", MODEL_SK="dpl_gemini_model";
 
 ;
-/* AI Studio GHRAB — GHRAB Material v1 adapter (Diferenciátor 1.3.0, bridge 1.3) */
+/* AI Studio GHRAB — GHRAB Material v1 adapter (Diferenciátor 1.3.4, bridge 1.3) */
 (function(){
   'use strict';
   const KEY='ghrab.handoff.v1',EVENTS='ghrab.pilot.events.v2',MAX_SOURCE=180000;
@@ -1804,7 +1831,7 @@ const KEY_SK="dpl_gemini_key", KEY_SESSION_SK="dpl_gemini_key_session", MODEL_SK
     }).join('\n\n');
   }
   function record(m){const parsed=parse(EVENTS,[]),a=Array.isArray(parsed)?parsed:[];a.push({at:new Date().toISOString(),type:'handoff-consumed',appId:'differentiator',materialId:String(m.id),estimatedMinutes:5});setLocal(EVENTS,JSON.stringify(a.slice(-500)))}
-  function banner(m,p){const b=document.createElement('div');b.className='studio-import-banner';const span=document.createElement('span'),strong=document.createElement('b'),small=document.createElement('small'),link=document.createElement('a'),close=document.createElement('button');strong.textContent='⇄ Materiál převzat z AI Studia';small.textContent=String(m.title||'Bez názvu');span.append(strong,small);link.href=studioUrl(p);link.textContent='Zpět do Studia';close.type='button';close.setAttribute('aria-label','Zavřít');close.textContent='×';close.onclick=()=>b.remove();b.append(span,link,close);(document.querySelector('.app')||document.body).prepend(b)}
+  function banner(m,p){const b=document.createElement('div');b.className='studio-import-banner';const span=document.createElement('span'),strong=document.createElement('b'),small=document.createElement('small'),link=document.createElement('a'),close=document.createElement('button');strong.textContent='⇄ Materiál převzat z AI Studia';small.textContent=String(m.title||'Bez názvu');span.append(strong,small);link.href=studioUrl(p);link.textContent='Zpět do Studia';close.type='button';close.setAttribute('aria-label','Zavřít');close.textContent='×';close.onclick=()=>b.remove();b.append(span,link,close);(document.querySelector('.wrap')||document.body).prepend(b)}
   function apply(m,p){
     const source=[String(m.content&&m.content.sourceText||'').slice(0,MAX_SOURCE),tasks(m)].filter(Boolean).join('\n\nÚLOHY:\n').slice(0,MAX_SOURCE);
     setValue('pasteText',source);setValue('baseText',source);setValue('subject',m.subject);setValue('mSubject',m.subject);setValue('mTopic',m.title);setValue('mClass',[m.yearGroup,m.level].filter(Boolean).join(' · '));setValue('advTargetGroup',[m.yearGroup,m.level].filter(Boolean).join(' · '));setValue('advLearningGoal',objectives(m).map(String).join('; '));setValue('advTeacherInstruction','Zachovej společný výukový cíl a jasně popiš, jak se jednotlivé varianty liší mírou podpory a kognitivní náročností.');
@@ -1816,6 +1843,7 @@ const KEY_SK="dpl_gemini_key", KEY_SESSION_SK="dpl_gemini_key_session", MODEL_SK
 
 ;
 const MODEL_DEFAULT="gemini-3.6-flash", FALLBACK_MODELS=["gemini-3.5-flash-lite"];
+const THINKING_DEFAULT='medium',THINKING_CHEAP='minimal';
 let geminiApiKey="", geminiKeyScope="", geminiModel=MODEL_DEFAULT;
 
 function cleanKey(s){return String(s||"").replace(/[^\x21-\x7E]/g,"")}
@@ -1906,7 +1934,7 @@ function hasApiKey(){return !!cleanKey(geminiApiKey)}
 function requireApiKeyForAction(actionLabel){
   if(hasApiKey())return true;
   const label=actionLabel||'tuto akci';
-  const msg='Bez API klíče nejde spustit '+label+'. Vlož klíč nahoře v panelu „Klíč k API“ a použij ho pro relaci. Výstup se bez klíče nezačne vytvářet.';
+  const msg='Bez API klíče nejde spustit '+label+'. Vlož klíč v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“. Výstup se bez klíče nezačne vytvářet.';
   const api=$('#apiPanel'), apiStep=$('#apiStepPanel');
   if(api)api.classList.add('open');
   updateApiToggleText();
@@ -1959,25 +1987,27 @@ function assertInlineRequestSize(body){const bytes=utf8Bytes(JSON.stringify(body
 function makeAppError(message,code){const e=new Error(message);e.code=code||"APP";return e}
 function friendlyApiMessage(e){
   if(!e)return "Neznámá chyba.";
-  if(e.code==="MISSING_KEY")return "Chybí API klíč. Vlož ho nahoře v panelu „Klíč k API“ a použij ho pro relaci.";
+  if(e.code==="MISSING_KEY")return "Chybí API klíč. Vlož ho v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“.";
   if(e.name==="AbortError"||e.code==="TIMEOUT")return "Model neodpověděl včas. Zkus akci spustit znovu.";
   if(e.code==="TEXT_TOO_LONG"||e.code==="FILE_TOO_LARGE"||e.code==="REQUEST_TOO_LARGE"||e.code==="TOO_MANY_IMAGES")return e.message;
   if(e.code==="INCOMPLETE_RESPONSE")return "Model odpověď nedokončil, takže ji appka raději nepoužila. Zkrať zadání, vyber méně verzí nebo to spusť znovu.";
   if(e.code==="SAFETY_STOP")return "Model odpověď zastavil bezpečnostním filtrem. Uprav zadání nebo zkus vložit jen čistý text úloh.";
   if(e.quota)return "Kvóta nebo limit API je vyčerpaný. Zkus to později nebo přepni model.";
   if(e.status===401||e.status===403)return "API klíč není platný nebo nemá oprávnění. Zkontroluj klíč v panelu nahoře.";
+  if(e.status===404)return "Zvolený model není dostupný. Přepni model v panelu nastavení nebo to zkus později.";
   if(e.status===400)return "Gemini odmítlo požadavek. Zkontroluj délku nebo obsah vstupu.";
   if(e.status>=500)return "Služba Gemini má dočasný problém. Zkus to znovu.";
   return e.message||"Nepovedlo se spojit s modelem.";
 }
 /* callGemini je záměrně přiřaditelná proměnná (ne deklarace funkce), aby ji interní testovací režim mohl dočasně nahradit mockem a poté čistě vrátit zpět. */
 let callGemini = async function callGeminiImpl(parts,opts={}){
-  if(!geminiApiKey)throw makeAppError("Chybí klíč k API. Vlož ho v „Klíč k API“ nahoře a zvol „Použít jen pro relaci“.","MISSING_KEY");
+  if(!geminiApiKey)throw makeAppError("Chybí klíč k API. Vlož ho v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“.","MISSING_KEY");
   const models=[geminiModel,...FALLBACK_MODELS.filter(m=>m!==geminiModel)];
-  const shouldFallback=e=>!!(e&&(e.quota||e.status===429||e.status===503||e.status===500));
-  const tryModel=async(model)=>{
+  const shouldFallback=e=>!!(e&&(e.quota||e.status===429||e.status===503||e.status===500||e.status===404));
+  const tryModel=async(model,withThinking=true)=>{
     const url="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
-    const generationConfig={maxOutputTokens:32768,thinkingConfig:{thinkingLevel:'low'}};
+    const generationConfig={maxOutputTokens:60000};
+    if(withThinking)generationConfig.thinkingConfig={thinkingLevel:(opts&&opts.thinking)||THINKING_DEFAULT};
     if(opts&&opts.json)generationConfig.responseMimeType='application/json';
     if(opts&&opts.schema)generationConfig.responseSchema=opts.schema;
     const body={contents:[{role:"user",parts}],generationConfig};
@@ -1996,7 +2026,9 @@ let callGemini = async function callGeminiImpl(parts,opts={}){
       const st=(data&&data.error&&data.error.status)?String(data.error.status):"";
       const quota=res.status===429||/RESOURCE_EXHAUSTED/i.test(st);
       const msg=(data&&data.error&&data.error.message)?data.error.message:("HTTP "+res.status);
-      const e=new Error(msg);e.quota=quota;e.status=res.status;e.model=model;throw e;
+      const e=new Error(msg);e.quota=quota;e.status=res.status;e.model=model;
+      if(withThinking&&res.status===400&&/thinking/i.test(msg))return tryModel(model,false);
+      throw e;
     }
     const cand=data.candidates&&data.candidates[0];
     const finish=cand&&cand.finishReason;
@@ -2103,6 +2135,7 @@ $('#cefr').addEventListener('change',async()=>{
   saveCefrPreference(c.checked);
   if(c.checked)await detectCefrForBase($('#baseText').value.trim());
   else {applyCefrLevels(null);setCefrNote('CEFR je vypnutý. U nejazykových předmětů aplikace používá jen úrovně obtížnosti.')}
+  updateCefrRunButton();
 });
 const cefrForceEl=$('#cefrForce');
 if(cefrForceEl)cefrForceEl.addEventListener('change',async()=>{
@@ -2111,14 +2144,16 @@ if(cefrForceEl)cefrForceEl.addEventListener('change',async()=>{
   if(c&&c.checked&&subjectAllowsCefr())await detectCefrForBase($('#baseText').value.trim());
 });
 $('#subject').addEventListener('change',syncCefrHintFromSubject);
-restoreCefrPreference();
+const cefrRunBtn=$('#cefrRunBtn');if(cefrRunBtn)cefrRunBtn.addEventListener('click',()=>detectCefrForBase($('#baseText').value.trim()));
+restoreCefrPreference();updateCefrRunButton();
 
+function setTipOpen(t,open){t.classList.toggle('open',!!open);t.setAttribute('aria-expanded',open?'true':'false')}
+function toggleTip(t){document.querySelectorAll('.tip.open').forEach(o=>{if(o!==t)setTipOpen(o,false)});setTipOpen(t,!t.classList.contains('open'))}
 document.querySelectorAll('.tip').forEach(t=>{
-  t.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();
-    document.querySelectorAll('.tip.open').forEach(o=>{if(o!==t)o.classList.remove('open')});
-    t.classList.toggle('open')});
+  t.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();toggleTip(t)});
+  t.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();toggleTip(t)}else if(e.key==='Escape')setTipOpen(t,false)});
 });
-document.addEventListener('click',()=>document.querySelectorAll('.tip.open').forEach(o=>o.classList.remove('open')));
+document.addEventListener('click',()=>document.querySelectorAll('.tip.open').forEach(o=>setTipOpen(o,false)));
 
 function fileToDataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('Soubor se nepodařilo načíst.'));r.readAsDataURL(file)})}
 function dataUrlToBase64(dataUrl){return String(dataUrl||'').split(',')[1]||''}
@@ -2360,7 +2395,7 @@ $('#extractBtn').addEventListener('click',async()=>{
     $('#baseText').value=pasted;
     if($('#cefr')&&$('#cefr').checked&&subjectAllowsCefr()){
       applyCefrLevels(null);
-      setCefrNote('Ručně vložený čistý text byl načten bez AI přepisu. CEFR odhad se kvůli úspoře dotazu nespouští automaticky; můžeš ho spustit vypnutím a opětovným zapnutím CEFR.','warn');
+      setCefrNote('Ručně vložený čistý text byl načten bez AI přepisu. CEFR odhad se kvůli úspoře dotazu nespouští automaticky; použij tlačítko „Odhadnout CEFR úroveň“.','warn');updateCefrRunButton();
     } else {
       if($('#cefr')&&$('#cefr').checked&&!subjectAllowsCefr()){$('#cefr').checked=false;saveCefrPreference(false);applyCefrLevels(null)}
       syncCefrHintFromSubject();
@@ -2370,8 +2405,8 @@ $('#extractBtn').addEventListener('click',async()=>{
     $('#configPanel').scrollIntoView({behavior:'smooth',block:'start'});
     return;
   }
-  if(!requireApiKeyForAction('načtení souboru')){errBox($('#inputErr'),'Bez API klíče se soubor nezačne zpracovávat. Vlož klíč nahoře a použij ho pro relaci.');return}
-  const btn=$('#extractBtn');btn.disabled=true;btn.innerHTML='<span class="mini"></span> Načítám zadání…';setStatus('statusFlow','načítám zadání','busy');
+  if(!requireApiKeyForAction('načtení souboru')){errBox($('#inputErr'),'Bez API klíče se soubor nezačne zpracovávat. Vlož klíč v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“.');return}
+  const btn=$('#extractBtn'),extractLabel=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="mini"></span> Načítám zadání…';setStatus('statusFlow','načítám zadání','busy');
   const prompt="Toto je zadání školního testu, pracovního listu nebo učebního materiálu libovolného předmětu. Přepiš jeho obsah do čistého, čitelného textu. Zachovej přesně původní jazyk nebo kombinaci jazyků u každé části; nic nepřekládej jen proto, že aplikace má české UI. Zachovej odbornou terminologii, matematický/chemický/fyzikální zápis, jednotky, značky, symboly, tabulkové údaje a číslování. U českých pasáží oprav jen zjevné OCR překlepy, ale výsledná čeština musí být gramaticky, stylisticky i lexikálně bezchybná. Na první řádek dej téma/nadpis, pak očíslované úlohy s plným zněním. Obsah zachovej věrně, nic nepřidávej a nevymýšlej nové úlohy. Pokud jde o více fotek, zpracuj je v pořadí nahrání jako pokračování jednoho materiálu. Odpověz POUZE přepsaným zadáním, bez úvodu a komentáře.";
   let parts;
   try{
@@ -2396,7 +2431,7 @@ $('#extractBtn').addEventListener('click',async()=>{
     hide($('#inputPanel'));show($('#configPanel'));
     $('#configPanel').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(err){setStatus('statusFlow','chyba načtení','warn');errBox($('#inputErr'),friendlyApiMessage(err))}
-  finally{btn.disabled=false;btn.textContent='Načíst zadání'}
+  finally{btn.disabled=false;btn.innerHTML=extractLabel}
 });
 
 document.querySelectorAll('.tierpick').forEach(p=>{const cb=p.querySelector('input');const s=()=>p.classList.toggle('on',cb.checked);cb.addEventListener('change',s);s()});
@@ -2420,12 +2455,12 @@ function metaLine(isKey){
   return '<div class="pa-meta">'+parts.join('')+'</div>';
 }
 /* Rozdělí vyrenderovaný list na samostatné bloky cvičení.
-   Každé cvičení začíná řádkem typu "1 ", "2)", "Cvičení 3", "Exercise 4", "Úloha 5".
+   Každé cvičení začíná řádkem typu "1.", "2)", "Cvičení 3", "Exercise 4", "Úloha 5".
    Bloky se v tisku nesmí rozpůlit (CSS .pa-ex { break-inside:avoid }). */
 function buildPrintBody(text){
   const lines=String(text||'').split(/\r?\n/);
   // Odsazené číslované možnosti jsou podpoložky, ne nové úlohy; čtyřciferný letopočet také nový blok nezakládá.
-  const reStart=/^(?:(?:cvičení|úloha|exercise|task|part)\s*)?\d{1,2}[.):]?\s+\S/i;
+  const reStart=/^(?:(?:cvičení|úloha|exercise|task|part)\s*\d{1,2}[.):]?\s+\S|\d{1,2}[.):]\s+\S)/i;
   const blocks=[];let cur=[];
   for(const ln of lines){
     if(reStart.test(ln)&&cur.length){blocks.push(cur.join('\n'));cur=[ln]}
@@ -2550,23 +2585,39 @@ function showStructureWarning(sheet,validation){
   box.innerHTML=html; box.classList.toggle('show',!!html);
 }
 
+/* Opak funkce render(): vrátí z upraveného HTML čistý text i s markery **tučného**. */
+function editableToText(el){
+  const walk=node=>{
+    if(node.nodeType===3)return node.nodeValue;
+    if(node.nodeType!==1)return '';
+    const inner=[...node.childNodes].map(walk).join('');
+    const tag=node.tagName;
+    if(tag==='B'||tag==='STRONG')return inner.trim()?'**'+inner.trim()+'**':inner;
+    if(tag==='BR')return '\n';
+    if(tag==='DIV'||tag==='P')return inner+'\n';
+    return inner;
+  };
+  return [...el.childNodes].map(walk).join('').replace(/\n{3,}/g,'\n\n').replace(/[ \t]+\n/g,'\n').trim();
+}
 function toggleEdit(sheet,btn){
   const body=sheet.querySelector('.body');
-  if(body.isContentEditable){
-    const txt=body.innerText.trim();
+  const editing=body.isContentEditable||body.getAttribute('contenteditable')==='true';
+  if(editing){
+    const original=String(sheet._text||'').trim(),txt=editableToText(body);
+    body.contentEditable='false';body.removeAttribute('contenteditable');
+    if(txt===original){body.innerHTML=render(original);attachSheetTools(sheet);return}
     sheet._text=txt;
     sheet._key='';
     sheet._quality='';
-    sheet._parts={...(sheet._parts||{}),teacherNote:''};
+    sheet._parts={...(sheet._parts||{}),tasks:txt,answerKey:'',teacherNote:''};
     sheet._validation={ok:true,issues:[]};sheet._pdfWarningSkipped=false;
     const sbox=sheet.querySelector('.structurebox');if(sbox){sbox.innerHTML='';sbox.classList.remove('show')}
     const box=sheet.querySelector('.keybox');box.innerHTML='';box.classList.remove('show');delete box.dataset.filled;
     const qbox=sheet.querySelector('.qualitybox');if(qbox){qbox.innerHTML='';qbox.classList.remove('show')}
-    renderTeacherNote(sheet);attachSheetTools(sheet);
-    body.contentEditable='false';body.innerHTML=render(txt);btn.textContent='Upravit';
+    body.innerHTML=render(txt);renderTeacherNote(sheet);attachSheetTools(sheet);
     setSheetStatus(sheet,'upraveno · zkontroluj','needcheck');
   }else{
-    body.contentEditable='true';btn.textContent='Hotovo';body.focus();
+    body.contentEditable='true';body.setAttribute('contenteditable','true');btn.textContent='Hotovo';body.focus();
   }
 }
 
@@ -2608,7 +2659,7 @@ function downloadPdf(title,rawText,opts){
   pendingPrintHtml=head+body;
   pendingPrintFileName=filenameSafe(title)+(opts.isKey?'-reseni':'');
   $('#printArea').innerHTML=pendingPrintHtml;
-  $('#printPreview').innerHTML=head+'<div>'+splitBody+'</div>';
+  $('#printPreview').innerHTML=head+'<div class="pa-body">'+splitBody+'</div>';
   const pf=$('#printFileName'); if(pf){pf.textContent='Doporučený název souboru: '+pendingPrintFileName+'.pdf';pf.classList.add('show')}
   const teacherConfirm=$('#printTeacherConfirmed'); if(teacherConfirm)teacherConfirm.checked=false;
   const printConfirm=$('#printConfirm'); if(printConfirm)printConfirm.disabled=true;
@@ -2669,7 +2720,7 @@ async function toggleKey(sheet,btn){
   if(!requireApiKeyForAction('vytvoření řešení'))return;
   btn.disabled=true;const old=btn.innerHTML;btn.innerHTML='<span class="mini"></span>';
   try{
-    const out=await callGemini([{text:"Ke každé úloze v tomto pracovním listu napiš stručné správné řešení / klíč. Vycházej výhradně z pracovního listu níže a zachovej jazyk úloh. Pouze klíč, očíslovaně podle úloh, bez úvodu.\n\nPRACOVNÍ LIST:\n"+sheet._text}]);
+    const out=await callGemini([{text:"Ke každé úloze v tomto pracovním listu napiš stručné správné řešení / klíč. Vycházej výhradně z pracovního listu níže a zachovej jazyk úloh. Pouze klíč, očíslovaně podle úloh, bez úvodu.\n\nPRACOVNÍ LIST:\n"+sheet._text}],{thinking:THINKING_CHEAP});
     sheet._key=out;
     box.innerHTML=keyHeaderHtml()+render(out);box.dataset.filled='1';
     box.classList.add('show');attachSheetTools(sheet);
@@ -2687,11 +2738,12 @@ const UiState={
 };
 function setSheetStatus(sheet,text,state){UiState.setSheetStatus(sheet,text,state)}
 const PromptBuilder={
-  makeTierPrompt(key,base){
+  makeTierPrompt(key,base,batch=1){
     const t=TIERS[key], opt=getOptionState();
+    const tierInstruction=(key==='core'&&batch>1)?'Vytvoř NORMÁLNÍ referenční verzi celé sady: zachovej původní obsah, příklady, data, počet položek, pořadí, formát odpovědí, strukturu i obtížnost. Nepřidávej ani neubírej oporu; měň jen to, co je nezbytné pro čisté a použitelné zpracování.':t.instr;
     const subject=getSubjectValue()||"daný předmět / obor";
     const add=[
-      variantModePromptLine(key),
+      variantModePromptLine(key,batch),
       'U otevřených úloh ponech přiměřené místo na odpověď žáka.',
       opt.useCefr?'CEFR použij pouze jako jazykovou obtížnost; u nejazykových předmětů CEFR nepoužívej.':'CEFR nepoužívej; pracuj jen s obecnou úrovní obtížnosti.',
       ...advancedPromptLines()
@@ -2708,7 +2760,7 @@ const PromptBuilder={
     ].join('\n');
     return [
       'Jsi zkušený učitel ('+subject+'). Z následujícího zadání vytvoř jeho odstupňovanou verzi.',
-      t.instr+(opt.useCefr?' '+t.cefr:''),
+      tierInstruction+(opt.useCefr?' '+t.cefr:''),
       add.length?'DOPLŇUJÍCÍ NASTAVENÍ:\n- '+add.join('\n- '):'',
       'JAZYK A ODBORNOST: Zachovej přesně jazyk nebo kombinaci jazyků původního zadání u každé úlohy. Nepřekládej žádný cizojazyčný ani odborný text do češtiny. Diferencuj obtížnost, oporu a formulaci, ne předmětovou pravdivost. Zachovej odbornou terminologii, symboly, vzorce, jednotky, značky, data, tabulky a standardní zápis daného předmětu. Pokud je některá část česky nebo přidáváš českou instrukci, čeština musí být bezchybná: gramaticky, stylisticky i lexikálně, bez hovorových neobratností, bez kalků, bez pravopisných a interpunkčních chyb. Tučně (**takto**) zvýrazni jen nadpisy a názvy úloh.',
       jsonSchema,
@@ -2717,7 +2769,7 @@ const PromptBuilder={
     ].filter(Boolean).join('\n\n');
   }
 };
-function makePromptForTier(key,base){return PromptBuilder.makeTierPrompt(key,base)}
+function makePromptForTier(key,base,batch=1){return PromptBuilder.makeTierPrompt(key,base,batch)}
 
 const ZAP='<span class="zap-cost">⚡ 1</span>';
 const ZAP_GENERATE='<span class="zap-cost">⚡ 1+</span>';
@@ -2750,9 +2802,9 @@ function attachSheetTools(sheet){
     mk('3 Stáhnout PDF',()=>requestPdfForSheet(sheet,tier.name+' verze',sheet._text||''),'primary','Před PDF připomene kontrolu kvality. Potom otevře náhled a systémový dialog pro uložení nebo tisk.')
   );
   more.append(
-    mk('Upravit',b=>toggleEdit(sheet,b),'soft','Umožní ručně přepsat text listu. Po uložení se klíč řešení zahodí.'),
+    mk('Upravit',b=>toggleEdit(sheet,b),'soft','Umožní ručně přepsat text listu. Po skutečné změně se zahodí řešení, kontrola kvality i poznámka pro učitele.'),
     mk('Kopírovat',b=>copyText(sheet._text,b,'Zkopírováno','Kopírovat'),'soft','Zkopíruje celý text listu do schránky.'),
-    mk('Export .md',b=>exportSheetMarkdown(sheet,b),'soft','Stáhne text pracovního listu jako Markdown soubor pro další úpravy mimo prohlížeč.'),
+    mk('Export .md',b=>exportSheetMarkdown(sheet,b),'soft','Stáhne kompletní materiál v Markdownu včetně řešení, poznámky pro učitele a kontroly kvality. Nesdílej ho se žáky.'),
     mk('Regenerovat '+ZAP_GENERATE,b=>regenerateSheet(sheet,b),'soft','Vytvoří tentýž stupeň obtížnosti znovu. Obvykle stojí 1 dotaz; při automatické opravě struktury může použít ještě jeden.')
   );
   tools.append(main,more);
@@ -2780,7 +2832,7 @@ async function generateIntoSheet(sheet,key,base,idx,total){
   sheet.querySelector('.qualitybox').innerHTML='';sheet.querySelector('.qualitybox').classList.remove('show');
   const structureBox=sheet.querySelector('.structurebox');if(structureBox){structureBox.innerHTML='';structureBox.classList.remove('show')}
   setProgress((total>1?'Verze '+(idx+1)+' z '+total+': ':'Generuji ')+t.name.toLowerCase()+' verzi…',true);
-  const out=await callGemini([{text:makePromptForTier(key,base)}],{json:true,schema:WORKSHEET_RESPONSE_SCHEMA});
+  const out=await callGemini([{text:makePromptForTier(key,base,total)}],{json:true,schema:WORKSHEET_RESPONSE_SCHEMA});
   let parsed=parseWorksheetResponse(out);
   let validation=validateWorksheetResponse(parsed);
   if(!validation.ok){
@@ -2821,8 +2873,8 @@ async function regenerateSheet(sheet,btn){
   if(!base){showMessage('Chybí základní zadání','Nejdřív načti nebo vlož zadání, ze kterého se má verze znovu vytvořit.');return}
   if(!requireApiKeyForAction('regeneraci verze'))return;
   const oldLabel=btn.innerHTML,snapshot=snapshotSheet(sheet);btn.disabled=true;btn.innerHTML='<span class="mini"></span>';
-  try{await generateIntoSheet(sheet,sheet._tierKey,base,0,1);recordDifferentiatorTelemetry(1,1,0)}
-  catch(err){recordDifferentiatorTelemetry(1,0,1);restoreSheetSnapshot(sheet,snapshot);setSheetStatus(sheet,'původní verze zachována','warn');showMessage('Regenerace se nepodařila',friendlyApiMessage(err)+' Původní hotová verze zůstala beze změny.')}
+  try{await generateIntoSheet(sheet,sheet._tierKey,base,0,1);recordDifferentiatorTelemetry(1,1,0);setProgress('Hotovo. Zkontroluj vytvořenou verzi.',false)}
+  catch(err){recordDifferentiatorTelemetry(1,0,1);restoreSheetSnapshot(sheet,snapshot);setSheetStatus(sheet,'původní verze zachována','warn');setProgress('Regenerace se nepodařila. Původní verze zůstala zachovaná.',false);showMessage('Regenerace se nepodařila',friendlyApiMessage(err)+' Původní hotová verze zůstala beze změny.')}
   finally{btn.disabled=false;btn.innerHTML=oldLabel;attachSheetTools(sheet)}
 }
 function renderQualityAudit(text){
@@ -2834,7 +2886,8 @@ function renderQualityAudit(text){
     return 'qa-plain'};
   const tag=k=>k==='qa-ok'?'OK':k==='qa-fix'?'Opravit':k==='qa-rec'?'Doporučení':'';
   return lines.map(l=>{const k=cls(l);const t=tag(k);
-    const body=t?l.replace(/^[^:：]{0,14}[:：]?\s*/,''):l;
+    const labelled=/^(?:ok|oprav\w*|doporuč\w*|zváž|zvaž)\s*[:：]\s*/i.test(l);
+    const body=labelled?l.replace(/^[^:：]{1,14}[:：]\s*/,''):l;
     return '<div class="qa-item '+k+'">'+(t?'<span class="qa-tag">'+t+'</span>':'')+esc(body||l)+'</div>'}).join('');
 }
 const QualityCheck={
@@ -2885,7 +2938,7 @@ async function checkQuality(sheet,btn){
   btn.disabled=true;const old=btn.innerHTML;btn.innerHTML='<span class="mini"></span>';
   try{
     const prompt=QualityCheck.makePrompt(sheet);
-    const out=await callGemini([{text:prompt}]);
+    const out=await callGemini([{text:prompt}],{thinking:THINKING_CHEAP});
     sheet._quality=out;setSheetStatus(sheet,'zkontrolováno','ok');attachSheetTools(sheet);openQuality(sheet);
   }catch(err){sheet._quality='';showMessage('Kontrola se nepodařila',friendlyApiMessage(err))}
   finally{btn.disabled=false;btn.innerHTML=old}
@@ -2970,7 +3023,7 @@ const TestSystem={
     try{this.runProjectRoundtripTest();}catch(e){this.log(e.message)}
     try{await this.runMockGeneration();}catch(e){this.log(e.message)}
     try{await this.runBatchAndTransactionTests();}catch(e){this.log(e.message)}
-    try{this.runAuditRegressionTests();}catch(e){this.log(e.message)}
+    try{await this.runAuditRegressionTests();}catch(e){this.log(e.message)}
     try{this.runPdfFlowTest();}catch(e){this.log(e.message)}
     try{this.runLayoutTest();}catch(e){this.log(e.message)}
     try{this.runNativeDialogScan();}catch(e){this.log(e.message)}
@@ -2979,12 +3032,13 @@ const TestSystem={
     this.add(failed?'warn':'ok','Souhrn testů',failed?('Dokončeno s počtem chyb: '+failed+' · release nepouštět.'):('Všechny interní testy prošly · release gate OK.'));
   },
   runSmokeUi(){
-    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','messageOverlay','advVariantMode','advLearningGoal','printTeacherConfirmed'];
+    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','messageOverlay','advVariantMode','advLearningGoal','printTeacherConfirmed','cefrRunBtn'];
     ids.forEach(id=>this.assert(!!$('#'+id),'UI prvek: '+id,'Nalezen','Chybí prvek #'+id));
     this.assert(document.querySelectorAll('#tiers input[type="radio"]').length===3,'Výběr úrovně','K dispozici jsou 3 úrovně','Počet úrovní není 3');
     const checked=document.querySelector('#tiers input[type="radio"]:checked');
     this.assert(checked&&checked.dataset&&checked.dataset.tier==='core','Výchozí úroveň','Výchozí volba je Normální','Výchozí volba není Normální');
     this.assert(!!document.querySelector('.privacy-note'),'Upozornění na anonymizaci','Krátké upozornění je u vstupu přítomné','Chybí upozornění u vstupu');
+    this.assert(!!document.querySelector('#extractBtn .zap-cost'),'Štítek spotřeby načtení','Tlačítko Načíst zadání obsahuje štítek spotřeby','U tlačítka Načíst zadání chybí štítek spotřeby');
   },
   runParserTests(){
     const parsed=parseWorksheetResponse(this.sampleStructured());
@@ -2997,6 +3051,9 @@ const TestSystem={
     this.assert(!fallbackValidation.ok,'Fallback kontrola','Nestrukturovaný výstup je označen k ověření','Fallback měl být označen jako varování');
     const prompt=makePromptForTier('core',this.demoBase);
     this.assert(prompt.includes('VNITŘNÍ STRUKTURA VÝSTUPU')&&prompt.includes('worksheet_title')&&prompt.includes('answer_key'),'Prompt pro JSON schéma','Prompt výslovně vyžaduje JSON strukturu','Prompt neobsahuje očekávané JSON schéma');
+    const batchPrompt=makePromptForTier('core',this.demoBase,3),singlePrompt=makePromptForTier('core',this.demoBase,1);
+    this.assert(!/změň konkrétní obsah/i.test(batchPrompt)&&/referenční variantu sady/i.test(batchPrompt),'Jednotné pravidlo celé sady','Normální verze v sadě zachovává stejný obsah a obtížnost','Normální verze sady stále žádá jiný obsah');
+    this.assert(/změň konkrétní obsah/i.test(singlePrompt),'Samostatná normální varianta','Jedna Normální verze může vytvořit paralelní obsah','Samostatná Normální verze ztratila pravidlo jiného obsahu');
   },
   runCefrTests(){
     const old=$('#subject')?$('#subject').value:'';
@@ -3035,13 +3092,17 @@ const TestSystem={
     };
     return ()=>{callGemini=original};
   },
-  runAuditRegressionTests(){
+  async runAuditRegressionTests(){
     this.assert(['Anglický jazyk','Německý jazyk','Ruský jazyk','Italský jazyk','Konverzace v anglickém jazyce'].every(looksLikeLanguageSubject)
       && !['Matematika','Dějepis','Informatika','Český jazyk'].some(looksLikeLanguageSubject),
       'Rozpoznání jazykového předmětu','Úřední názvy typu „Anglický jazyk“ projdou, nejazykové předměty ne.','Jazykový předmět není rozpoznán podle přídavného jména');
-    this.assert(buildPrintBody('Úvodní text\n1. První úloha\n   1. možnost A\n   2. možnost B\n2. Druhá úloha\n1989 byl rok revoluce.').split('<div class="pa-ex">').length-1===3,
-      'Dělení tisku na cvičení','Odsazené podpoložky a letopočty nezakládají nový tiskový blok.','Tisk se dělí na příliš mnoho bloků');
+    this.assert(buildPrintBody('Úvodní text\n12 hodin práce\n1. První úloha\n2. Druhá úloha').split('<div class="pa-ex">').length-1===3,
+      'Dělení tisku na cvičení','Běžný řádek začínající číslem nevytvoří blok; úvod a dvě úlohy zůstanou tři logické části.','Tisk chybně považuje „12 hodin práce“ za novou úlohu');
     this.assert(/Ostrava-Hrab/.test(printHead()),'Školní identita v PDF','Hlavička tištěného listu uvádí plný název školy.','Hlavička PDF uvádí jen obecné „Gymnázium“');
+    this.assert(/chybu v úloze 3/.test(renderQualityAudit('Opravit chybu v úloze 3')),'Audit bez dvojtečky','Kontrola kvality nezahodí začátek řádku bez dvojtečky.','Kontrola kvality ořízla skutečný obsah řádku');
+    const editSheet=makeSheet('core',false);editSheet._text='**Nadpis**\n\n1. Úloha';editSheet._key='1. Řešení';editSheet._quality='OK: vše sedí';editSheet._parts={title:'Nadpis',instructions:'',tasks:editSheet._text,answerKey:editSheet._key,teacherNote:'Poznámka'};editSheet.querySelector('.body').innerHTML=render(editSheet._text);renderTeacherNote(editSheet);const editBtn=document.createElement('button');toggleEdit(editSheet,editBtn);toggleEdit(editSheet,editBtn);
+    this.assert(editSheet._text==='**Nadpis**\n\n1. Úloha'&&editSheet._key==='1. Řešení'&&editSheet._quality==='OK: vše sedí'&&!!editSheet.querySelector('.body b'),'Prázdná editace zachová data','Tučné markery, řešení i kontrola kvality zůstaly beze změny.','Pouhé otevření editace poškodilo text nebo učitelská data');
+    const dataOverlay=$('#dataOverlay'),messageOverlay=$('#messageOverlay');if(dataOverlay&&messageOverlay){dataOverlay.classList.add('show');await new Promise(r=>setTimeout(r,0));messageOverlay.classList.add('show');await new Promise(r=>setTimeout(r,0));document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await new Promise(r=>setTimeout(r,0));this.assert(!messageOverlay.classList.contains('show')&&dataOverlay.classList.contains('show'),'Zásobník dialogů','Escape zavře naposledy otevřené potvrzení a ponechá spodní dialog.','Escape zavřel nesprávný dialog');dataOverlay.classList.remove('show');messageOverlay.classList.remove('show');await new Promise(r=>setTimeout(r,0));}
     const oldSupport=TIERS.support.cefrLbl,oldCore=TIERS.core.cefrLbl,oldExtend=TIERS.extend.cefrLbl;
     const probe=makeSheet('core',false);$('#results').appendChild(probe);applyCefrLevels('B1');
     this.assert(probe.querySelector('.level-badge')&&probe.querySelector('.level-badge').textContent==='B1','Živý CEFR štítek','CEFR změna se propsala i do již vytvořené karty.','CEFR štítek na hotové kartě zůstal zastaralý');
@@ -3124,6 +3185,7 @@ const TestSystem={
       this.assert(results.firstElementChild===preserved&&preserved._text==='PŮVODNÍ HOTOVÁ VERZE','Transakční generování','Při úplném výpadku API zůstane předchozí výstup zachovaný','Neúspěšné generování smazalo předchozí práci');
       const fakeBtn=document.createElement('button');fakeBtn.innerHTML='Regenerovat';await regenerateSheet(preserved,fakeBtn);
       this.assert(preserved._text==='PŮVODNÍ HOTOVÁ VERZE'&&preserved._key==='PŮVODNÍ KLÍČ','Bezpečná regenerace','Při chybě regenerace se obnoví text, klíč i učitelská data','Chybná regenerace poškodila hotovou verzi');
+      this.assert(!document.getElementById('progressStrip').classList.contains('show')&&!document.getElementById('statusFlow').classList.contains('busy'),'Ukončení regenerace','Po neúspěšné regeneraci nezůstane průběh ani stav viset v režimu Generuji.','Regenerace nechala aktivní indikaci průběhu');
       callGemini=workingMock;if($('#messageOverlay'))$('#messageOverlay').classList.remove('show');
     }finally{
       restoreMock();geminiApiKey=oldKey;geminiKeyScope=oldScope;updateKeyStatus();$('#baseText').value=oldBase;if(results)results.replaceChildren(...oldNodes);if(progressSnapshot&&progress){progress.innerHTML=progressSnapshot.html;progress.className=progressSnapshot.cls}if(statusSnapshot&&status){status.innerHTML=statusSnapshot.html;status.className=statusSnapshot.cls}if(bannerSnapshot&&banner){banner.className=bannerSnapshot.cls;$('#resultSummary').textContent=bannerSnapshot.summary}if(resultsPanel)resultsPanel.classList.toggle('hide',!!resultsPanelHidden);if(configErr)configErr.innerHTML=configErrHtml;if($('#messageOverlay'))$('#messageOverlay').classList.remove('show');
@@ -3173,6 +3235,7 @@ const TestSystem={
     sheet._quality='OK: Ručně zkontrolováno.';
     requestPdfForSheet(sheet,'PDF test',sheet._text);
     this.assert($('#printOverlay')&&$('#printOverlay').classList.contains('show'),'PDF po kontrole','Po kontrole se otevřel náhled PDF','Náhled PDF se neotevřel');
+    this.assert(!!document.querySelector('#printPreview .pa-body'),'Struktura náhledu PDF','Náhled používá stejný obal těla jako tisk','V náhledu PDF chybí .pa-body');
     this.assert($('#printConfirm')&&$('#printConfirm').disabled,'Povinná učitelská kontrola','Tisk je do potvrzení učitele zablokovaný','Tisk nebyl zablokovaný před potvrzením');
     if($('#printTeacherConfirmed')){$('#printTeacherConfirmed').checked=true;$('#printTeacherConfirmed').dispatchEvent(new Event('change'));}
     this.assert($('#printConfirm')&&!$('#printConfirm').disabled,'Odemčení PDF','Potvrzení učitele odemklo tisk/PDF','Potvrzení učitele tisk neodemklo');
@@ -3190,6 +3253,7 @@ const TestSystem={
     this.assert(!!$('#helpTopBtn'),'Horní nápověda','Nápověda je dostupná i v horní liště','Chybí horní tlačítko nápovědy');
     this.assert(!!document.querySelector('.formats-compact'),'Kompaktní formáty','Mobilní zobrazení má kompaktní řádek podporovaných formátů','Chybí kompaktní mobilní popis formátů');
     this.assert(/Kontrola[\s\S]*Řešení[\s\S]*PDF/.test($('#resultBanner')?$('#resultBanner').textContent:''),'Výsledkový postup','Banner vede uživatele v pořadí Kontrola → Řešení → PDF','Doporučený postup ve výsledku není sjednocený');
+    const apiSource=String(callGemini);this.assert(apiSource.includes('404')&&!apiSource.includes("thinkingLevel:'low'"),'Odolnost modelového API','Fallback pokrývá 404 a kód nepoužívá pevnou úroveň low','Nastavení modelů neodpovídá release pravidlům');
   },
   runNativeDialogScan(){
     const forbidden=['al'+'ert','pro'+'mpt'];
@@ -3252,7 +3316,7 @@ function insertSheetInTierOrder(results,sheet){
   if(before)results.insertBefore(sheet,before);else results.appendChild(sheet);
 }
 async function generateVersions(keys,triggerBtn){
-  clearErr($('#configErr'));if($('#batchErr'))clearErr($('#batchErr'));
+  clearErr($('#configErr'));
   const base=$('#baseText').value.trim();
   try{assertTextLength(base,'Načtené zadání')}catch(err){errBox($('#configErr'),friendlyApiMessage(err));return}
   if(!base){errBox($('#configErr'),'Zadání je prázdné – nejdřív ho načti.');return}
@@ -3304,11 +3368,12 @@ $('#genBtn').addEventListener('click',()=>{
 $('#genAllBtn').addEventListener('click',()=>generateVersions(['support','core','extend'],$('#genAllBtn')));
 
 function initAccessibleModals(){
-  const overlays=[...document.querySelectorAll('.overlay')];let lastFocus=null;
-  overlays.forEach((ov,i)=>{const modal=ov.querySelector('.modal'),heading=modal&&modal.querySelector('h2');ov.setAttribute('aria-hidden',ov.classList.contains('show')?'false':'true');if(modal){modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.tabIndex=-1;if(heading){if(!heading.id)heading.id='dialogTitle'+i;modal.setAttribute('aria-labelledby',heading.id)}}});
-  const observer=new MutationObserver(records=>records.forEach(r=>{const ov=r.target;if(!ov.classList.contains('overlay'))return;const open=ov.classList.contains('show');ov.setAttribute('aria-hidden',open?'false':'true');document.body.classList.toggle('modal-open',overlays.some(x=>x.classList.contains('show')));if(open){lastFocus=document.activeElement;setTimeout(()=>{const focusable=ov.querySelector('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');(focusable||ov.querySelector('.modal'))?.focus()},0)}else if(lastFocus&&document.contains(lastFocus)){lastFocus.focus()}}));
+  const overlays=[...document.querySelectorAll('.overlay')],openStack=[],focusOrigins=new WeakMap(),openStates=new WeakMap();
+  overlays.forEach((ov,i)=>{const modal=ov.querySelector('.modal'),heading=modal&&modal.querySelector('h2'),open=ov.classList.contains('show');openStates.set(ov,open);ov.setAttribute('aria-hidden',open?'false':'true');if(open)openStack.push(ov);if(modal){modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.tabIndex=-1;if(heading){if(!heading.id)heading.id='dialogTitle'+i;modal.setAttribute('aria-labelledby',heading.id)}}});
+  const focusTop=ov=>setTimeout(()=>{const focusable=ov&&ov.querySelector('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');(focusable||(ov&&ov.querySelector('.modal')))?.focus()},0);
+  const observer=new MutationObserver(records=>records.forEach(r=>{const ov=r.target;if(!ov.classList.contains('overlay'))return;const open=ov.classList.contains('show'),wasOpen=!!openStates.get(ov);ov.setAttribute('aria-hidden',open?'false':'true');if(open===wasOpen)return;openStates.set(ov,open);const idx=openStack.indexOf(ov);if(open){focusOrigins.set(ov,document.activeElement);if(idx>=0)openStack.splice(idx,1);openStack.push(ov);focusTop(ov)}else{if(idx>=0)openStack.splice(idx,1);const origin=focusOrigins.get(ov);focusOrigins.delete(ov);const top=openStack[openStack.length-1];if(top)focusTop(top);else if(origin&&document.contains(origin))origin.focus()}document.body.classList.toggle('modal-open',openStack.length>0)}));
   overlays.forEach(ov=>observer.observe(ov,{attributes:true,attributeFilter:['class']}));
-  document.addEventListener('keydown',e=>{const ov=overlays.filter(x=>x.classList.contains('show')).pop();if(!ov)return;if(e.key==='Escape'){e.preventDefault();if(ov.id==='pdfCheckOverlay')closePdfCheck();else{const close=ov.querySelector('[id$="Close"],#permanentCancel,#printCancel,#restartCancel');if(close)close.click();else ov.classList.remove('show')}return}if(e.key!=='Tab')return;const nodes=[...ov.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null);if(!nodes.length)return;const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}});
+  document.addEventListener('keydown',e=>{const ov=openStack[openStack.length-1];if(!ov)return;if(e.key==='Escape'){e.preventDefault();if(ov.id==='pdfCheckOverlay')closePdfCheck();else{const close=ov.querySelector('[id$="Close"],#permanentCancel,#printCancel,#restartCancel');if(close)close.click();else ov.classList.remove('show')}return}if(e.key!=='Tab')return;const nodes=[...ov.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null);if(!nodes.length)return;const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}});
 }
 initAccessibleModals();
 
@@ -3359,7 +3424,13 @@ $('#restartOverlay').addEventListener('click',e=>{if(e.target.id==='restartOverl
 </script>
 <script type="module" data-ghrab-access-bootstrap>
 const APP_ID = 'differentiator';
-function showAccessBootstrapFailure(title = 'Přístup nelze ověřit', message = 'Centrální přístupová služba není dostupná. Zkontrolujte připojení a otevřete aplikaci znovu přes AI Studio.') {
+function showAccessBootstrapFailure(title, message) {
+  if (!title && navigator.onLine === false) {
+    title = 'Offline režim není podporován';
+    message = 'Diferenciátor vyžaduje připojení k internetu. Ověření přístupu i generování probíhá online; offline režim aplikace nepodporuje.';
+  }
+  title = title || 'Přístup nelze ověřit';
+  message = message || 'Centrální přístupová služba není dostupná. Zkontrolujte připojení a otevřete aplikaci znovu přes AI Studio.';
   document.documentElement.dataset.ghrabAccess = 'denied';
   document.body.style.visibility = 'visible';
   document.body.innerHTML = '<main class="ghrab-access-gate"><div class="ghrab-access-gate-mark">⬡</div><p class="ghrab-access-gate-eyebrow">AI STUDIO GHRAB</p><h1>' + title + '</h1><p>' + message + '</p><div class="ghrab-access-gate-actions"><a class="ghrab-access-gate-primary" href="/AI-Studio-GHRAB/">Otevřít AI Studio</a></div></main>';

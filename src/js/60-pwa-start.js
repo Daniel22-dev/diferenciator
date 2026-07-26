@@ -46,7 +46,7 @@ function insertSheetInTierOrder(results,sheet){
   if(before)results.insertBefore(sheet,before);else results.appendChild(sheet);
 }
 async function generateVersions(keys,triggerBtn){
-  clearErr($('#configErr'));if($('#batchErr'))clearErr($('#batchErr'));
+  clearErr($('#configErr'));
   const base=$('#baseText').value.trim();
   try{assertTextLength(base,'Načtené zadání')}catch(err){errBox($('#configErr'),friendlyApiMessage(err));return}
   if(!base){errBox($('#configErr'),'Zadání je prázdné – nejdřív ho načti.');return}
@@ -98,11 +98,12 @@ $('#genBtn').addEventListener('click',()=>{
 $('#genAllBtn').addEventListener('click',()=>generateVersions(['support','core','extend'],$('#genAllBtn')));
 
 function initAccessibleModals(){
-  const overlays=[...document.querySelectorAll('.overlay')];let lastFocus=null;
-  overlays.forEach((ov,i)=>{const modal=ov.querySelector('.modal'),heading=modal&&modal.querySelector('h2');ov.setAttribute('aria-hidden',ov.classList.contains('show')?'false':'true');if(modal){modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.tabIndex=-1;if(heading){if(!heading.id)heading.id='dialogTitle'+i;modal.setAttribute('aria-labelledby',heading.id)}}});
-  const observer=new MutationObserver(records=>records.forEach(r=>{const ov=r.target;if(!ov.classList.contains('overlay'))return;const open=ov.classList.contains('show');ov.setAttribute('aria-hidden',open?'false':'true');document.body.classList.toggle('modal-open',overlays.some(x=>x.classList.contains('show')));if(open){lastFocus=document.activeElement;setTimeout(()=>{const focusable=ov.querySelector('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');(focusable||ov.querySelector('.modal'))?.focus()},0)}else if(lastFocus&&document.contains(lastFocus)){lastFocus.focus()}}));
+  const overlays=[...document.querySelectorAll('.overlay')],openStack=[],focusOrigins=new WeakMap(),openStates=new WeakMap();
+  overlays.forEach((ov,i)=>{const modal=ov.querySelector('.modal'),heading=modal&&modal.querySelector('h2'),open=ov.classList.contains('show');openStates.set(ov,open);ov.setAttribute('aria-hidden',open?'false':'true');if(open)openStack.push(ov);if(modal){modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.tabIndex=-1;if(heading){if(!heading.id)heading.id='dialogTitle'+i;modal.setAttribute('aria-labelledby',heading.id)}}});
+  const focusTop=ov=>setTimeout(()=>{const focusable=ov&&ov.querySelector('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');(focusable||(ov&&ov.querySelector('.modal')))?.focus()},0);
+  const observer=new MutationObserver(records=>records.forEach(r=>{const ov=r.target;if(!ov.classList.contains('overlay'))return;const open=ov.classList.contains('show'),wasOpen=!!openStates.get(ov);ov.setAttribute('aria-hidden',open?'false':'true');if(open===wasOpen)return;openStates.set(ov,open);const idx=openStack.indexOf(ov);if(open){focusOrigins.set(ov,document.activeElement);if(idx>=0)openStack.splice(idx,1);openStack.push(ov);focusTop(ov)}else{if(idx>=0)openStack.splice(idx,1);const origin=focusOrigins.get(ov);focusOrigins.delete(ov);const top=openStack[openStack.length-1];if(top)focusTop(top);else if(origin&&document.contains(origin))origin.focus()}document.body.classList.toggle('modal-open',openStack.length>0)}));
   overlays.forEach(ov=>observer.observe(ov,{attributes:true,attributeFilter:['class']}));
-  document.addEventListener('keydown',e=>{const ov=overlays.filter(x=>x.classList.contains('show')).pop();if(!ov)return;if(e.key==='Escape'){e.preventDefault();if(ov.id==='pdfCheckOverlay')closePdfCheck();else{const close=ov.querySelector('[id$="Close"],#permanentCancel,#printCancel,#restartCancel');if(close)close.click();else ov.classList.remove('show')}return}if(e.key!=='Tab')return;const nodes=[...ov.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null);if(!nodes.length)return;const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}});
+  document.addEventListener('keydown',e=>{const ov=openStack[openStack.length-1];if(!ov)return;if(e.key==='Escape'){e.preventDefault();if(ov.id==='pdfCheckOverlay')closePdfCheck();else{const close=ov.querySelector('[id$="Close"],#permanentCancel,#printCancel,#restartCancel');if(close)close.click();else ov.classList.remove('show')}return}if(e.key!=='Tab')return;const nodes=[...ov.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null);if(!nodes.length)return;const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}});
 }
 initAccessibleModals();
 
