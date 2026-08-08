@@ -85,7 +85,7 @@ async function detectCefrForBase(text){
   cefrBusy=true;setCefrNote('Odhaduji CEFR úroveň…','busy');
   try{
     const forcedNote=isCefrForced()?'CEFR je ručně vynucený, protože název předmětu nemusel být rozpoznán. Přesto vrať NEPLATÍ, pokud materiál ve skutečnosti není jazykový. ':'';
-    const lvlRaw=await callGemini([{text:forcedNote+"Urči jazykovou úroveň podle CEFR (A1, A2, B1, B2, C1 nebo C2) tohoto materiálu pro výuku jazyka. Pokud materiál NENÍ jazykový (např. matematika, dějepis, fyzika v rodném jazyce), odpověz přesně slovem NEPLATÍ. Odpověz POUZE jedním z těchto kódů, nic jiného: A1 A2 B1 B2 C1 C2 NEPLATÍ\n\nMATERIÁL:\n"+base}],{thinking:THINKING_CHEAP});
+    const lvlRaw=await callGemini([{text:forcedNote+"Urči jazykovou úroveň podle CEFR (A1, A2, B1, B2, C1 nebo C2) tohoto materiálu pro výuku jazyka. Pokud materiál NENÍ jazykový (např. matematika, dějepis, fyzika v rodném jazyce), odpověz přesně slovem NEPLATÍ. Odpověz POUZE jedním z těchto kódů, nic jiného: A1 A2 B1 B2 C1 C2 NEPLATÍ\n\nMATERIÁL:\n"+base}],{thinking:THINKING_CHEAP,operation:'cefr-detection'});
     const raw=String(lvlRaw||'').trim().toUpperCase();
     const lvl=raw.match(/A1|A2|B1|B2|C1|C2/);
     applyCefrLevels(lvl?lvl[0]:null);
@@ -261,11 +261,14 @@ function collectProjectSheets(){return Array.from(document.querySelectorAll('#re
   tierKey:sheet._tierKey||'core',text:sheet._text||'',answerKey:sheet._key||'',quality:sheet._quality||'',parts:sheet._parts||{},structured:!!sheet._structured,validation:sheet._validation||{ok:true,issues:[]}
 })).filter(x=>x.text||x.answerKey||x.quality)}
 function serializeProject(){return {app:PROJECT_APP,schemaVersion:PROJECT_SCHEMA_VERSION,release:RELEASE.version,exportedAt:new Date().toISOString(),note:'Soubor neobsahuje API klíč.',form:getAppFormState(),sheets:collectProjectSheets()}}
-function exportProject(){
+async function exportProject(){
   const data=serializeProject();
   const base=filenameSafe((data.form&&data.form.meta&&data.form.meta.topic)||data.form.subject||'diferenciator-projekt');
-  downloadTextFile(base+'-projekt.json',JSON.stringify(data,null,2),'application/json;charset=utf-8');
-  showMessage('Projekt exportován','Rozpracovaná práce byla uložena do JSON souboru. API klíč se do projektu neukládá.');
+  try{
+    if(window.GHRABArtifact?.download)await window.GHRABArtifact.download({appId:'differentiator',appVersion:RELEASE.version,artifactType:'differentiator-project',sensitivity:'internal',contentManifest:[{kind:'project',schema:PROJECT_APP+'-project-v'+PROJECT_SCHEMA_VERSION}],payload:data,filename:base+'-projekt.ghrab.json'});
+    else downloadTextFile(base+'-projekt.json',JSON.stringify(data,null,2),'application/json;charset=utf-8');
+    showMessage('Projekt exportován','Rozpracovaná práce byla uložena do kontrolovaného JSON souboru. API klíč se do projektu neukládá.');
+  }catch(error){showMessage('Projekt se nepodařilo exportovat',friendlyApiMessage(error));}
 }
 function restoreProjectSheet(item){
   const sheet=makeSheet(item.tierKey||'core',false);
@@ -296,7 +299,7 @@ function importProjectFile(file){
   if(!file)return;
   if(file.size>MAX_PROJECT_FILE_BYTES){showMessage('Projekt se nepodařilo načíst','Projektový soubor je příliš velký. Bezpečný limit je '+humanBytes(MAX_PROJECT_FILE_BYTES)+'.');return}
   const reader=new FileReader();
-  reader.onload=()=>{try{applyProject(JSON.parse(String(reader.result||'')));showMessage('Projekt načten','Rozpracovaná práce byla obnovena. API klíč se z projektu nenačítá.')}catch(e){showMessage('Projekt se nepodařilo načíst',friendlyApiMessage(e))}};
+  reader.onload=async()=>{try{const raw=String(reader.result||'');const unpacked=window.GHRABArtifact?.unwrapMaybe?await window.GHRABArtifact.unwrapMaybe(raw,{allowLegacy:true,expectedAppId:'differentiator',verifyChecksum:true}):{payload:JSON.parse(raw)};applyProject(unpacked.payload);showMessage('Projekt načten','Rozpracovaná práce byla obnovena. API klíč se z projektu nenačítá.')}catch(e){showMessage('Projekt se nepodařilo načíst',friendlyApiMessage(e))}};
   reader.onerror=()=>showMessage('Projekt se nepodařilo načíst','Soubor se nepodařilo přečíst.');
   reader.readAsText(file);
 }
@@ -324,7 +327,7 @@ function exportSheetMarkdown(sheet,btn){
 }
 function updateDataSummary(){
   const rows=[];
-  const keyState=geminiApiKey?(geminiKeyScope==='permanent'?'uložen trvale':'jen pro relaci'):'není uložen';
+  const keyState=geminiApiKey?'jen pro relaci':'není uložen';
   rows.push('<div class="data-row"><b>API klíč:</b> '+esc(keyState)+'</div>');
   rows.push('<div class="data-row"><b>Nastavení:</b> model, vzhled, CEFR volba a stav úvodní nápovědy jsou uloženy jen v tomto prohlížeči. Pedagogické zpřesnění je součástí pracovního projektu pouze po ručním exportu.</div>');
   rows.push('<div class="data-row"><b>Rozpracovaná práce:</b> aktuálně je v paměti stránky; pro bezpečné uložení použij Exportovat projekt.</div>');
@@ -344,7 +347,8 @@ function clearWorkingData(){
   setStatus('statusInput','čeká na zadání','');setStatus('statusFlow','připraveno','ok');closeDataManagement();showMessage('Pracovní data vyčištěna','Aktuální zadání a výstupy byly vyčištěny. API klíč ani uložené preference se nesmazaly.');updateDataSummary();
 }
 
-$('#foot').innerHTML='<div class="footer-tools"><div class="tools-wrap"><button class="footer-tools-btn" id="footerToolsBtn" type="button" aria-expanded="false" aria-controls="footerToolsMenu">Nástroje a nápověda ▴</button><div class="footer-tools-menu" id="footerToolsMenu"><button id="exportProjectBtn" type="button" title="Uloží rozpracovaný stav bez API klíče do souboru JSON">💾 Exportovat projekt</button><button id="importProjectBtn" type="button" title="Načte dříve exportovaný projekt">📂 Načíst projekt</button><button id="dataManageBtn" type="button" title="Správa lokálních dat v tomto prohlížeči">🧹 Správa dat</button><button class="test-toggle" id="testToggle" type="button" title="Otevře interní testovací nástroj" aria-expanded="false">🧪 Testy</button><button id="changelogBtn" type="button" title="Zobrazí poslední změny v aplikaci">📝 Změny</button><button id="helpBtn" type="button">❔ Jak to funguje?</button></div></div><div class="footer-tools-hint">Nápověda, projekty, správa dat a release testy jsou dostupné tady.</div></div><div class="ownerline"><strong>Vlastník aplikace:</strong> Daniel Baláž · Gymnázium, Ostrava-Hrabůvka</div><div class="legal">© 2026 Daniel Baláž. Všechna práva vyhrazena.</div>';
+$('#foot').innerHTML='<div class="footer-tools"><div class="tools-wrap"><button class="footer-tools-btn" id="footerToolsBtn" type="button" aria-expanded="false" aria-controls="footerToolsMenu">Nástroje a nápověda ▴</button><div class="footer-tools-menu" id="footerToolsMenu"><button id="exportProjectBtn" type="button" title="Uloží rozpracovaný stav bez API klíče do souboru JSON">💾 Exportovat projekt</button><button id="importProjectBtn" type="button" title="Načte dříve exportovaný projekt">📂 Načíst projekt</button><button id="dataManageBtn" type="button" title="Správa lokálních dat v tomto prohlížeči">🧹 Správa dat</button><button class="test-toggle" id="testToggle" type="button" title="Otevře interní testovací nástroj" aria-expanded="false">🧪 Testy</button><button id="changelogBtn" type="button" title="Zobrazí poslední změny v aplikaci">📝 Změny</button><button id="helpBtn" type="button">❔ Jak to funguje?</button></div></div><div class="footer-tools-hint">Nápověda, projekty, správa dat a release testy jsou dostupné tady.</div></div><div data-ghrab-footer-branding></div>';
+window.GHRAB_PLATFORM?.mountFooter?.($('#foot'));
 
 function parseChangeEntry(entry){
   const text=String(entry||'').trim();
@@ -394,7 +398,7 @@ $('#importProjectBtn').addEventListener('click',()=>projectImportInput.click());
 $('#dataManageBtn').addEventListener('click',openDataManagement);
 $('#dataClose').addEventListener('click',closeDataManagement);
 $('#dataOverlay').addEventListener('click',e=>{if(e.target.id==='dataOverlay')closeDataManagement()});
-$('#dataClearKey').addEventListener('click',()=>{clearKey();updateDataSummary();closeDataManagement();showMessage('API klíč smazán','Klíč byl odstraněn z relace i z trvalého úložiště tohoto prohlížeče.')});
+$('#dataClearKey').addEventListener('click',()=>{clearKey();updateDataSummary();closeDataManagement();showMessage('API klíč smazán','Klíč byl odstraněn z relace a případná stará trvalá kopie byla smazána.')});
 $('#dataClearPrefs').addEventListener('click',clearPreferenceData);
 
 

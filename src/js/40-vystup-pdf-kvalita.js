@@ -185,7 +185,7 @@ async function toggleKey(sheet,btn){
   if(!requireApiKeyForAction('vytvoření řešení'))return;
   btn.disabled=true;const old=btn.innerHTML;btn.innerHTML='<span class="mini"></span>';
   try{
-    const out=await callGemini([{text:"Ke každé úloze v tomto pracovním listu napiš stručné správné řešení / klíč. Vycházej výhradně z pracovního listu níže a zachovej jazyk úloh. Pouze klíč, očíslovaně podle úloh, bez úvodu.\n\nPRACOVNÍ LIST:\n"+sheet._text}],{thinking:THINKING_CHEAP});
+    const out=await callGemini([{text:"Ke každé úloze v tomto pracovním listu napiš stručné správné řešení / klíč. Vycházej výhradně z pracovního listu níže a zachovej jazyk úloh. Pouze klíč, očíslovaně podle úloh, bez úvodu.\n\nPRACOVNÍ LIST:\n"+sheet._text}],{thinking:THINKING_CHEAP,operation:'answer-key-generation'});
     sheet._key=out;
     box.innerHTML=keyHeaderHtml()+render(out);box.dataset.filled='1';
     box.classList.add('show');attachSheetTools(sheet);
@@ -286,7 +286,7 @@ async function repairWorksheetJson(raw,validation,base,key){
     'PŮVODNÍ ZADÁNÍ:\n'+String(base||'').slice(0,8000),
     'ODPOVĚĎ K OPRAVĚ:\n'+String(raw||'')
   ].filter(Boolean).join('\n\n');
-  return callGemini([{text:prompt}],{json:true,schema:WORKSHEET_RESPONSE_SCHEMA});
+  return callGemini([{text:prompt}],{json:true,schema:WORKSHEET_RESPONSE_SCHEMA,operation:'worksheet-structure-repair'});
 }
 
 async function generateIntoSheet(sheet,key,base,idx,total){
@@ -297,7 +297,7 @@ async function generateIntoSheet(sheet,key,base,idx,total){
   sheet.querySelector('.qualitybox').innerHTML='';sheet.querySelector('.qualitybox').classList.remove('show');
   const structureBox=sheet.querySelector('.structurebox');if(structureBox){structureBox.innerHTML='';structureBox.classList.remove('show')}
   setProgress((total>1?'Verze '+(idx+1)+' z '+total+': ':'Generuji ')+t.name.toLowerCase()+' verzi…',true);
-  const out=await callGemini([{text:makePromptForTier(key,base,total)}],{json:true,schema:WORKSHEET_RESPONSE_SCHEMA});
+  const out=await callGemini([{text:makePromptForTier(key,base,total)}],{json:true,schema:WORKSHEET_RESPONSE_SCHEMA,operation:'worksheet-generation'});
   let parsed=parseWorksheetResponse(out);
   let validation=validateWorksheetResponse(parsed);
   if(!validation.ok){
@@ -403,7 +403,7 @@ async function checkQuality(sheet,btn){
   btn.disabled=true;const old=btn.innerHTML;btn.innerHTML='<span class="mini"></span>';
   try{
     const prompt=QualityCheck.makePrompt(sheet);
-    const out=await callGemini([{text:prompt}],{thinking:THINKING_CHEAP});
+    const out=await callGemini([{text:prompt}],{thinking:THINKING_CHEAP,operation:'worksheet-quality-audit'});
     sheet._quality=out;setSheetStatus(sheet,'zkontrolováno','ok');attachSheetTools(sheet);openQuality(sheet);
   }catch(err){sheet._quality='';showMessage('Kontrola se nepodařila',friendlyApiMessage(err))}
   finally{btn.disabled=false;btn.innerHTML=old}

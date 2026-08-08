@@ -1,4 +1,4 @@
-/* AI Studio GHRAB — GHRAB Material v1 adapter (Diferenciátor 1.3.4, bridge 1.3) */
+/* AI Studio GHRAB — GHRAB Material v1 adapter (Diferenciátor 1.3.12, bridge 2.0) */
 (function(){
   'use strict';
   const KEY='ghrab.handoff.v1',EVENTS='ghrab.pilot.events.v2',MAX_SOURCE=180000;
@@ -15,10 +15,12 @@
     return source.trim().length>0||taskList(m).length>0;
   }
   function studioUrl(p){
-    try{const u=new URL(p&&p.studioUrl||'/AI-Studio-GHRAB/',location.origin);if(u.origin===location.origin&&u.pathname.startsWith('/AI-Studio-GHRAB/'))return u.href}catch(_){}
-    return location.origin+'/AI-Studio-GHRAB/';
+    const configured=window.__GHRAB_DEPLOYMENT_CONFIG__?.studioBaseUrl||window.__GHRAB_STUDIO_URL__||'/AI-Studio-GHRAB/';
+    try{const u=new URL(p&&p.studioUrl||configured,location.href);if(/^https?:$/.test(u.protocol))return u.href}catch(_){}
+    return new URL(configured,location.href).href;
   }
   function take(){
+    const v2=window.GHRAB_PLATFORM?.bridge?.take?.({target:'differentiator',maxBytes:500000});if(v2)return v2;
     const p=parse(KEY,null),expires=p&&Date.parse(p.expiresAt||'');
     if(!p||p.schema!=='ghrab-handoff-v1'||p.target!=='differentiator'||!valid(p.material)||!Number.isFinite(expires)||expires<=Date.now()){if(p)remove(KEY);return null}
     remove(KEY);return p;

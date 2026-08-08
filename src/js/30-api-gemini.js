@@ -5,22 +5,8 @@ let geminiApiKey="", geminiKeyScope="", geminiModel=MODEL_DEFAULT;
 function cleanKey(s){return String(s||"").replace(/[^\x21-\x7E]/g,"")}
 function inputKey(){return cleanKey($("keyInput").value)}
 function setKey(key,scope){geminiApiKey=cleanKey(key);geminiKeyScope=geminiApiKey?scope:"";$("keyInput").value=geminiApiKey;updateKeyStatus()}
-function loadKey(){let sessionKey="",permanentKey="";try{sessionKey=sessionStorage.getItem(KEY_SESSION_SK)||""}catch(_){}try{permanentKey=localStorage.getItem(KEY_SK)||""}catch(_){}setKey(sessionKey||permanentKey,sessionKey?"session":(permanentKey?"permanent":""))}
+function loadKey(){let sessionKey="",legacyKey="";try{sessionKey=sessionStorage.getItem(KEY_SESSION_SK)||""}catch(_){}try{legacyKey=localStorage.getItem(KEY_SK)||"";localStorage.removeItem(KEY_SK)}catch(_){}if(!sessionKey&&legacyKey){try{sessionStorage.setItem(KEY_SESSION_SK,legacyKey);sessionKey=legacyKey}catch(_){}}setKey(sessionKey,sessionKey?"session":"")}
 function useKeySession(){const k=inputKey();let stored=true;try{if(k)sessionStorage.setItem(KEY_SESSION_SK,k);else sessionStorage.removeItem(KEY_SESSION_SK)}catch(_){stored=false}setKey(k,k?(stored?"session":"memory"):"");return stored}
-let pendingPermanentKey="";
-function normConfirmPhrase(s){return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/\s+/g," ").trim()}
-function openPermanentKeyModal(k){
-  pendingPermanentKey=cleanKey(k);
-  const input=$("permanentPhrase"), err=$("permanentErr");
-  if(input)input.value="";
-  if(err)err.classList.remove("show");
-  $("permanentKeyOverlay").classList.add("show");
-  setTimeout(()=>{if(input)input.focus()},60);
-}
-function closePermanentKeyModal(){
-  pendingPermanentKey="";
-  $("permanentKeyOverlay").classList.remove("show");
-}
 function showMessage(title,message){
   const t=$("messageTitle"), m=$("messageText");
   if(t)t.textContent=title||"Upozornění";
@@ -34,30 +20,14 @@ function saveKeyPermanent(){
     showMessage("Klíč není uložen", "Nejdřív vlož API klíč. Pro běžné použití doporučuji tlačítko „Použít jen pro relaci“.");
     return;
   }
-  openPermanentKeyModal(k);
-}
-function confirmPermanentKey(){
-  const typed=$("permanentPhrase")?$("permanentPhrase").value:"";
-  const err=$("permanentErr");
-  if(normConfirmPhrase(typed)!==normConfirmPhrase("UKLADAM NA OSOBNIM ZARIZENI")){
-    if(err)err.classList.add("show");
-    return;
-  }
-  const saved=pendingPermanentKey;
-  try{localStorage.setItem(KEY_SK,saved)}catch(_){
-    if(err){err.textContent='Klíč se nepodařilo uložit do tohoto prohlížeče.';err.classList.add('show')}
-    return;
-  }
-  try{sessionStorage.removeItem(KEY_SESSION_SK)}catch(_){}
-  closePermanentKeyModal();
-  setKey(saved,"permanent");
+  useKeySession();
+  showMessage("Bezpečné uložení pro relaci", "Trvalé ukládání provider klíče bylo v P1 odstraněno. Klíč je uložen pouze do zavření prohlížeče.");
 }
 function clearKey(){try{sessionStorage.removeItem(KEY_SESSION_SK)}catch(_){}try{localStorage.removeItem(KEY_SK)}catch(_){}setKey("","")}
 function updateKeyStatus(){
   const el=$("keyStatus");el.className="api-status";
   if(geminiApiKey){
-    if(geminiKeyScope==="permanent"){el.textContent="✓ Klíč uložen trvale";el.classList.add("perm");setStatus("statusKey","uložen trvale","warn")}
-    else if(geminiKeyScope==="session"){el.textContent="✓ Klíč uložen pro relaci";el.classList.add("ok");setStatus("statusKey","relace","ok")}
+    if(geminiKeyScope==="session"){el.textContent="✓ Klíč uložen pro relaci";el.classList.add("ok");setStatus("statusKey","relace","ok")}
     else{el.textContent="✓ Klíč zadán (neuložen)";el.classList.add("ok")}
   } else {
     el.textContent="Klíč není nastaven";
@@ -68,10 +38,6 @@ function updateKeyStatus(){
 $("btnSession").onclick=()=>{const stored=useKeySession();if(stored)flashBtn($("btnSession"),"Uloženo pro relaci ✓");else showMessage("Úložiště relace není dostupné","Klíč lze použít na právě otevřené stránce, ale prohlížeč ho nedokázal uložit do relace. Po obnovení stránky ho bude nutné vložit znovu.")};
 $("btnPermanent").onclick=()=>saveKeyPermanent();
 $("btnClear").onclick=()=>{clearKey();$("keyInput").value=""};
-$("permanentCancel").onclick=()=>closePermanentKeyModal();
-$("permanentConfirm").onclick=()=>confirmPermanentKey();
-$("permanentPhrase").addEventListener("keydown",e=>{if(e.key==="Enter")confirmPermanentKey();if(e.key==="Escape")closePermanentKeyModal()});
-$("permanentKeyOverlay").addEventListener("click",e=>{if(e.target.id==="permanentKeyOverlay")closePermanentKeyModal()});
 $("messageClose").onclick=()=>$("messageOverlay").classList.remove("show");
 $("messageOverlay").addEventListener("click",e=>{if(e.target.id==="messageOverlay")$("messageOverlay").classList.remove("show")});
 function updateApiToggleText(){
@@ -86,7 +52,7 @@ $("keyInput").addEventListener("input",()=>{
   updateKeyStatus();
 });
 function flashBtn(btn,msg){const o=btn.textContent;btn.textContent=msg;btn.disabled=true;setTimeout(()=>{btn.textContent=o;btn.disabled=false},1300)}
-function hasApiKey(){return !!cleanKey(geminiApiKey)}
+function hasApiKey(){return !!window.GHRAB_PLATFORM?.isSchoolProfile?.()||!!cleanKey(geminiApiKey)}
 function requireApiKeyForAction(actionLabel){
   if(hasApiKey())return true;
   const label=actionLabel||'tuto akci';
@@ -573,7 +539,7 @@ $('#extractBtn').addEventListener('click',async()=>{
     } else {
       parts=[{text:prompt+"\n\nZADÁNÍ:\n"+pasted}];
     }
-    const out=await callGemini(parts);
+    const out=await callGemini(parts,{operation:'material-extraction'});
     const extracted=String(out||pasted||(uploaded&&uploaded.text)||'').trim();
     if(!extracted)throw makeAppError('Ze vstupu se nepodařilo získat žádný čitelný text.','EMPTY_EXTRACT');
     $('#baseText').value=extracted;

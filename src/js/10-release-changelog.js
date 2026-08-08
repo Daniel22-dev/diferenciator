@@ -1,10 +1,12 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.4',
-  date: '2026-07-26',
+  version: '1.3.12',
+  date: '2026-08-04',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    "1.3.12: platformní etapa P1 — šest operací běží přes GHRAB AI Core 1.0.0; GitHub profil zachovává direct-gemini, školní profil používá server-session a school-gateway bez provider klíče v prohlížeči. Přidány jsou datové a CSP kontrakty, bezpečná diagnostika a měření skutečných provider requestů.",
+    "1.3.12: sjednocen reportér technických chyb s AI Studiem — jediná lokální instance, centrální reportér vypnutý přes errorReporter:false, živé přebírání body.dark, až pět screenshotů, bezpečný koncept, ZIP a nativní Gmail odkaz. Reportér je součástí PWA cache a manuál odkazuje na aktuální centrální návod; funkce diferenciace a uživatelská data zůstaly beze změny.",
     "1.3.4: opravena zaseknutá indikace průběhu po regeneraci, náhled PDF nyní odpovídá výslednému dokumentu, do tisku se už nedostanou provozní proužky, editace listu zachovává tučné formátování i hotové řešení, kontrola kvality přestala ořezávat text, sada tří verzí vzniká podle jednoho pravidla, aktualizováno nastavení modelů Gemini a doplněn návrat z manuálu.",
     "1.3.3: ochrana hotových verzí před přepsáním a potvrzení před smazáním práce, viditelný průběh generování, správné rozpoznání úředních názvů jazykových předmětů, přesnější dělení tisku, plná školní identita v PDF, živé CEFR štítky, aktuální modely Gemini a zpřesněné informace o práci s daty.",
     "1.3.2: interaktivní manuál byl ověřen proti aktuálním funkcím a při otevření z aplikace uvnitř AI Studia zůstává ve stejném pracovním rámci; nová PWA cache vynutí načtení opravy.",

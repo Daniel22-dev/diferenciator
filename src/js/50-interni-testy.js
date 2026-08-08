@@ -295,7 +295,7 @@ const TestSystem={
     this.assert(!!$('#helpTopBtn'),'Horní nápověda','Nápověda je dostupná i v horní liště','Chybí horní tlačítko nápovědy');
     this.assert(!!document.querySelector('.formats-compact'),'Kompaktní formáty','Mobilní zobrazení má kompaktní řádek podporovaných formátů','Chybí kompaktní mobilní popis formátů');
     this.assert(/Kontrola[\s\S]*Řešení[\s\S]*PDF/.test($('#resultBanner')?$('#resultBanner').textContent:''),'Výsledkový postup','Banner vede uživatele v pořadí Kontrola → Řešení → PDF','Doporučený postup ve výsledku není sjednocený');
-    const apiSource=String(callGemini);this.assert(apiSource.includes('404')&&!apiSource.includes("thinkingLevel:'low'"),'Odolnost modelového API','Fallback pokrývá 404 a kód nepoužívá pevnou úroveň low','Nastavení modelů neodpovídá release pravidlům');
+    const apiSource=String(callGemini);this.assert(apiSource.includes('GHRAB_AI.generate')&&!apiSource.includes("thinkingLevel:'low'")&&DPL_AI_OPERATIONS.operations['worksheet-generation'],'Odolnost modelového API','Volání vede přes GHRAB AI Core, operace je registrovaná a kód nepoužívá pevnou úroveň low','Nastavení AI Core neodpovídá release pravidlům');
   },
   runNativeDialogScan(){
     const forbidden=['al'+'ert','pro'+'mpt'];

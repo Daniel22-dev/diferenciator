@@ -33,12 +33,51 @@
     "differentiation",
     "worksheets",
     "quality-check",
-    "pdf"
+    "pdf",
+    "ghrab-platform-v1",
+    "canonical-branding",
+    "storage-namespace-v1",
+    "artifact-envelope-v1"
   ],
   "compatibility": {
     "studioMinVersion": "0.18.7",
     "materialSchema": "ghrab-material-v1",
-    "studioBridge": "1.3"
+    "studioBridge": "2.0",
+    "platformContract": "ghrab-platform-v1",
+    "platformRange": ">=1.1.0 <2.0.0"
   },
-  "publishedAt": "__BUILD_TIME__"
+  "publishedAt": "__BUILD_TIME__",
+  "aiCore": {
+    "schema": "ghrab-ai-app-integration-v1",
+    "status": "integrated-p1",
+    "coreVersion": "1.0.0",
+    "contractVersion": "1",
+    "serverReady": true,
+    "conformancePassed": true,
+    "operationsManifestUrl": "https://daniel22-dev.github.io/diferenciator/ai-operations.json",
+    "runtimeSchema": "ghrab-runtime-config-v1",
+    "gatewayContract": "ghrab-ai-request-v1",
+    "certificationStatus": "certified-p1",
+    "certificationEvidence": "evidence/p1-ai-conformance.json",
+    "certifiedOperations": 6
+  },
+  "slug": "diferenciator",
+  "paths": {
+    "app": "https://daniel22-dev.github.io/diferenciator/",
+    "manual": "https://daniel22-dev.github.io/diferenciator/manual/",
+    "manifest": "https://daniel22-dev.github.io/diferenciator/studio-manifest.json"
+  },
+  "platform": {
+    "schema": "ghrab-platform-app-integration-v1",
+    "contract": "ghrab-platform-v1",
+    "requiredPlatformRange": ">=1.1.0 <2.0.0",
+    "platformVersion": "1.0.0",
+    "brandVersion": "1.0.0",
+    "themeContract": 1,
+    "swContract": 1,
+    "studioBridge": 2,
+    "artifactEnvelope": 1,
+    "storagePrefix": "ghrab.differentiator.",
+    "cacheName": "ghrab-differentiator-v1.3.12"
+  }
 }
