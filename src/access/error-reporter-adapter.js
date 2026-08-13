@@ -8,7 +8,7 @@ const reporterGuideUrl = deployment?.access?.guideUrl || new URL('manualy/error-
 const reporter = setupErrorReporter({
   appId: 'differentiator',
   appName: 'Diferenciátor',
-  appVersion: '1.3.12',
+  appVersion: '1.3.13',
   studioUrl: reporterStudioUrl,
   supportEmail: 'balaz@ghrabuvka.cz',
   guideUrl: reporterGuideUrl,

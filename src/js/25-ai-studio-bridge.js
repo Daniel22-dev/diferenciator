@@ -1,4 +1,4 @@
-/* AI Studio GHRAB — GHRAB Material v1 adapter (Diferenciátor 1.3.12, bridge 2.0) */
+/* AI Studio GHRAB — GHRAB Material v1 adapter (Diferenciátor 1.3.13, bridge 2.0) */
 (function(){
   'use strict';
   const KEY='ghrab.handoff.v1',EVENTS='ghrab.pilot.events.v2',MAX_SOURCE=180000;

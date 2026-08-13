@@ -917,3 +917,12 @@ a.manual-launch-btn::after{content:"";position:absolute;inset:-3px;border-radius
 a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacity:1;box-shadow:0 0 0 3px color-mix(in srgb,var(--acc, var(--accent, #65d9ff)) 12%,transparent)}
 
 .tip:focus-visible{outline:3px solid color-mix(in srgb,var(--core) 45%,transparent);outline-offset:3px}
+
+/* Mobilní containment: udrží obsah i diagnostický dialog v šířce viewportu. */
+@media(max-width:560px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .wrap,.brand,.app-shell,.main-flow,.panel{min-width:0;max-width:100%}
+  .brand{overflow:hidden}
+  .paste-label,.school-brand-lockup{min-width:0;overflow-wrap:anywhere}
+  .tip::after{left:auto;right:0;transform:none;max-width:min(220px,calc(100vw - 40px))}
+}

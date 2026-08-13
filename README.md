@@ -1,12 +1,12 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.12  
+**Aktuální verze:** 1.3.13  
 **Platforma:** GHRAB Platform 1.1.0 · etapa P3
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.12
+- **Verze:** 1.3.13
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž

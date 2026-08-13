@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 import { setTimeout as sleep } from "node:timers/promises";
 
 const ROOT=join(dirname(fileURLToPath(import.meta.url)),".."),BASE=join(ROOT,"dist");
-const REPO="diferenciator",APP_ID="differentiator",APP_VERSION="1.3.12",CACHE_PREFIX="ghrab-differentiator-v";
+const REPO="diferenciator",APP_ID="differentiator",APP_VERSION="1.3.13",CACHE_PREFIX="ghrab-differentiator-v";
 let failures=0;const ok=m=>console.log("  ✓ "+m),bad=m=>{console.error("  ✗ "+m);failures++};
 if(!existsSync(join(BASE,"index.html"))){console.error("Chybí dist. Spusť nejdřív npm run build.");process.exit(1)}
 function testHtml(raw){return raw.replace('type="application/ghrab-protected" data-ghrab-protected','type="text/javascript" data-ghrab-test-executable').replace(/<script type="module" data-ghrab-access-bootstrap>[\s\S]*?<\/script>/,'')}

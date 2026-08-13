@@ -1,10 +1,11 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.12',
-  date: '2026-08-04',
+  version: '1.3.13',
+  date: '2026-08-13',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    "1.3.13: reportér používá ověřený dvoukrokový tok z KS 5.10.3 — skutečné stažení diagnostického ZIPu před odemčením Gmailu, jasný pokyn k ruční příloze, bezpečně skryté pomocné video bez rekurzivního obrazu a rozšířenou browserovou regresní kontrolu.",
     "1.3.12: platformní etapa P1 — šest operací běží přes GHRAB AI Core 1.0.0; GitHub profil zachovává direct-gemini, školní profil používá server-session a school-gateway bez provider klíče v prohlížeči. Přidány jsou datové a CSP kontrakty, bezpečná diagnostika a měření skutečných provider requestů.",
     "1.3.12: sjednocen reportér technických chyb s AI Studiem — jediná lokální instance, centrální reportér vypnutý přes errorReporter:false, živé přebírání body.dark, až pět screenshotů, bezpečný koncept, ZIP a nativní Gmail odkaz. Reportér je součástí PWA cache a manuál odkazuje na aktuální centrální návod; funkce diferenciace a uživatelská data zůstaly beze změny.",
     "1.3.4: opravena zaseknutá indikace průběhu po regeneraci, náhled PDF nyní odpovídá výslednému dokumentu, do tisku se už nedostanou provozní proužky, editace listu zachovává tučné formátování i hotové řešení, kontrola kvality přestala ořezávat text, sada tří verzí vzniká podle jednoho pravidla, aktualizováno nastavení modelů Gemini a doplněn návrat z manuálu.",

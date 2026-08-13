@@ -1,3 +1,11 @@
+## 1.3.13 — sjednocení reportéru (2026-08-13)
+
+- Reportér používá dvoukrokové vytvoření a skutečné stažení diagnostického ZIPu; Gmail je dostupný až po kliknutí na stažení.
+- Rozhraní i e-mail vyžadují ruční přiložení ZIPu a pomocné video je bezpečně skryté uvnitř reportéru i při scrollování.
+- Regresní sada fyzicky ověřuje stažený ZIP, jeho snímky a diagnostiku, jednu instanci reportéru, motivy, mobilní zobrazení a klávesnici.
+- Mobilní rozložení má explicitní šířkový containment, který odstraňuje dvoupixelové vodorovné přetečení release gate.
+- Diferenciace ani uživatelská data nebyly změněny; PWA cache je `ghrab-differentiator-v1.3.13`.
+
 ## 1.3.12 — P5 (2026-08-05)
 
 
