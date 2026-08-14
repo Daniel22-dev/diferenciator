@@ -13,7 +13,7 @@
         <div class="top-icon-row" aria-label="Režim zobrazení">
           <button class="theme-toggle" id="themeToggle" type="button" aria-label="Přepnout denní/noční režim" title="Denní / noční režim">🌙</button>
           <button class="icon-btn fullscreen-toggle" id="fullscreenToggle" type="button" aria-label="Zapnout režim celé obrazovky" title="Celá obrazovka">⛶</button>
-          <a class="icon-btn manual-launch-btn" id="manualLaunch" href="./manual/" target="_self" aria-label="Otevřít interaktivní manuál celé aplikace" title="Interaktivní manuál celé aplikace">📖</a>
+          <a class="icon-btn manual-launch-btn" href="./manual/" target="_self" aria-label="Otevřít interaktivní manuál celé aplikace" title="Interaktivní manuál celé aplikace">📖</a>
           <button class="icon-btn help-top-btn" id="helpTopBtn" type="button" aria-label="Otev&#345;&#237;t n&#225;pov&#283;du" title="Jak to funguje">?</button>
         </div>
       </div>
@@ -84,9 +84,9 @@
       <div class="model-row">
         <label>Profil AI</label>
         <div class="model-quick" role="group" aria-label="Profil AI">
-          <button class="qm" id="profileEconomy" data-model-profile="economy" aria-pressed="false" title="Rychlé a úsporné.">◇ Úsporný<span class="sub">nižší spotřeba</span></button>
-          <button class="qm" id="profileBalanced" data-model-profile="balanced" aria-pressed="true" title="Výchozí profil.">⚡ Doporučený<span class="sub">výchozí volba</span></button>
-          <button class="qm" id="profileQuality" data-model-profile="quality" aria-pressed="false" title="Pro náročnější úlohy.">★ Důkladný<span class="sub">vyšší kvalita</span></button>
+          <button class="qm" data-model-profile="economy" aria-pressed="false" title="Rychlé a úsporné.">◇ Úsporný<span class="sub">nižší spotřeba</span></button>
+          <button class="qm" data-model-profile="balanced" aria-pressed="true" title="Výchozí profil.">⚡ Doporučený<span class="sub">výchozí volba</span></button>
+          <button class="qm" data-model-profile="quality" aria-pressed="false" title="Pro náročnější úlohy.">★ Důkladný<span class="sub">vyšší kvalita</span></button>
         </div>
         <p class="hint">Aplikace předává pouze profil AI; konkrétní model vybírá aktivní AI služba.</p>
         <details class="model-terms"><summary>Fakturace a práce s daty</summary><p class="hint">Serverless používá osobní Gemini API klíč; školní režim spravuje server. Vždy posílej materiály bez osobních a citlivých údajů žáků.</p></details>
@@ -123,12 +123,27 @@
 
   </section>
 
+    <section class="visual-source-panel hide" id="visualSourcePanel">
+      <div class="visual-source-head">
+        <div><h3>Obrazové podklady</h3><p id="visualSourceSummary">Aplikace rozpoznala obrazové části zdroje.</p></div>
+        <span class="visual-source-badge" id="visualSourceBadge">0 podkladů</span>
+      </div>
+      <p class="visual-source-help">U map, grafů, schémat, geometrických nákresů nebo biologických obrázků zvol, zda se má původní obraz zachovat ve výstupu. U fotografie nebo skenu můžeš obraz lokálně otočit, vylepšit jeho čitelnost pro AI nebo vyříznout jen potřebnou oblast. Vylepšená kopie slouží jen ke čtení AI; do výsledku se dál vkládá původní obraz. U naskenovaného PDF lze přidat snímek konkrétní stránky nebo výřez jako samostatný zachovaný podklad.</p>
+      <div class="visual-source-actions">
+        <input id="visualSupplementFile" type="file" multiple accept="image/*" class="hide" />
+        <button class="btn ghost small hide" id="visualSupplementBtn" type="button">Přidat snímek / výřez k PDF</button>
+      </div>
+      <div class="visual-source-list" id="visualSourceList"></div>
+      <div class="visual-source-warning hide" id="visualSourceWarning"></div>
+    </section>
+
   <section class="panel pedagogical-panel hide" id="configPanel">
     <p class="step"><b>3</b> Zkontroluj zadání a vyber stupně <span class="step-role ped">Pedagogické nastavení</span></p>
     <label for="baseText">Načtené zadání
       <span class="tip" tabindex="0" role="button" aria-expanded="false" data-tip="Tohle je přepis z fotky/PDF/dokumentu. Klidně ho oprav – z opraveného textu se pak dělají všechny verze.">?</span>
     </label>
     <textarea id="baseText" style="min-height:150px;font-family:var(--serif)"></textarea>
+
     <div class="row" style="margin-top:14px">
       <div class="field"><label for="subject">Předmět</label>
         <input id="subject" type="text" placeholder="např. Dějepis, Chemie, Matematika, Angličtina, Hudební výchova" /></div>
@@ -149,13 +164,13 @@
     <details class="advanced-settings emphasized" id="advancedSettings">
       <summary><span class="summary-main">Pedagogické zpřesnění</span><span class="summary-sub">volitelné, ale doporučené pro přesnější diferenciaci</span></summary>
       <div class="advanced-grid">
-        <div class="field"><label for="advTargetGroup">Cílová skupina</label><input id="advTargetGroup" type="text" placeholder="např. tercie, kvarta, 2. ročník, slabší skupina" aria-describedby="advTargetGroupHelp advTargetGroupDetected" /><div class="field-help" id="advTargetGroupHelp">Můžeš použít i označení prima–oktáva. Aplikace je převede na odpovídající ročník osmiletého gymnázia a přibližný věk.</div><div class="field-feedback" id="advTargetGroupDetected" aria-live="polite"></div></div>
+        <div class="field"><label for="advTargetGroup">Ročník / cílová skupina</label><select id="advTargetGroup" aria-describedby="advTargetGroupHelp advTargetGroupDetected"><option value="">Nevybráno</option><optgroup label="Osmileté gymnázium"><option value="8g-prima">Prima · 1. ročník · 11–12 let</option><option value="8g-sekunda">Sekunda · 2. ročník · 12–13 let</option><option value="8g-tercie">Tercie · 3. ročník · 13–14 let</option><option value="8g-kvarta">Kvarta · 4. ročník · 14–15 let</option><option value="8g-kvinta">Kvinta · 5. ročník · 15–16 let</option><option value="8g-sexta">Sexta · 6. ročník · 16–17 let</option><option value="8g-septima">Septima · 7. ročník · 17–18 let</option><option value="8g-oktava">Oktáva · 8. ročník · 18–19 let</option></optgroup><optgroup label="Čtyřleté gymnázium"><option value="4g-1">1. ročník (prvák) · 15–16 let</option><option value="4g-2">2. ročník (druhák) · 16–17 let</option><option value="4g-3">3. ročník (třeťák) · 17–18 let</option><option value="4g-4">4. ročník (čtvrťák) · 18–19 let</option></optgroup></select><div class="field-help" id="advTargetGroupHelp">Vyber konkrétní ročník. Aplikace pak předá AI jednoznačný typ gymnázia, ročník i orientační věk. Čas na vypracování zůstává ruční pole vedle.</div><div class="field-feedback" id="advTargetGroupDetected" aria-live="polite"></div></div>
         <div class="field"><label for="advWorkTime">Čas na vypracování</label><input id="advWorkTime" type="text" placeholder="např. 10 minut, 25 minut" /></div>
         <div class="field wide"><label for="advLearningGoal">Výukový cíl / očekávaný výstup</label><input id="advLearningGoal" type="text" placeholder="např. žák rozliší příčiny a důsledky a své rozhodnutí zdůvodní" /></div>
         <div class="field wide"><label for="advVariantMode">Co se má v nové verzi změnit?</label><select id="advVariantMode" aria-describedby="advVariantHelp"><option value="auto">Doporučeně podle cílové úrovně</option><option value="same_content_diff_difficulty">Stejný obsah, jiná obtížnost</option><option value="same_format_new_content">Stejný formát, jiný obsah</option><option value="same_content_same_format">Stejný obsah i formát, jen jemně upravit oporu/jazyk</option><option value="same_goal_flexible">Stejný výukový cíl, volnější nová varianta</option></select><div class="field-help" id="advVariantHelp"></div></div>
         <div class="field"><label for="advStructureMode">Zachování struktury</label><select id="advStructureMode" aria-describedby="advStructureHelp"><option value="auto">Řídit se režimem výše (doporučeno)</option><option value="strict">Co nejpřesněji zachovat původní strukturu</option><option value="flexible">Může upravit strukturu, pokud to pomůže diferenciaci</option></select><div class="field-help" id="advStructureHelp"></div></div>
         <div class="field"><label for="advSupportType">Typ podpory / výzvy</label><input id="advSupportType" type="text" list="supportTypeSuggestions" placeholder="např. slovní banka, nápověda, argumentace navíc" aria-describedby="advSupportHelp" /><datalist id="supportTypeSuggestions"><option value="slovní banka"></option><option value="nápověda po krocích"></option><option value="výběr z možností"></option><option value="začátek odpovědi"></option><option value="méně opory"></option><option value="argumentace navíc"></option><option value="aplikace a srovnání"></option></datalist><div class="field-help" id="advSupportHelp">Volitelné vodítko, jak má aplikace obtížnost změnit. Nemění téma ani výukový cíl; jen preferovaný způsob podpory nebo výzvy.</div></div>
-        <div class="field wide"><label for="advScoringMode">Bodování, pokud ve vzoru chybí</label><select id="advScoringMode" aria-describedby="advScoringHelp"><option value="teacher">Nechat bez nových bodů — doplním je sám/sama</option><option value="ai">AI navrhne přiměřené bodování</option></select><div class="field-help" id="advScoringHelp"><b>Existující bodování se vždy zachovává.</b> Tato volba řeší jen materiál, který žádné body nemá. AI bodování nevytváří další request — vzniká při stejném generování.</div></div>
+        <div class="field wide"><label for="advScoringMode">Bodování</label><select id="advScoringMode" aria-describedby="advScoringHelp"><option value="ai">1. Body navrhne AI</option><option value="original" disabled>2. Převzít body z originálu</option><option value="manual">3. Body doplním sám/sama před PDF</option><option value="none" selected>4. Bez bodování</option></select><div class="field-help" id="advScoringHelp">Pokud aplikace v načteném originálu rozpozná body, automaticky předvolí jejich převzetí. Jinak je výchozí „Bez bodování“. Ruční režim otevře před PDF jednoduchý editor bodů pro jednotlivé úlohy a nic nestojí.</div></div>
         <div class="field wide"><label for="advTeacherInstruction">Vlastní pokyn učitele</label><textarea id="advTeacherInstruction" placeholder="Volitelné: napiš vlastní požadavek, který má model při tvorbě dodržet." aria-describedby="advTeacherInstructionHelp"></textarea><div class="field-help" id="advTeacherInstructionHelp">Pokyn se posílá modelu jako závazné doplnění. Má přednost před automatickými preferencemi, ale nesmí popřít zvolenou úroveň, režim změny, bezpečnost nebo věcnou správnost.</div></div>
       </div>
       <p class="advanced-hint">Tato část je volitelná. Výchozí automatika ponechává aplikaci univerzální: u Normální verze typicky vytvoří paralelní variantu se stejnou obtížností, u Jednodušší/Obtížnější verze více drží původní obsah a mění míru opory nebo výzvy.</p>
@@ -182,7 +197,7 @@
 
   <section class="panel results pedagogical-panel hide" id="resultsPanel">
     <p class="step"><b>4</b> Hotová verze <span class="step-role ped">Výstup pro použití</span></p>
-        <div class="result-banner" id="resultBanner"><div class="result-banner-copy"><strong id="resultSummary">Verze je připravená.</strong><span>AI výstup je návrh, ne garance správnosti. Doporučený postup: nejdřív kontrola, potom řešení a ruční učitelské ověření, a až nakonec PDF.</span></div><div class="result-checklist result-flow" aria-label="Doporučený postup před PDF"><span><b>1.</b> Kontrola</span><span><b>2.</b> Řešení + ověření</span><span><b>3.</b> PDF</span></div></div>
+        <div class="result-banner" id="resultBanner"><div class="result-banner-copy"><strong id="resultSummary">Verze je připravená.</strong><span>AI výstup je návrh, ne garance správnosti. Konkrétní doporučený postup je vždy přímo u dané vygenerované verze níže.</span></div></div>
     <div class="meta">
       <div class="field"><label for="mSubject">Předmět</label><input id="mSubject" type="text" placeholder="Předmět" /></div>
       <div class="field"><label for="mTopic">Téma</label><input id="mTopic" type="text" placeholder="téma hodiny / testu" /></div>
@@ -195,19 +210,6 @@
 
     </div>
 
-    <aside class="side-rail" aria-label="Rychlý přehled">
-      <div class="side-card compact">
-        <h2>Rychlý postup</h2>
-        <p>Stačí projít čtyři kroky. Detailní volby otevři jen tehdy, když chceš přesnější výstup.</p>
-        <div class="quick-short" aria-label="Zkrácený postup">
-          <span><b>1</b> API klíč</span>
-          <span><b>2</b> Zadání</span>
-          <span><b>3</b> Úroveň a zpřesnění</span>
-          <span><b>4</b> Kontrola a PDF</span>
-        </div>
-        <p class="side-mini-note">Tip: pro běžnou práci většinou stačí relace, vložený text a jedna vybraná úroveň.</p>
-      </div>
-    </aside>
   </main>
 
   <footer id="foot" data-ghrab-footer data-ghrab-footer-mode="append"></footer>
@@ -235,6 +237,20 @@
     <p class="muted">Prohlížeč nepovolil automatické kopírování. Označ text níže a zkopíruj ho ručně.</p>
     <textarea class="manual-copy" id="copyManual" readonly></textarea>
     <button class="btn" id="copyClose" style="margin-top:12px">Zavřít</button>
+  </div>
+</div>
+
+<div class="overlay" id="visualCropOverlay">
+  <div class="modal visual-crop-modal">
+    <h2>Vyříznout obrazový podklad</h2>
+    <p class="modal-text">Tažením označ jen mapu, graf, schéma nebo jinou část, kterou chceš zachovat v nové verzi jako původní obraz. Výřez vznikne lokálně v prohlížeči a nestojí žádný AI dotaz.</p>
+    <div class="visual-crop-stage"><canvas id="visualCropCanvas" aria-label="Náhled obrázku pro výřez"></canvas></div>
+    <p class="hint" id="visualCropHint">Tažením myši nebo prstu označ oblast.</p>
+    <div class="modal-actions">
+      <button class="btn ghost small" id="visualCropCancel">Zrušit</button>
+      <button class="btn ghost small" id="visualCropReset">Vybrat celý obrázek</button>
+      <button class="btn small" id="visualCropApply">Vyříznout a zachovat</button>
+    </div>
   </div>
 </div>
 
@@ -301,6 +317,19 @@
   </div>
 </div>
 
+<div class="overlay" id="manualScoringOverlay">
+  <div class="modal scoring-modal">
+    <h2>Ruční bodování před PDF</h2>
+    <p class="modal-text">Doplň body k jednotlivým hlavním úlohám. Hodnoty se přidají jen do připravovaného výstupu a nevyvolají žádný AI dotaz.</p>
+    <div class="manual-scoring-list" id="manualScoringList"></div>
+    <div class="manual-scoring-total">Celkem: <strong id="manualScoringTotal">0</strong> bodů</div><div class="field-feedback manual-scoring-error" id="manualScoringError" role="alert"></div>
+    <div class="modal-actions">
+      <button class="btn ghost small" id="manualScoringCancel">Zpět</button>
+      <button class="btn small" id="manualScoringContinue">Uložit body a pokračovat k PDF</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="printOverlay">
   <div class="modal preview-modal">
     <h2>Náhled před stažením PDF</h2>
@@ -308,7 +337,7 @@
     <div class="print-file-name" id="printFileName"></div>
     <div class="print-preview" id="printPreview"></div>
     <label class="teacher-confirm"><input type="checkbox" id="printTeacherConfirmed"><span><strong>Finální učitelská kontrola.</strong> Potvrzuji, že jsem prošel/prošla zadání, řešení i případné citlivé údaje a materiál je připraven k použití.</span></label>
-    <p class="print-hint">Tip: v dialogu tisku vyber u položky <b>Záhlaví a zápatí</b> možnost <b>Žádné</b> — jinak prohlížeč doplní datum a cestu k souboru, které student nemá vidět.</p>
+    <p class="print-hint"><b>Čistý školní výstup:</b> tisková šablona je nastavená tak, aby prohlížeč neměl prostor pro vlastní datum ani webovou adresu. Pokud je přesto vynutí místní nastavení prohlížeče, vypni v Dalších nastaveních položku Záhlaví a zápatí.</p>
     <div class="modal-actions">
       <button class="btn ghost small" id="printCancel">Zpět</button>
       <button class="btn small" id="printConfirm">Stáhnout PDF / vytisknout</button>

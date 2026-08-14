@@ -1,6 +1,20 @@
-const IS_TEST_MODE=new URLSearchParams(window.location.search).has('test')||String(window.location.hash||'').toLowerCase().includes('test');
+const TEST_HASH=String(window.location.hash||'').replace(/^#/,'').toLowerCase();
+const IS_TEST_MODE=new URLSearchParams(window.location.search).has('test')||TEST_HASH==='test';
 
-const CEFR_PREF_SK='dpl_cefr_language_pref';
+const STORAGE_KEYS=Object.freeze({
+  theme:'ghrab.differentiator.theme.v1',
+  cefr:'ghrab.differentiator.cefr-language.v1',
+  guide:'ghrab.differentiator.guide-seen.v1',
+  model:'ghrab.differentiator.ai.model.v1',
+  keyLocal:'ghrab.differentiator.ai.key.local.v1',
+  keySession:'ghrab.differentiator.ai.key.session.v1'
+});
+const LEGACY_STORAGE_KEYS=Object.freeze({theme:'dpl_theme',cefr:'dpl_cefr_language_pref',guide:'dpl_guide_seen',model:'dpl_gemini_model',keyLocal:'dpl_gemini_key',keySession:'dpl_gemini_key_session'});
+const CEFR_PREF_SK=STORAGE_KEYS.cefr, GUIDE_SEEN_SK=STORAGE_KEYS.guide, KEY_SK=STORAGE_KEYS.keyLocal, KEY_SESSION_SK=STORAGE_KEYS.keySession, MODEL_PROFILE_SK=STORAGE_KEYS.model, THEME_SK=STORAGE_KEYS.theme;
+function storageObject(kind){try{return kind==='session'?window.sessionStorage:window.localStorage}catch(_){return null}}
+function storageReadMigrated(kind,canonical,legacy){try{const store=storageObject(kind);if(!store)return null;let value=store.getItem(canonical);if(value==null&&legacy){value=store.getItem(legacy);if(value!=null){store.setItem(canonical,value);store.removeItem(legacy)}}return value}catch(_){return null}}
+function storageRemovePair(kind,canonical,legacy){try{const store=storageObject(kind);if(!store)return;store.removeItem(canonical);if(legacy)store.removeItem(legacy)}catch(_){}}
+function safeScrollIntoView(el,opts){try{if(el&&typeof el.scrollIntoView==='function')el.scrollIntoView(opts)}catch(_){}}
 
 const PROJECT_SCHEMA_VERSION=1;
 
@@ -101,8 +115,8 @@ function subjectAllowsCefr(){
   const subject=getSubjectValue();
   return isCefrForced() || (!!subject && looksLikeLanguageSubject(subject));
 }
-function saveCefrPreference(enabled){try{localStorage.setItem(CEFR_PREF_SK,enabled?'1':'0')}catch(_){}}
-function loadCefrPreference(){try{return localStorage.getItem(CEFR_PREF_SK)==='1'}catch(_){return false}}
+function saveCefrPreference(enabled){try{localStorage.setItem(CEFR_PREF_SK,enabled?'1':'0');localStorage.removeItem(LEGACY_STORAGE_KEYS.cefr)}catch(_){}}
+function loadCefrPreference(){return storageReadMigrated('local',CEFR_PREF_SK,LEGACY_STORAGE_KEYS.cefr)==='1'}
 function setCefrCheckedState(checked){const c=$('#cefr');if(c)c.checked=!!checked}
 function syncCefrHintFromSubject(){
   const cefr=$('#cefr'); if(!cefr)return;
@@ -135,7 +149,7 @@ const toSelector=s=>{s=String(s||'');return /^[A-Za-z][\w:-]*$/.test(s)?'#'+s:s}
 const $=s=>document.querySelector(toSelector(s));
 const show=el=>el.classList.remove('hide'), hide=el=>el.classList.add('hide');
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const render=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+const render=s=>typeof renderEducationalTextHtml==='function'?renderEducationalTextHtml(s):(typeof renderStemTextHtml==='function'?renderStemTextHtml(s):esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'));
 function errBox(t,m){if(t)t.innerHTML='<div class="err" role="alert">'+esc(String(m||''))+'</div>'}
 function clearErr(t){t.innerHTML=''}
 
@@ -150,30 +164,64 @@ function syncTierCards(){
 }
 function setSelectedTierKey(key){const wanted=['support','core','extend'].includes(key)?key:null;document.querySelectorAll('#tiers input').forEach(i=>{i.checked=!!wanted&&i.dataset.tier===wanted});syncTierCards();updateAdvancedGuidance();}
 const GYMNASIUM_TARGET_GROUPS=Object.freeze({
-  prima:{label:'prima',detail:'1. ročník osmiletého gymnázia · přibližně 6. ročník ZŠ · obvykle 11–12 let'},
-  sekunda:{label:'sekunda',detail:'2. ročník osmiletého gymnázia · přibližně 7. ročník ZŠ · obvykle 12–13 let'},
-  tercie:{label:'tercie',detail:'3. ročník osmiletého gymnázia · přibližně 8. ročník ZŠ · obvykle 13–14 let'},
-  kvarta:{label:'kvarta',detail:'4. ročník osmiletého gymnázia · přibližně 9. ročník ZŠ · obvykle 14–15 let'},
-  kvinta:{label:'kvinta',detail:'5. ročník osmiletého gymnázia · přibližně 1. ročník čtyřletého gymnázia · obvykle 15–16 let'},
-  sexta:{label:'sexta',detail:'6. ročník osmiletého gymnázia · přibližně 2. ročník čtyřletého gymnázia · obvykle 16–17 let'},
-  septima:{label:'septima',detail:'7. ročník osmiletého gymnázia · přibližně 3. ročník čtyřletého gymnázia · obvykle 17–18 let'},
-  oktava:{label:'oktáva',detail:'8. ročník osmiletého gymnázia · přibližně 4. ročník čtyřletého gymnázia · obvykle 18–19 let'}
+  '8g-prima':{label:'Prima',detail:'1. ročník osmiletého gymnázia · přibližně 6. ročník ZŠ · obvykle 11–12 let'},
+  '8g-sekunda':{label:'Sekunda',detail:'2. ročník osmiletého gymnázia · přibližně 7. ročník ZŠ · obvykle 12–13 let'},
+  '8g-tercie':{label:'Tercie',detail:'3. ročník osmiletého gymnázia · přibližně 8. ročník ZŠ · obvykle 13–14 let'},
+  '8g-kvarta':{label:'Kvarta',detail:'4. ročník osmiletého gymnázia · přibližně 9. ročník ZŠ · obvykle 14–15 let'},
+  '8g-kvinta':{label:'Kvinta',detail:'5. ročník osmiletého gymnázia · odpovídá 1. ročníku čtyřletého gymnázia · obvykle 15–16 let'},
+  '8g-sexta':{label:'Sexta',detail:'6. ročník osmiletého gymnázia · odpovídá 2. ročníku čtyřletého gymnázia · obvykle 16–17 let'},
+  '8g-septima':{label:'Septima',detail:'7. ročník osmiletého gymnázia · odpovídá 3. ročníku čtyřletého gymnázia · obvykle 17–18 let'},
+  '8g-oktava':{label:'Oktáva',detail:'8. ročník osmiletého gymnázia · odpovídá 4. ročníku čtyřletého gymnázia · obvykle 18–19 let'},
+  '4g-1':{label:'1. ročník čtyřletého gymnázia (prvák)',detail:'Obvykle 15–16 let'},
+  '4g-2':{label:'2. ročník čtyřletého gymnázia (druhák)',detail:'Obvykle 16–17 let'},
+  '4g-3':{label:'3. ročník čtyřletého gymnázia (třeťák)',detail:'Obvykle 17–18 let'},
+  '4g-4':{label:'4. ročník čtyřletého gymnázia (čtvrťák)',detail:'Obvykle 18–19 let'}
 });
-function detectGymnasiumTargetGroups(value){
-  const normalized=normalizeSubjectCode(value).replace(/[^a-z0-9]+/g,' ').trim(),found=[];
-  for(const [key,info] of Object.entries(GYMNASIUM_TARGET_GROUPS))if(new RegExp('(?:^|\\s)'+key+'(?:$|\\s)').test(normalized))found.push(info);
-  return found;
-}
-function detectGymnasiumTargetGroup(value){return detectGymnasiumTargetGroups(value)[0]||null}
-function targetGroupPromptLine(value){
+function normalizeTargetGroupValue(value){
   const raw=String(value||'').trim();if(!raw)return '';
-  const detected=detectGymnasiumTargetGroups(raw);
-  return detected.length?'Cílová skupina: '+raw+'. Rozpoznaná gymnaziální označení: '+detected.map(x=>x.label+' = '+x.detail).join('; ')+'. Přizpůsob slovník, délku instrukcí a kognitivní náročnost uvedenému věku a ročníku; pokud je skupin více, hledej společnou přiměřenou úroveň.':'Cílová skupina: '+raw+'.';
+  if(GYMNASIUM_TARGET_GROUPS[raw])return raw;
+  const v=normalizeSubjectCode(raw).replace(/[^a-z0-9]+/g,' ').trim();
+  const aliases={
+    prima:'8g-prima',sekunda:'8g-sekunda',tercie:'8g-tercie',kvarta:'8g-kvarta',kvinta:'8g-kvinta',sexta:'8g-sexta',septima:'8g-septima',oktava:'8g-oktava',
+    prvak:'4g-1',druhak:'4g-2',tretak:'4g-3',ctvrtak:'4g-4'
+  };
+  for(const [alias,key] of Object.entries(aliases))if(new RegExp('(?:^|\\s)'+alias+'(?:$|\\s)').test(v))return key;
+  const four=v.match(/(?:^|\\s)([1-4])\\.?\\s*rocnik\\s*ctyrleteho\\s*gymnazia(?:$|\\s)/);if(four)return '4g-'+four[1];
+  const eight=v.match(/(?:^|\\s)([1-8])\\.?\\s*rocnik\\s*osmileteho\\s*gymnazia(?:$|\\s)/);if(eight)return ['','8g-prima','8g-sekunda','8g-tercie','8g-kvarta','8g-kvinta','8g-sexta','8g-septima','8g-oktava'][Number(eight[1])]||'';
+  return '';
+}
+function targetGroupPromptLine(value){
+  const key=normalizeTargetGroupValue(value),info=GYMNASIUM_TARGET_GROUPS[key];if(!info)return '';
+  return 'Cílová skupina: '+info.label+'. '+info.detail+'. Přizpůsob slovník, délku instrukcí, rozsah podpory a kognitivní náročnost tomuto konkrétnímu ročníku a věku.';
 }
 function updateTargetGroupHint(){
   const input=$('#advTargetGroup'),out=$('#advTargetGroupDetected');if(!input||!out)return;
-  const detected=detectGymnasiumTargetGroups(input.value);
-  out.textContent=detected.length?'Rozpoznáno: '+detected.map(x=>x.label+' = '+x.detail).join('; ')+'.':'';out.classList.toggle('show',!!detected.length);
+  const info=GYMNASIUM_TARGET_GROUPS[normalizeTargetGroupValue(input.value)];
+  out.textContent=info?'Vybráno: '+info.label+' · '+info.detail+'.':'';out.classList.toggle('show',!!info);
+}
+const SCORING_MODES=Object.freeze(['ai','original','manual','none']);
+function analyzeOriginalScoring(text){
+  const raw=String(text||'');
+  const totalMatch=raw.match(/(?:celkem|total|součet|soucet|maximum|max\.?)[^\n\d]{0,20}(\d+(?:[.,]\d+)?)\s*(?:bod(?:ů|u|y)?|b\.?|points?|pts?)/i);
+  const pointRx=/(?:\(|\[|\b)(\d+(?:[.,]\d+)?)\s*(?:bod(?:ů|u|y)?|b\.?|points?|pts?)(?:\)|\]|\b)/gi;
+  const values=[...raw.matchAll(pointRx)].map(m=>Number(String(m[1]).replace(',','.'))).filter(Number.isFinite);
+  const hasScoring=!!totalMatch||values.length>0;
+  const total=totalMatch?Number(String(totalMatch[1]).replace(',','.')):null;
+  return {hasScoring,total:Number.isFinite(total)?total:null,count:values.length};
+}
+function scoringMode(){const el=$('#advScoringMode');return el&&SCORING_MODES.includes(el.value)?el.value:'none'}
+function syncScoringModeFromSource(autoSelect=false){
+  const select=$('#advScoringMode'),help=$('#advScoringHelp');if(!select)return analyzeOriginalScoring('');
+  const info=analyzeOriginalScoring($('#baseText')?$('#baseText').value:'');
+  const original=[...select.options].find(o=>o.value==='original');if(original)original.disabled=!info.hasScoring;
+  if(autoSelect)select.value=info.hasScoring?'original':'none';
+  else if(select.value==='original'&&!info.hasScoring)select.value='none';
+  if(help){
+    const detected=info.hasScoring?(info.total!=null?'Rozpoznáno původní bodování · celkem '+info.total+' bodů.':'Rozpoznáno původní bodování.'):'V originálu nebylo spolehlivě rozpoznáno bodování.';
+    const modeText={ai:' AI navrhne vlastní konzistentní bodování už při generování; žádný další request navíc.',original:' Původní body jsou závazné a mají se zachovat.',manual:' Před PDF se otevře lokální editor bodů pro jednotlivé hlavní úlohy; bez AI requestu.',none:' Výstup bude bez bodových hodnot.'}[scoringMode()]||'';
+    help.textContent=detected+modeText;
+  }
+  return info;
 }
 function resolvedStructureMode(key){
   const a=getAdvancedOptions();if(a.structureMode==='strict'||a.structureMode==='flexible')return a.structureMode;
@@ -217,10 +265,10 @@ function getAdvancedOptions(){return {
   variantMode:($('#advVariantMode')?$('#advVariantMode').value:'auto'),
   structureMode:($('#advStructureMode')?$('#advStructureMode').value:'auto'),
   supportType:($('#advSupportType')?$('#advSupportType').value.trim():''),
-  scoringMode:($('#advScoringMode')?$('#advScoringMode').value:'teacher'),
+  scoringMode:scoringMode(),
   teacherInstruction:($('#advTeacherInstruction')?$('#advTeacherInstruction').value.trim():'')
 }}
-function resetAdvancedSettings(){['advTargetGroup','advWorkTime','advLearningGoal','advSupportType','advTeacherInstruction'].forEach(id=>{const el=$(id);if(el)el.value=''});const variant=$('#advVariantMode');if(variant)variant.value='auto';const mode=$('#advStructureMode');if(mode)mode.value='auto';const scoring=$('#advScoringMode');if(scoring)scoring.value='teacher';const force=$('#cefrForce');if(force)force.checked=false;const det=$('#advancedSettings');if(det)det.open=false;updateTargetGroupHint();syncVariantTierRules()}
+function resetAdvancedSettings(){['advTargetGroup','advWorkTime','advLearningGoal','advSupportType','advTeacherInstruction'].forEach(id=>{const el=$(id);if(el)el.value=''});const variant=$('#advVariantMode');if(variant)variant.value='auto';const mode=$('#advStructureMode');if(mode)mode.value='auto';const scoring=$('#advScoringMode');if(scoring)scoring.value='none';const force=$('#cefrForce');if(force)force.checked=false;const det=$('#advancedSettings');if(det)det.open=false;updateTargetGroupHint();syncScoringModeFromSource(false);syncVariantTierRules()}
 function variantModePromptLine(key,batch=1){
   const a=getAdvancedOptions();
   const mode=a.variantMode||'auto';
@@ -244,16 +292,20 @@ function advancedPromptLines(key='core'){
   if(structure==='strict')out.push('Zachování struktury: co nejpřesněji zachovej původní strukturu, pořadí, počet položek a formát odpovědí.');
   if(structure==='flexible')out.push('Zachování struktury: strukturu můžeš rozumně upravit, pokud to pedagogicky pomůže diferenciaci, ale zachovej původní cíl materiálu.');
   if(a.supportType)out.push('Preferovaný způsob podpory nebo výzvy (neměň kvůli němu téma ani výukový cíl): '+a.supportType+'.');
-  if(a.scoringMode==='ai')out.push('BODOVÁNÍ: Pokud originál obsahuje explicitní body nebo celkový součet, jde o závaznou součást vzoru: zachovej bodové hodnoty srovnatelných úloh a celkový počet bodů přesně. Pokud je kvůli zvolené diferenciaci nutné změnit vnitřní členění úlohy, přerozděl body uvnitř této úlohy tak, aby její hodnota i celkový součet zůstaly stejné. Pokud originál žádné body neobsahuje, navrhni přiměřené body pro jednotlivé úlohy a uveď jasný celkový součet. Bodování musí odpovídat náročnosti a řešení.');
-  else out.push('BODOVÁNÍ: Pokud originál obsahuje explicitní body nebo celkový součet, jde o závaznou součást vzoru: zachovej bodové hodnoty srovnatelných úloh a celkový počet bodů přesně. Pokud je kvůli zvolené diferenciaci nutné změnit vnitřní členění úlohy, přerozděl body uvnitř této úlohy tak, aby její hodnota i celkový součet zůstaly stejné. Pokud originál žádné body neobsahuje, žádné nové body nevymýšlej — učitel je případně doplní ručně.');
+  if(a.scoringMode==='ai')out.push('BODOVÁNÍ — REŽIM AI: navrhni vlastní přiměřené a konzistentní bodování všech hlavních úloh a uveď jasný celkový součet. Body musí odpovídat náročnosti a řešení. Původní bodové hodnoty můžeš použít jen jako orientaci, nejsou v tomto režimu závazné.');
+  else if(a.scoringMode==='original')out.push('BODOVÁNÍ — PŘEVZÍT Z ORIGINÁLU: explicitní body, váhy a celkový součet jsou závazná součást vzoru. Zachovej bodové hodnoty srovnatelných úloh a celkový počet bodů přesně. Pokud diferenciace změní vnitřní členění úlohy, přerozděl body pouze uvnitř této úlohy tak, aby její hodnota i celkový součet zůstaly stejné. Žádné nové body navíc nevymýšlej.');
+  else if(a.scoringMode==='manual')out.push('BODOVÁNÍ — DOPLNÍ UČITEL: ve vygenerovaném pracovním listu neuváděj žádné bodové hodnoty ani celkový součet, i kdyby je originál obsahoval. Učitel je doplní lokálně v aplikaci před PDF.');
+  else out.push('BODOVÁNÍ — BEZ BODŮ: ve výsledném pracovním listu neuváděj žádné body, váhy ani celkový bodový součet, i kdyby je originál obsahoval.');
   if(a.teacherInstruction)out.push('ZÁVAZNÝ VLASTNÍ POKYN UČITELE: '+a.teacherInstruction+' Tento pokyn má přednost před automatickými preferencemi, pokud není v rozporu se zvolenou úrovní, výslovně zvoleným režimem změny, bezpečností nebo věcnou správností.');
   return out;
 }
-const advTargetGroupEl=$('#advTargetGroup');if(advTargetGroupEl)advTargetGroupEl.addEventListener('input',updateTargetGroupHint);
+const advTargetGroupEl=$('#advTargetGroup');if(advTargetGroupEl)advTargetGroupEl.addEventListener('change',updateTargetGroupHint);
+const advScoringModeEl=$('#advScoringMode');if(advScoringModeEl)advScoringModeEl.addEventListener('change',()=>syncScoringModeFromSource(false));
+const baseTextScoringEl=$('#baseText');if(baseTextScoringEl)baseTextScoringEl.addEventListener('input',()=>syncScoringModeFromSource(false));
 const advVariantModeEl=$('#advVariantMode');if(advVariantModeEl)advVariantModeEl.addEventListener('change',syncVariantTierRules);
 const advStructureModeEl=$('#advStructureMode');if(advStructureModeEl)advStructureModeEl.addEventListener('change',updateAdvancedGuidance);
 document.querySelectorAll('#tiers input[type="radio"]').forEach(input=>input.addEventListener('change',()=>{syncTierCards();updateAdvancedGuidance()}));
-updateTargetGroupHint();syncVariantTierRules();
+updateTargetGroupHint();syncScoringModeFromSource(false);syncVariantTierRules();
 
 function downloadTextFile(filename,text,type='text/plain;charset=utf-8'){
   const blob=new Blob([String(text||'')],{type});
@@ -286,20 +338,22 @@ function applyAppFormState(s){
   if($('#mClass'))$('#mClass').value=m.className||'';
   if($('#mDate'))$('#mDate').value=m.date||'';
   const a=s.advanced||{};
-  if($('#advTargetGroup'))$('#advTargetGroup').value=a.targetGroup||'';
+  if($('#advTargetGroup'))$('#advTargetGroup').value=normalizeTargetGroupValue(a.targetGroup)||'';
   if($('#advWorkTime'))$('#advWorkTime').value=a.workTime||'';
   if($('#advLearningGoal'))$('#advLearningGoal').value=a.learningGoal||'';
   if($('#advVariantMode'))$('#advVariantMode').value=a.variantMode||'auto';
   if($('#advStructureMode'))$('#advStructureMode').value=a.structureMode||'auto';
   if($('#advSupportType'))$('#advSupportType').value=a.supportType||'';
-  if($('#advScoringMode'))$('#advScoringMode').value=a.scoringMode==='ai'?'ai':'teacher';
+  if($('#advScoringMode'))$('#advScoringMode').value=SCORING_MODES.includes(a.scoringMode)?a.scoringMode:(a.scoringMode==='teacher'?'manual':'none');
   if($('#advTeacherInstruction'))$('#advTeacherInstruction').value=a.teacherInstruction||'';
-  updateTargetGroupHint();syncVariantTierRules();syncCefrHintFromSubject();
+  updateTargetGroupHint();syncScoringModeFromSource(false);syncVariantTierRules();syncCefrHintFromSubject();
 }
 const PROJECT_APP='Diferenciátor pracovních listů a testů';
-const MAX_PROJECT_FILE_BYTES=2*1024*1024;
+const MAX_PROJECT_FILE_BYTES=32*1024*1024;
 const MAX_PROJECT_SHEETS=12;
 function safeProjectText(value,max=MAX_TEXT_CHARS){return (typeof value==='string'||typeof value==='number')?String(value).slice(0,max):''}
+const MAX_PROJECT_VISUALS=8,MAX_PROJECT_VISUAL_DATA_CHARS=18*1024*1024;
+function normalizeProjectVisualAsset(value){if(!value||typeof value!=='object'||Array.isArray(value))return null;const id=String(value.id||'').toUpperCase();if(!/^VISUAL_\d+$/.test(id))return null;const mime=String(value.mime_type||'');if(!/^image\/(?:png|jpe?g|webp|gif)$/i.test(mime))return null;const data=String(value.data||'').replace(/\s+/g,'');if(!data||data.length>MAX_PROJECT_VISUAL_DATA_CHARS||!/^[A-Za-z0-9+/=]+$/.test(data))return null;return {id,name:safeProjectText(value.name,300),mime_type:mime,data,role:VISUAL_ROLES.includes(value.role)?value.role:'unknown',type:VISUAL_TYPES.includes(value.type)?value.type:'other',description:safeProjectText(value.description,500),mode:'preserve',source:safeProjectText(value.source,80)||'project',optimized:!!value.optimized}}
 function normalizeProjectForm(form){
   form=(form&&typeof form==='object'&&!Array.isArray(form))?form:{};
   const meta=(form.meta&&typeof form.meta==='object'&&!Array.isArray(form.meta))?form.meta:{};
@@ -309,7 +363,7 @@ function normalizeProjectForm(form){
     pasteText:safeProjectText(form.pasteText),baseText:safeProjectText(form.baseText),subject:safeProjectText(form.subject,300),
     cefr:!!form.cefr,cefrForce:!!form.cefrForce,selectedTier:tier,
     meta:{subject:safeProjectText(meta.subject,300),topic:safeProjectText(meta.topic,500),className:safeProjectText(meta.className,200),date:safeProjectText(meta.date,100)},
-    advanced:{targetGroup:safeProjectText(advanced.targetGroup,500),workTime:safeProjectText(advanced.workTime,200),learningGoal:safeProjectText(advanced.learningGoal,1000),variantMode:['auto','same_content_diff_difficulty','same_format_new_content','same_content_same_format','same_goal_flexible'].includes(advanced.variantMode)?advanced.variantMode:'auto',structureMode:['auto','strict','flexible'].includes(advanced.structureMode)?advanced.structureMode:'auto',supportType:safeProjectText(advanced.supportType,500),scoringMode:advanced.scoringMode==='ai'?'ai':'teacher',teacherInstruction:safeProjectText(advanced.teacherInstruction,2000)}
+    advanced:{targetGroup:normalizeTargetGroupValue(advanced.targetGroup),workTime:safeProjectText(advanced.workTime,200),learningGoal:safeProjectText(advanced.learningGoal,1000),variantMode:['auto','same_content_diff_difficulty','same_format_new_content','same_content_same_format','same_goal_flexible'].includes(advanced.variantMode)?advanced.variantMode:'auto',structureMode:['auto','strict','flexible'].includes(advanced.structureMode)?advanced.structureMode:'auto',supportType:safeProjectText(advanced.supportType,500),scoringMode:SCORING_MODES.includes(advanced.scoringMode)?advanced.scoringMode:(advanced.scoringMode==='teacher'?'manual':'none'),teacherInstruction:safeProjectText(advanced.teacherInstruction,2000)}
   };
 }
 function normalizeProjectSheet(item){
@@ -319,7 +373,9 @@ function normalizeProjectSheet(item){
   const rawParts=(item.parts&&typeof item.parts==='object'&&!Array.isArray(item.parts))?item.parts:{};
   const parts={title:safeProjectText(rawParts.title,1000),instructions:safeProjectText(rawParts.instructions,5000),tasks:safeProjectText(rawParts.tasks||text),answerKey:safeProjectText(rawParts.answerKey||answerKey),teacherNote:safeProjectText(rawParts.teacherNote,5000)};
   const parsed={worksheet:text,answerKey,parts,structured:!!item.structured,structureType:item.structured?'json':'fallback'};
-  return {tierKey,text,answerKey,quality,qualityStage:['none','initial','revised','final','final-revised'].includes(item.qualityStage)?item.qualityStage:(quality?'initial':'none'),qualityApplied:Array.isArray(item.qualityApplied)?item.qualityApplied.filter(Number.isInteger).slice(0,100):[],finalAuditUsed:!!item.finalAuditUsed,parts,structured:!!item.structured,validation:validateWorksheetResponse(parsed)};
+  const manualScores=(item.manualScores&&typeof item.manualScores==='object'&&!Array.isArray(item.manualScores))?Object.fromEntries(Object.entries(item.manualScores).filter(([k,v])=>/^\d+$/.test(k)&&Number.isFinite(Number(v))&&Number(v)>=0).slice(0,100)):{};
+  const visualAssets=(Array.isArray(item.visualAssets)?item.visualAssets:[]).slice(0,MAX_PROJECT_VISUALS).map(normalizeProjectVisualAsset).filter(Boolean);
+  return {tierKey,text,answerKey,quality,qualityStage:['none','initial','revised','final','final-revised'].includes(item.qualityStage)?item.qualityStage:(quality?'initial':'none'),qualityApplied:Array.isArray(item.qualityApplied)?item.qualityApplied.filter(Number.isInteger).slice(0,100):[],finalAuditUsed:!!item.finalAuditUsed,scoringMode:SCORING_MODES.includes(item.scoringMode)?item.scoringMode:'none',manualScores,visualAssets,parts,structured:!!item.structured,validation:validateWorksheetResponse(parsed)};
 }
 function normalizeProject(data){
   if(!data||typeof data!=='object'||Array.isArray(data)||data.app!==PROJECT_APP||Number(data.schemaVersion)!==PROJECT_SCHEMA_VERSION)throw makeAppError('Soubor není kompatibilní projekt této verze Diferenciátoru.','BAD_PROJECT');
@@ -327,7 +383,7 @@ function normalizeProject(data){
   return {...data,form:normalizeProjectForm(data.form),sheets};
 }
 function collectProjectSheets(){return Array.from(document.querySelectorAll('#results .sheet')).map(sheet=>({
-  tierKey:sheet._tierKey||'core',text:sheet._text||'',answerKey:sheet._key||'',quality:sheet._quality||'',qualityStage:sheet._qualityStage||'none',qualityApplied:[...(sheet._qualityApplied||[])],finalAuditUsed:!!sheet._finalAuditUsed,parts:sheet._parts||{},structured:!!sheet._structured,validation:sheet._validation||{ok:true,issues:[]}
+  tierKey:sheet._tierKey||'core',text:sheet._text||'',answerKey:sheet._key||'',quality:sheet._quality||'',qualityStage:sheet._qualityStage||'none',qualityApplied:[...(sheet._qualityApplied||[])],finalAuditUsed:!!sheet._finalAuditUsed,scoringMode:sheet._scoringMode||'none',manualScores:{...(sheet._manualScores||{})},visualAssets:(sheet._visualAssets||[]).map(cloneVisualAsset).filter(Boolean),parts:sheet._parts||{},structured:!!sheet._structured,validation:sheet._validation||{ok:true,issues:[]}
 })).filter(x=>x.text||x.answerKey||x.quality)}
 function serializeProject(){return {app:PROJECT_APP,schemaVersion:PROJECT_SCHEMA_VERSION,release:RELEASE.version,exportedAt:new Date().toISOString(),note:'Soubor neobsahuje API klíč.',form:getAppFormState(),sheets:collectProjectSheets()}}
 async function exportProject(){
@@ -341,7 +397,7 @@ async function exportProject(){
 }
 function restoreProjectSheet(item){
   const sheet=makeSheet(item.tierKey||'core',false);
-  sheet._tierKey=item.tierKey||'core';sheet._text=item.text||'';sheet._key=item.answerKey||'';sheet._quality=item.quality||'';sheet._qualityStage=item.qualityStage||(sheet._quality?'initial':'none');sheet._qualityApplied=[...(item.qualityApplied||[])];sheet._finalAuditUsed=!!item.finalAuditUsed;sheet._parts=item.parts||{title:'',instructions:'',tasks:item.text||'',answerKey:item.answerKey||'',teacherNote:''};sheet._structured=!!item.structured;sheet._validation=item.validation||validateWorksheetResponse({worksheet:sheet._text,structured:true,structureType:'json',parts:sheet._parts});sheet._pdfWarningSkipped=false;
+  sheet._tierKey=item.tierKey||'core';sheet._text=item.text||'';sheet._key=item.answerKey||'';sheet._quality=item.quality||'';sheet._qualityStage=item.qualityStage||(sheet._quality?'initial':'none');sheet._qualityApplied=[...(item.qualityApplied||[])];sheet._finalAuditUsed=!!item.finalAuditUsed;sheet._scoringMode=SCORING_MODES.includes(item.scoringMode)?item.scoringMode:'none';sheet._manualScores={...(item.manualScores||{})};sheet._visualAssets=(item.visualAssets||[]).map(cloneVisualAsset).filter(Boolean);sheet._parts=item.parts||{title:'',instructions:'',tasks:item.text||'',answerKey:item.answerKey||'',teacherNote:''};sheet._structured=!!item.structured;sheet._validation=item.validation||validateWorksheetResponse({worksheet:sheet._text,structured:true,structureType:'json',parts:sheet._parts});sheet._pdfWarningSkipped=false;
   renderSheetBody(sheet);
   renderTeacherNote(sheet);
   showStructureWarning(sheet,sheet._validation);
@@ -357,6 +413,7 @@ function applyProject(data){
   applyAppFormState(data.form);
   const results=$('#results');if(results)results.innerHTML='';
   const sheets=data.sheets;
+  const restoredVisuals=(sheets[0]&&sheets[0].visualAssets||[]).map(cloneVisualAsset).filter(Boolean);sourceVisualAssets=restoredVisuals.map(a=>({...a,mode:'preserve',analysis_data:'',analysis_mime_type:'',analysis_mode:'',quality:null,modeTouched:true}));sourceDocumentVisualNotes=[];sourceScanReport=null;visualAssetSeq=sourceVisualAssets.reduce((m,a)=>Math.max(m,Number(String(a.id||'').match(/\d+/)?.[0]||0)),0);renderSourceVisualPanel();
   sheets.forEach(item=>results.appendChild(restoreProjectSheet(item)));
   hide($('#inputPanel'));show($('#configPanel'));
   if(sheets.length){show($('#resultsPanel'));setResultSummary(sheets.length)}else hide($('#resultsPanel'));
@@ -383,11 +440,11 @@ function updateDataSummary(){
 function openDataManagement(){updateDataSummary();$('#dataOverlay').classList.add('show')}
 function closeDataManagement(){$('#dataOverlay').classList.remove('show')}
 function clearPreferenceData(){
-  ['dpl_guide_seen',CEFR_PREF_SK,MODEL_PROFILE_SK,THEME_SK].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
+  [[GUIDE_SEEN_SK,LEGACY_STORAGE_KEYS.guide],[CEFR_PREF_SK,LEGACY_STORAGE_KEYS.cefr],[MODEL_PROFILE_SK,LEGACY_STORAGE_KEYS.model],[THEME_SK,LEGACY_STORAGE_KEYS.theme]].forEach(([canonical,legacy])=>storageRemovePair('local',canonical,legacy));
   resetAdvancedSettings();loadModelProfile();loadTheme();restoreCefrPreference();closeDataManagement();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
 }
 function clearWorkingData(){
-  uploaded=null;if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
+  uploaded=null;resetSourceVisualAssets();if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
   $('#pasteText').value='';$('#baseText').value='';$('#subject').value='';$('#mSubject').value='';$('#mTopic').value='';$('#mClass').value='';$('#mDate').value='';
   resetAdvancedSettings();$('#results').innerHTML='';hide($('#resultsPanel'));hide($('#configPanel'));show($('#inputPanel'));
   const fc=$('#filechip');if(fc)fc.classList.remove('show');const th=$('#thumb');if(th)th.classList.remove('show');setUploadInfo('');
@@ -469,4 +526,3 @@ function setResultSummary(count){
   if(banner)banner.classList.add('show');
 }
 
-const KEY_SK="dpl_gemini_key", KEY_SESSION_SK="dpl_gemini_key_session", MODEL_PROFILE_SK="dpl_gemini_model";

@@ -63,7 +63,7 @@ async function generateVersions(keys,triggerBtn){
       const sheet=makeSheet(key,true);working.set(key,sheet);
       if(old){previous.set(key,old);old.replaceWith(sheet)}else insertSheetInTierOrder(results,sheet);
     }
-    $('#resultsPanel').scrollIntoView({behavior:'smooth',block:'start'});
+    safeScrollIntoView($('#resultsPanel'),{behavior:'smooth',block:'start'});
     for(let i=0;i<keys.length;i++){
       const key=keys[i],sheet=working.get(key);
       try{await generateIntoSheet(sheet,key,base,i,keys.length);successful.push(sheet)}

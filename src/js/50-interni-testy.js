@@ -3,7 +3,6 @@ const TestSystem={
   sampleStructured(){return JSON.stringify({worksheet_title:"Past Simple Practice – varianta",student_instructions:"Doplň správný tvar slovesa a odpověz celou větou.",tasks:"1. Complete: Yesterday we ___ (visit) the museum.\n2. Complete: She ___ (already finish) her project.\n3. Answer: What did the students see during the trip?",answer_key:"1. visited\n2. has already finished\n3. Přijatelná odpověď podle textu, např. They saw the museum exhibition.",teacher_note:"Zkontroluj rozdíl mezi jednorázovou minulostí a zkušeností s vazbou already."})},
   mockQuality:"OK: Materiál má jasné zadání a odpovídá zvolené úrovni.\nOK: Řešení odpovídá počtu úloh.\nDoporučení: Před tiskem doplň třídu a datum.",
   results:[],
-  enabled(){return true},
   setVisible(show){
     const panel=$('#testPanel');
     const toggle=$('#testToggle');
@@ -14,7 +13,7 @@ const TestSystem={
       toggle.classList.toggle('active',isShown);
       toggle.setAttribute('aria-expanded',isShown?'true':'false');
     }
-    if(isShown && panel)setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),0);
+    if(isShown && panel)setTimeout(()=>safeScrollIntoView(panel,{behavior:'smooth',block:'start'}),0);
   },
   toggle(){
     const panel=$('#testPanel');
@@ -59,6 +58,8 @@ const TestSystem={
     this.log('Vnitřní moduly aplikace: '+Object.entries(AppModules).map(([k,v])=>k+' = '+v).join(' · '));
     await this.runStep('Smoke UI',()=>this.runSmokeUi());
     await this.runStep('Parser',()=>this.runParserTests());
+    await this.runStep('STEM bezpečnost',()=>this.runStemSafetyTests());
+    await this.runStep('Fotografie a skeny',()=>this.runScanPipelineTests());
     await this.runStep('CEFR',()=>this.runCefrTests());
     await this.runStep('API guard',()=>this.runApiGuardTests());
     await this.runStep('T6 AI profile switch',()=>this.runModelSwitchIntegrationTest());
@@ -86,7 +87,7 @@ const TestSystem={
     }
   },
   runSmokeUi(){
-    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','qualityApply','messageOverlay','privacyOverlay','privacyAnonymize','privacyContinue','advVariantMode','advLearningGoal','advTargetGroupDetected','advScoringMode','tierChoiceHint','printTeacherConfirmed','cefrRunBtn','qualityFinalRun'];
+    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','qualityApply','messageOverlay','privacyOverlay','privacyAnonymize','privacyContinue','advVariantMode','advLearningGoal','advTargetGroupDetected','advScoringMode','tierChoiceHint','printTeacherConfirmed','cefrRunBtn','qualityFinalRun','manualScoringOverlay','manualScoringList','manualScoringContinue'];
     ids.forEach(id=>this.assert(!!$('#'+id),'UI prvek: '+id,'Nalezen','Chybí prvek #'+id));
     this.assert(document.querySelectorAll('#tiers input[type="radio"]').length===3,'Výběr úrovně','K dispozici jsou 3 úrovně','Počet úrovní není 3');
     const checked=document.querySelector('#tiers input[type="radio"]:checked');
@@ -110,17 +111,28 @@ const TestSystem={
     this.assert(normalizeWorksheetTitleText('You and your body (Parallel Version)')==='You and your body','Čistý hlavní nadpis','Technický suffix Parallel Version se z hlavního nadpisu odstraní','Technický suffix zůstal v nadpisu');
     const titleSheet=makeSheet('core',false);titleSheet._structured=true;titleSheet._text='You and your body\n\nWork carefully.\n\n1. Match.';titleSheet._parts={title:'You and your body',instructions:'Work carefully.',tasks:'1. Match.',answerKey:'1. A',teacherNote:''};renderSheetBody(titleSheet);
     this.assert(!!titleSheet.querySelector('.worksheet-title')&&titleSheet.querySelector('.worksheet-title').textContent==='You and your body','Výrazný nadpis výsledku','Strukturovaný výstup vykresluje samostatný hlavní nadpis','Nadpis se stále zobrazuje jako obyčejný text');
-    const scoring=$('#advScoringMode'),oldScoring=scoring?scoring.value:'teacher';if(scoring)scoring.value='ai';const scoringAi=makePromptForTier('core',this.demoBase);if(scoring)scoring.value='teacher';const scoringTeacher=makePromptForTier('core',this.demoBase);if(scoring)scoring.value=oldScoring;
-    this.assert(/navrhni přiměřené body/i.test(scoringAi)&&/žádné nové body nevymýšlej/i.test(scoringTeacher)&&/Pokud originál obsahuje explicitní body nebo celkový součet/i.test(scoringAi)&&/celkový počet bodů přesně/i.test(scoringAi),'Bodování podle volby učitele','Existující body se zachovají a chybějící lze buď navrhnout AI, nebo nechat učiteli','Režimy bodování se do promptu nepropsaly správně');
+    const scoring=$('#advScoringMode'),oldScoring=scoring?scoring.value:'none';const prompts={};for(const mode of ['ai','original','manual','none']){if(scoring)scoring.value=mode;prompts[mode]=makePromptForTier('core',this.demoBase)}if(scoring)scoring.value=oldScoring;
+    this.assert(/REŽIM AI/.test(prompts.ai)&&/PŘEVZÍT Z ORIGINÁLU/.test(prompts.original)&&/DOPLNÍ UČITEL/.test(prompts.manual)&&/BEZ BODŮ/.test(prompts.none),'Čtyři režimy bodování','AI, originál, ruční body i bez bodování mají samostatný prompt','Některý režim bodování se do promptu nepropsal');
+    this.assert(analyzeOriginalScoring('1. Úloha (5 points)\n2. Úloha (3 points)\nTotal: 8 points').hasScoring&&analyzeOriginalScoring('1. Úloha bez bodů').hasScoring===false,'Detekce bodování originálu','Původní body se rozpoznají a prázdný materiál se neoznačí falešně','Detekce původního bodování selhala');
     const mediaOrder=docxReferencedMediaPaths('<w:p><a:blip r:embed="rId4"/><a:blip r:embed="rId5"/><a:blip r:embed="rId5"/><a:blip r:embed="rId6"/></w:p>','<Relationships><Relationship Id="rId4" Type="x/image" Target="media/image1.png"/><Relationship Id="rId5" Type="x/image" Target="media/image2.png"/><Relationship Id="rId6" Type="x/image" Target="media/image3.jpeg"/></Relationships>');
     this.assert(mediaOrder.join(',')==='word/media/image1.png,word/media/image2.png,word/media/image3.jpeg','DOCX vložené obrázky','DOCX parser zachová pořadí a odstraní duplicitní reference vložených obrázků','DOCX parser neumí spolehlivě najít vložené obrázky');
-    const oldTarget=$('#advTargetGroup')?$('#advTargetGroup').value:'';if($('#advTargetGroup'))$('#advTargetGroup').value='tercie';
-    this.assert(/3\. ročník osmiletého gymnázia/.test(targetGroupPromptLine('tercie'))&&/13–14 let/.test(targetGroupPromptLine('tercie')),'Cílová skupina tercie','Tercie se převádí na konkrétní ročník a věk','Aplikace neví, co znamená tercie');
-    this.assert(/tercie =/.test(targetGroupPromptLine('tercie, kvarta'))&&/kvarta =/.test(targetGroupPromptLine('tercie, kvarta'))&&/14–15 let/.test(targetGroupPromptLine('tercie, kvarta')),'Více gymnaziálních tříd','Tercie, kvarta i další uvedené stupně se rozpoznají společně','Při více gymnaziálních označeních se část cílové skupiny ztratila');
+    const oldTarget=$('#advTargetGroup')?$('#advTargetGroup').value:'';if($('#advTargetGroup'))$('#advTargetGroup').value='8g-tercie';
+    this.assert(/3\. ročník osmiletého gymnázia/.test(targetGroupPromptLine('8g-tercie'))&&/13–14 let/.test(targetGroupPromptLine('8g-tercie')),'Cílová skupina tercie','Tercie z rozbalovací nabídky předá konkrétní ročník a věk','Cílový ročník tercie není jednoznačný');
+    this.assert(/1\. ročník čtyřletého gymnázia/.test(targetGroupPromptLine('4g-1'))&&/15–16 let/.test(targetGroupPromptLine('4g-1'))&&normalizeTargetGroupValue('prvák')==='4g-1','Čtyřleté gymnázium','Prvák/1. ročník se mapuje na 15–16 let','Aplikace nezná prvák na čtyřletém gymnáziu');
     if($('#advTargetGroup'))$('#advTargetGroup').value=oldTarget;updateTargetGroupHint();
     const batchPrompt=makePromptForTier('core',this.demoBase,3),singlePrompt=makePromptForTier('core',this.demoBase,1);
     this.assert(!/změň konkrétní obsah/i.test(batchPrompt)&&/referenční variantu sady/i.test(batchPrompt),'Jednotné pravidlo celé sady','Normální verze v sadě zachovává stejný obsah a obtížnost','Normální verze sady stále žádá jiný obsah');
     this.assert(/změň konkrétní obsah/i.test(singlePrompt),'Samostatná normální varianta','Jedna Normální verze může vytvořit paralelní obsah','Samostatná Normální verze ztratila pravidlo jiného obsahu');
+  },
+  runScanPipelineTests(){
+    const manifest=splitVisualManifest(['Přepis','<<<VISUAL_MANIFEST>>>','VISUAL_1|role=page_scan|type=other|description=fotografie stránky','PDF_VISUAL|page=2|role=critical|type=map|description=slepá mapa','SCAN_REPORT|status=fair|pages=2|issues=stín','<<<END_VISUAL_MANIFEST>>>'].join('\n'));
+    this.assert(manifest.text==='Přepis'&&manifest.entries.length===1&&manifest.documentEntries.length===1&&manifest.scanReports.length===1,'Scan manifest','Import odděluje obrázky, vizuální prvky PDF a report čitelnosti.','Scan manifest se nerozdělil správně');
+    const fake={mime_type:'image/png',data:'QUJD',analysis_mime_type:'image/jpeg',analysis_data:'REVG'};
+    const payload=visualAnalysisPayload(fake);
+    this.assert(payload&&payload.mime_type==='image/jpeg'&&payload.data==='REVG'&&fake.data==='QUJD','Oddělená čtecí kopie','AI může dostat vylepšenou kopii, zatímco originální obraz zůstává beze změny pro výstup.','Vylepšení přepisuje originální obraz');
+    const scanPrompt=visualManifestPrompt(2,true);
+    this.assert(/SCAN_REPORT/.test(scanPrompt)&&/PDF_VISUAL/.test(scanPrompt)&&/Nehádej nečitelný obsah/.test(scanPrompt),'Scan pravidla promptu','PDF a fotografie mají technický report čitelnosti a zákaz domýšlení nečitelných dat.','Chybí ochrana proti hádání ze skenu');
+    this.assert(typeof analyzeVisualQuality==='function'&&typeof rotateVisualAsset==='function'&&typeof enhanceVisualForAnalysis==='function'&&typeof appendSupplementalVisualFiles==='function','Lokální scan nástroje','Otočení, kontrola kvality, čtecí kontrast a doplňkový PDF snímek jsou dostupné lokálně.','Některý scan nástroj chybí');
   },
   runCefrTests(){
     const old=$('#subject')?$('#subject').value:'';
@@ -176,7 +188,7 @@ const TestSystem={
     this.assert(['Anglický jazyk','Německý jazyk','Ruský jazyk','Italský jazyk','Konverzace v anglickém jazyce'].every(looksLikeLanguageSubject)
       && !['Matematika','Dějepis','Informatika','Český jazyk'].some(looksLikeLanguageSubject),
       'Rozpoznání jazykového předmětu','Úřední názvy typu „Anglický jazyk“ projdou, nejazykové předměty ne.','Jazykový předmět není rozpoznán podle přídavného jména');
-    this.assert(buildPrintBody('Úvodní text\n12 hodin práce\n1. První úloha\n2. Druhá úloha').split('<div class="pa-ex">').length-1===3,
+    this.assert((buildPrintBody('Úvodní text\n12 hodin práce\n1. První úloha\n2. Druhá úloha').match(/class="pa-ex"/g)||[]).length===3&&!isMainTaskStartLine('12 hodin práce'),
       'Dělení tisku na cvičení','Běžný řádek začínající číslem nevytvoří blok; úvod a dvě úlohy zůstanou tři logické části.','Tisk chybně považuje „12 hodin práce“ za novou úlohu');
     this.assert(/Ostrava-Hrab/.test(printHead()),'Školní identita v PDF','Hlavička tištěného listu uvádí plný název školy.','Hlavička PDF uvádí jen obecné „Gymnázium“');
     this.assert(/chybu v úloze 3/.test(renderQualityAudit('Opravit chybu v úloze 3')),'Audit bez dvojtečky','Kontrola kvality nezahodí začátek řádku bez dvojtečky.','Kontrola kvality ořízla skutečný obsah řádku');
@@ -189,6 +201,27 @@ const TestSystem={
     const probe=makeSheet('core',false);$('#results').appendChild(probe);applyCefrLevels('B1');
     this.assert(probe.querySelector('.level-badge')&&probe.querySelector('.level-badge').textContent==='B1','Živý CEFR štítek','CEFR změna se propsala i do již vytvořené karty.','CEFR štítek na hotové kartě zůstal zastaralý');
     probe.remove();TIERS.support.cefrLbl=oldSupport;TIERS.core.cefrLbl=oldCore;TIERS.extend.cefrLbl=oldExtend;applyCefrLevels(oldCore||null);
+  },
+  runStemSafetyTests(){
+    const subject=$('#subject'),meta=$('#mSubject'),old=subject?subject.value:'',oldMeta=meta?meta.value:'';
+    try{
+      this.assert(stemSubjectKind('Matematika')==='math'&&stemSubjectKind('Fyzika')==='physics'&&stemSubjectKind('Chemie')==='chemistry'&&stemSubjectKind('Biologie')==='biology','STEM rozpoznání předmětu','Matematika, fyzika, chemie a biologie mají vlastní přesnostní profil.','Některý STEM předmět nebyl rozpoznán');
+      this.assert(Math.abs(stemEvalArithmetic('3/4 + 1/8')-0.875)<1e-12&&Math.abs(stemEvalArithmetic('\\frac{3}{4}+\\sqrt{1/16}')-1)<1e-12&&Math.abs(stemEvalArithmetic('\\sqrt[3]{8}')-2)<1e-12&&stemArithmeticIssues('3/4 + 1/8 = 7/8').length===0&&stemArithmeticIssues('2 + 2 = 5').length===1,'STEM aritmetika','Lokální kontrola ověřuje zlomky, operace a chybné rovnosti.','Lokální aritmetická kontrola nefunguje');
+      this.assert(stemLinearEquationIssues('2x + 3 = 9 → x = 3').length===0&&stemLinearEquationIssues('2x + 3 = 9 → x = 4').length===1,'STEM lineární rovnice','Jednoduché numerické řešení rovnice se ověří zpětným dosazením.','Kontrola řešení lineární rovnice selhala');
+      this.assert(stemUnitConversionIssues('72 km/h = 20 m/s\n2 km = 2000 m').length===0&&stemUnitConversionIssues('72 km/h = 25 m/s').length===1,'STEM jednotky','Lokální kontrola ověřuje základní převody jednotek v klíči.','Kontrola převodů jednotek selhala');
+      this.assert(chemReactionBalanced('2 H2 + O2 → 2 H2O')===true&&chemReactionBalanced('H2 + O2 → H2O')===false&&chemReactionBalanced('CaCO3 → CaO + CO2')===true,'STEM chemické rovnice','Bilance atomů rozliší správně a chybně vyčíslenou reakci.','Kontrola chemické bilance selhala');
+      this.assert(chemReactionChargeBalanced('Fe^{3+} + e- → Fe^{2+}')===true&&chemReactionChargeBalanced('Fe^{3+} → Fe^{2+}')===false&&stemChemicalIssues('Fe^{3+} → Fe^{2+}').some(x=>/náboj/.test(x)),'STEM iontové rovnice','Iontové rovnice navíc kontrolují celkový náboj.','Kontrola náboje iontové rovnice selhala');
+      const omml='<w:document xmlns:w="w" xmlns:m="m"><w:body><w:p><w:r><w:t>A = </w:t></w:r><m:oMath><m:f><m:num><m:r><m:t>1</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><m:r><m:t>x</m:t></m:r><m:sSup><m:e><m:r><m:t>y</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:oMath></w:p></w:body></w:document>';
+      const ommlText=officeDomBlockText(omml);this.assert(ommlText.includes('\\frac{1}{2}')&&ommlText.includes('y^{2}'),'DOCX Word Equation','Word Equation převádí zlomek a exponent do zachovatelného textového zápisu.','OMML rovnice se při importu ztrácí nebo slévá');
+      const omml2='<w:document xmlns:w="w" xmlns:m="m"><w:body><w:p><m:oMath><m:rad><m:deg><m:r><m:t>3</m:t></m:r></m:deg><m:e><m:r><m:t>8</m:t></m:r></m:e></m:rad><m:m><m:mr><m:e><m:r><m:t>1</m:t></m:r></m:e><m:e><m:r><m:t>2</m:t></m:r></m:e></m:mr><m:mr><m:e><m:r><m:t>3</m:t></m:r></m:e><m:e><m:r><m:t>4</m:t></m:r></m:e></m:mr></m:m></m:oMath></w:p></w:body></w:document>';const ommlText2=officeDomBlockText(omml2);this.assert(ommlText2.includes('\\sqrt[3]{8}')&&ommlText2.includes('[1, 2; 3, 4]'),'DOCX pokročilejší Word Equation','Word Equation zachová také n-tou odmocninu a jednoduchou matici.','Pokročilejší OMML se ztrácí');
+      if(subject)subject.value='Matematika';if(meta)meta.value='Matematika';const mathHtml=renderStemTextHtml('\\frac{3}{4} + x^{2} = \\sqrt{9}; \\sqrt[3]{8}');
+      const mathProbe=document.createElement('div');mathProbe.innerHTML=mathHtml;this.assert(mathHtml.includes('stem-frac')&&mathHtml.includes('<sup')&&mathHtml.includes('stem-sqrt')&&mathHtml.includes('stem-root-index')&&!mathProbe.textContent.includes('\\frac')&&!mathProbe.textContent.includes('\\sqrt'),'STEM sazba matematiky','Zlomky, exponenty a odmocniny se zobrazují typograficky místo surového LaTeXu.','Matematický zápis se nevykreslil správně');
+      const ed=document.createElement('div');appendStemRichText(ed,'\\frac{3}{4} + x^{2}');this.assert(editableToText(ed)==='\\frac{3}{4} + x^2','STEM editace roundtrip','Typografický matematický zápis se po editoru vrátí do ekvivalentního zápisu bez ztráty významu.','Editace poškodila matematický zápis');
+      if(subject)subject.value='Chemie';if(meta)meta.value='Chemie';const chemHtml=renderStemTextHtml('2 H2 + O2 → 2 H2O; Ca(OH)2');this.assert((chemHtml.match(/<sub/g)||[]).length>=4,'STEM sazba chemie','Chemické indexy se v chemii zobrazují jako dolní indexy.','Chemické vzorce zůstaly typograficky ploché');
+      const chemPrompt=makePromptForTier('core','Vyčísli reakci H2 + O2 → H2O.');this.assert(/CHEMIE:/.test(chemPrompt)&&/počet atomů|bilanci atomů/i.test(chemPrompt),'STEM prompt chemie','Generování dostává explicitní pravidla pro vzorce, koeficienty a bilanci.','Chemický přesnostní prompt chybí');
+      const bad={worksheet:'Test',answerKey:'1. 2 + 2 = 5',parts:{title:'Test',instructions:'',tasks:'1. Spočítej 2 + 2.',answerKey:'1. 2 + 2 = 5',teacherNote:''},structured:true,structureType:'json'};if(subject)subject.value='Matematika';const val=validateWorksheetResponse(bad);this.assert(!val.ok&&val.issues.some(x=>/početní rovnost/.test(x)),'STEM validator výsledku','Zjevně chybný početní výsledek je zachycen ještě lokálně před tiskem.','Chybný početní výsledek prošel bez varování');
+      if(subject)subject.value='Biologie';const bioPrompt=QualityCheck.makePrompt({...makeSheet('core',false),_parts:{title:'Buňka',instructions:'',tasks:'1. Popiš mitochondrii.',teacherNote:''},_text:'1. Popiš mitochondrii.',_key:'1. organela',_tierKey:'core',_structured:true,_validation:{ok:true,issues:[]}},false);this.assert(/BIOLOGICKÁ KONTROLA/.test(bioPrompt),'STEM audit biologie','Biologie má vlastní faktickou kontrolu terminologie a více možných odpovědí.','Biologický kontrolní profil chybí');
+    }finally{if(subject)subject.value=old;if(meta)meta.value=oldMeta;syncCefrHintFromSubject();}
   },
   runApiGuardTests(){
     const oldKey=geminiApiKey, oldScope=geminiKeyScope;
@@ -272,7 +305,8 @@ const TestSystem={
     const progress=$('#progressStrip'),progressSnapshot=progress?{html:progress.innerHTML,cls:progress.className}:null,status=$('#statusFlow'),statusSnapshot=status?{html:status.innerHTML,cls:status.className}:null,banner=$('#resultBanner'),bannerSnapshot=banner?{cls:banner.className,summary:$('#resultSummary').textContent}:null,resultsPanel=$('#resultsPanel'),resultsPanelHidden=resultsPanel&&resultsPanel.classList.contains('hide'),configErr=$('#configErr'),configErrHtml=configErr?configErr.innerHTML:'';
     try{
       if(results)results.replaceChildren();$('#baseText').value=this.demoBase;geminiApiKey='INTERNAL_BATCH_TEST_KEY';geminiKeyScope='memory';updateKeyStatus();
-      await generateVersions(['support','core','extend'],$('#genAllBtn'));
+      const originalScroll=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=()=>{throw new Error('simulated scrollIntoView failure')};
+      try{await generateVersions(['support','core','extend'],$('#genAllBtn'))}finally{if(originalScroll)Element.prototype.scrollIntoView=originalScroll;else delete Element.prototype.scrollIntoView}
       const sheets=[...results.querySelectorAll('.sheet')];
       this.assert(sheets.length===3,'Celá diferencovaná sada','Jedním tokem vznikly všechny 3 úrovně','Celá sada nevytvořila 3 výstupy');
       this.assert(sheets.map(x=>x._tierKey).join(',')==='support,core,extend','Pořadí sady','Sada má pořadí Jednodušší → Normální → Obtížnější','Pořadí nebo typy variant nesouhlasí');
@@ -353,7 +387,16 @@ const TestSystem={
     if($('#printOverlay'))$('#printOverlay').classList.remove('show');
     sheet._structured=true;sheet._parts={title:'Výrazný testovací nadpis',instructions:'Pracuj pečlivě.',tasks:'1. První úloha\n2. Druhá úloha',answerKey:'1. A\n2. B\n3. C\n4. D\n5. E\n6. F',teacherNote:''};sheet._key=sheet._parts.answerKey;downloadKeyPdf(sheet);
     this.assert(!!$('#printPreview .pa-title')&&$('#printPreview .pa-title').textContent==='Výrazný testovací nadpis','Nadpis v PDF','PDF používá skutečný výrazný název materiálu, ne jen technický název verze','PDF nemá výrazný skutečný nadpis');
+    this.assert($('#printFileName')&&$('#printFileName').textContent.includes('Výrazný testovací nadpis – řešení.pdf'),'Výchozí název PDF','Název souboru vychází z nadpisu testu a zachovává čitelný text','PDF stále používá technický název aplikace nebo slug');
     this.assert(document.querySelectorAll('#printPreview .pa-key-body .pa-ex').length>1,'Řešení bez prázdné první strany','Klíč je v tisku rozdělen do zalomitelných bloků místo jednoho nedělitelného bloku','Celý klíč je stále jeden blok a může odsunout obsah na další stranu');
+    const originalDocTitle=document.title;
+    setPrintDocumentTitle('První tisk.pdf');setPrintDocumentTitle('Druhý tisk.pdf');document.body.classList.add('do-print');finishPrintSession();
+    this.assert(document.title===originalDocTitle&&!document.body.classList.contains('do-print'),'Obnova po tisku','Dvojí příprava tisku i chybějící afterprint obnoví titulek a odkryjí UI.','Po tisku zůstal změněný titulek nebo třída do-print');
+    if($('#printOverlay'))$('#printOverlay').classList.remove('show');
+    const manual=makeSheet('core',false);manual._structured=true;manual._scoringMode='manual';manual._quality='OK: kontrola';manual._parts={title:'Ruční body',instructions:'',tasks:'**1. První úloha**\nText\n**2. Druhá úloha**\nText',answerKey:'1. A\n2. B',teacherNote:''};manual._text=['Ruční body',manual._parts.tasks].join('\n\n');manual._key=manual._parts.answerKey;manual._validation={ok:true,issues:[]};requestPdfForSheet(manual,'Ruční body',manual._text);
+    this.assert($('#manualScoringOverlay')&&$('#manualScoringOverlay').classList.contains('show')&&document.querySelectorAll('#manualScoringList input[data-score-index]').length===2,'Ruční bodování před PDF','Před PDF se zobrazí dva lokální vstupy pro dvě úlohy','Ruční bodování se neotevřelo nebo nerozpoznalo hlavní úlohy');
+    const scoreInputs=[...document.querySelectorAll('#manualScoringList input[data-score-index]')];if(scoreInputs[0])scoreInputs[0].value='5';if(scoreInputs[1])scoreInputs[1].value='3';if($('#manualScoringContinue'))$('#manualScoringContinue').click();
+    this.assert($('#printOverlay')&&$('#printOverlay').classList.contains('show')&&document.querySelectorAll('#printPreview .pa-points').length===2&&/Celkem:\s*8 b\./.test($('#printPreview').textContent),'Ruční body v PDF','Body a součet se propsaly do náhledu bez AI requestu','Ruční body se do PDF nepropsaly');
     if($('#printOverlay'))$('#printOverlay').classList.remove('show');
   },
   runLayoutTest(){
@@ -365,10 +408,13 @@ const TestSystem={
     this.assert(Array.isArray(RELEASE.changes)&&RELEASE.changes[0]&&RELEASE.changes[0].includes(RELEASE.version),'Changelog verze','První záznam changelogu odpovídá aktuální verzi','První záznam changelogu neodpovídá aktuální verzi');
     this.assert(/release gate OK/i.test('release gate OK'),'Release pravidlo','Bez zelených interních testů novou verzi nevydávat; při FAIL je release stopka.','Release pravidlo není definováno');
     this.assert(/AI výstup je návrh/i.test($('#resultBanner')?$('#resultBanner').textContent:''),'Učitelské ověření','Výstup připomíná ruční ověření před PDF','Chybí připomínka ručního ověření výstupu');
+    this.assert(!document.querySelector('#resultBanner .result-checklist'),'Bez duplicitního postupu','Horní souhrn neopakuje číslovaný Doporučený postup z karty verze','Horní souhrn stále duplikuje číslovaný postup');
     this.assert(!!$('#helpTopBtn'),'Horní nápověda','Nápověda je dostupná i v horní liště','Chybí horní tlačítko nápovědy');
     this.assert(!!document.querySelector('.formats-compact'),'Kompaktní formáty','Mobilní zobrazení má kompaktní řádek podporovaných formátů','Chybí kompaktní mobilní popis formátů');
-    this.assert(/Kontrola[\s\S]*Řešení[\s\S]*PDF/.test($('#resultBanner')?$('#resultBanner').textContent:''),'Výsledkový postup','Banner vede uživatele v pořadí Kontrola → Řešení → PDF','Doporučený postup ve výsledku není sjednocený');
+    const sheetFlowSource=String(attachSheetTools);this.assert(sheetFlowSource.includes("'1. '+qualityLabel")&&sheetFlowSource.includes("'2. '+")&&sheetFlowSource.includes("'3. Stáhnout PDF'"),'Výsledkový postup','Jediný číslovaný postup je přímo u konkrétní verze: Kontrola → Řešení → PDF','Doporučený postup u verze není sjednocený');
     const apiSource=String(callGemini);this.assert(apiSource.includes('GHRAB_AI.generate')&&!apiSource.includes("thinkingLevel:'low'")&&DPL_AI_OPERATIONS.operations['worksheet-generation']&&DPL_AI_OPERATIONS.operations['worksheet-quality-revision'],'Odolnost modelového API','Volání vede přes GHRAB AI Core, operace je registrovaná a kód nepoužívá pevnou úroveň low','Nastavení AI Core neodpovídá release pravidlům');
+    this.assert(!(IS_TEST_MODE&&TEST_HASH==='testy'),'Přesný testovací hash','#testy neaktivuje interní režim; aktivní je pouze ?test nebo #test.','#testy omylem aktivuje interní režim');
+    this.assert(CEFR_PREF_SK.startsWith('ghrab.differentiator.')&&MODEL_PROFILE_SK.startsWith('ghrab.differentiator.')&&THEME_SK.startsWith('ghrab.differentiator.'),'Kanonické úložiště','Aplikace zapisuje preference do ghrab.differentiator.* a legacy dpl_* slouží jen jako migrační fallback.','Aplikace stále používá legacy dpl_* jako primární úložiště');
   },
   runNativeDialogScan(){
     const forbidden=['al'+'ert','pro'+'mpt'];

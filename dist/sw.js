@@ -1,7 +1,7 @@
 const GHRAB_SW_CONTRACT='ghrab-service-worker-v1';
 /* GHRAB service-worker contract v1 · update activation is user-controlled. */
-const APP_VERSION = "1.3.17";
-const CACHE_NAME = "ghrab-differentiator-v1.3.17";
+const APP_VERSION = "1.3.25";
+const CACHE_NAME = "ghrab-differentiator-v1.3.25";
 const CACHE_PREFIXES = ["ghrab-differentiator-v", "diferenciator-"];
 const CORE_ASSETS = [
   "./",
@@ -13,9 +13,6 @@ const CORE_ASSETS = [
   "./access/error-reporter.js",
   "./access/error-reporter.css",
   "./access/error-reporter-adapter.js",
-  "./config/deployment.json",
-  "./config/deployment.school-server-p0.json",
-  "./config/deployment.school-server.example.json",
   "./manual/",
   "./manual/index.html",
   "./icons/icon-32.png",
@@ -27,7 +24,6 @@ const CORE_ASSETS = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
-  "./icons/apple-touch-icon.png",
   "./config/brand-manifest.json",
   "./config/platform-manifest.json",
   "./assets/brand/school-logo.png",
@@ -118,5 +114,5 @@ self.addEventListener('fetch', (event) => {
 
 /* GHRAB_PLATFORM_P3_START */
 const GHRAB_PLATFORM_P3_ASSETS=["./ghrab/ghrab-platform.js","./ghrab/ghrab-platform.css","./ghrab/ghrab-artifact-envelope-v1.schema.json","./ghrab/ghrab-app-registry-v2.schema.json","./ghrab/ghrab-platform-manifest-1.1.0.json","./assets/brand/school-logo.png","./ghrab-platform.consumer.json"];
-self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open("ghrab-differentiator-v1.3.17");const results=await Promise.allSettled(GHRAB_PLATFORM_P3_ASSETS.map(asset=>cache.add(asset)));const failed=results.filter(item=>item.status==='rejected');if(failed.length)throw new Error('GHRAB Platform P3 precache selhal: '+failed.length);})()));
+self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open("ghrab-differentiator-v1.3.25");const results=await Promise.allSettled(GHRAB_PLATFORM_P3_ASSETS.map(asset=>cache.add(asset)));const failed=results.filter(item=>item.status==='rejected');if(failed.length)throw new Error('GHRAB Platform P3 precache selhal: '+failed.length);})()));
 /* GHRAB_PLATFORM_P3_END */

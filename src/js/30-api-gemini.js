@@ -4,22 +4,22 @@ const THINKING_DEFAULT='medium',THINKING_CHEAP='minimal';
 let geminiApiKey="", geminiKeyScope="", selectedModelProfile=MODEL_PROFILE_DEFAULT;
 
 function currentAiMode(){return window.__GHRAB_RUNTIME_CONFIG__?.ai?.defaultMode==="school-gateway"?"school-gateway":"direct-gemini"}
-function applyAiRuntimeUi(){const direct=$("directGeminiSettings");if(direct)direct.hidden=currentAiMode()==="school-gateway";updateApiToggleText();updateKeyStatus()}
+function applyAiRuntimeUi(){const direct=$('#directGeminiSettings');if(direct)direct.hidden=currentAiMode()==="school-gateway";updateApiToggleText();updateKeyStatus()}
 window.addEventListener("ghrab:runtime-config-changed",applyAiRuntimeUi);
 function cleanKey(s){return String(s||"").replace(/[^\x21-\x7E]/g,"")}
-function inputKey(){return cleanKey($("keyInput").value)}
-function setKey(key,scope){geminiApiKey=cleanKey(key);geminiKeyScope=geminiApiKey?scope:"";$("keyInput").value=geminiApiKey;updateKeyStatus()}
-function loadKey(){let sessionKey="",legacyKey="";try{sessionKey=sessionStorage.getItem(KEY_SESSION_SK)||""}catch(_){}try{legacyKey=localStorage.getItem(KEY_SK)||"";localStorage.removeItem(KEY_SK)}catch(_){}if(!sessionKey&&legacyKey){try{sessionStorage.setItem(KEY_SESSION_SK,legacyKey);sessionKey=legacyKey}catch(_){}}setKey(sessionKey,sessionKey?"session":"")}
-function useKeySession(){const k=inputKey();let stored=true;try{if(k)sessionStorage.setItem(KEY_SESSION_SK,k);else sessionStorage.removeItem(KEY_SESSION_SK)}catch(_){stored=false}setKey(k,k?(stored?"session":"memory"):"");return stored}
+function inputKey(){return cleanKey($('#keyInput').value)}
+function setKey(key,scope){geminiApiKey=cleanKey(key);geminiKeyScope=geminiApiKey?scope:"";$('#keyInput').value=geminiApiKey;updateKeyStatus()}
+function loadKey(){let sessionKey=storageReadMigrated('session',KEY_SESSION_SK,LEGACY_STORAGE_KEYS.keySession)||"",persisted="";try{persisted=localStorage.getItem(KEY_SK)||localStorage.getItem(LEGACY_STORAGE_KEYS.keyLocal)||""}catch(_){}if(!sessionKey&&persisted){try{sessionStorage.setItem(KEY_SESSION_SK,persisted);sessionKey=persisted}catch(_){}}storageRemovePair('local',KEY_SK,LEGACY_STORAGE_KEYS.keyLocal);setKey(sessionKey,sessionKey?"session":"")}
+function useKeySession(){const k=inputKey();let stored=true;try{if(k)sessionStorage.setItem(KEY_SESSION_SK,k);else sessionStorage.removeItem(KEY_SESSION_SK);sessionStorage.removeItem(LEGACY_STORAGE_KEYS.keySession)}catch(_){stored=false}setKey(k,k?(stored?"session":"memory"):"");return stored}
 function showMessage(title,message){
-  const t=$("messageTitle"), m=$("messageText");
+  const t=$('#messageTitle'), m=$('#messageText');
   if(t)t.textContent=title||"Upozornění";
   if(m)m.textContent=String(message||"");
-  $("messageOverlay").classList.add("show");
+  $('#messageOverlay').classList.add("show");
 }
-function clearKey(){try{sessionStorage.removeItem(KEY_SESSION_SK)}catch(_){}try{localStorage.removeItem(KEY_SK)}catch(_){}setKey("","")}
+function clearKey(){storageRemovePair('session',KEY_SESSION_SK,LEGACY_STORAGE_KEYS.keySession);storageRemovePair('local',KEY_SK,LEGACY_STORAGE_KEYS.keyLocal);setKey("","")}
 function updateKeyStatus(){
-  const el=$("keyStatus");el.className="api-status";
+  const el=$('#keyStatus');el.className="api-status";
   if(currentAiMode()==="school-gateway"){el.textContent="✓ Školní AI služba";el.classList.add("ok");setStatus("statusKey","školní server","ok");return}
   if(geminiApiKey){
     if(geminiKeyScope==="session"){el.textContent="✓ Klíč uložen pro relaci";el.classList.add("ok");setStatus("statusKey","relace","ok")}
@@ -30,14 +30,14 @@ function updateKeyStatus(){
   }
   if(geminiApiKey&&geminiKeyScope==="memory")setStatus("statusKey","zadán, neuložen","warn");
 }
-$("btnSession").onclick=()=>{const stored=useKeySession();if(stored)flashBtn($("btnSession"),"Uloženo pro relaci ✓");else showMessage("Úložiště relace není dostupné","Klíč lze použít na právě otevřené stránce, ale prohlížeč ho nedokázal uložit do relace. Po obnovení stránky ho bude nutné vložit znovu.")};
-$("btnClear").onclick=()=>{clearKey();$("keyInput").value=""};
-$("messageClose").onclick=()=>$("messageOverlay").classList.remove("show");
-$("messageOverlay").addEventListener("click",e=>{if(e.target.id==="messageOverlay")$("messageOverlay").classList.remove("show")});
-function updateApiToggleText(){const btn=$("apiToggle"),panel=$("apiPanel");if(!btn||!panel)return;const open=panel.classList.contains("open");btn.textContent=open?"Skrýt nastavení AI ▴":"Nastavení AI ▾";btn.setAttribute("aria-expanded",open?"true":"false")}
-$("apiToggle").onclick=()=>{$("apiPanel").classList.toggle("open");updateApiToggleText()};
+$('#btnSession').onclick=()=>{const stored=useKeySession();if(stored)flashBtn($('#btnSession'),"Uloženo pro relaci ✓");else showMessage("Úložiště relace není dostupné","Klíč lze použít na právě otevřené stránce, ale prohlížeč ho nedokázal uložit do relace. Po obnovení stránky ho bude nutné vložit znovu.")};
+$('#btnClear').onclick=()=>{clearKey();$('#keyInput').value=""};
+$('#messageClose').onclick=()=>$('#messageOverlay').classList.remove("show");
+$('#messageOverlay').addEventListener("click",e=>{if(e.target.id==="messageOverlay")$('#messageOverlay').classList.remove("show")});
+function updateApiToggleText(){const btn=$('#apiToggle'),panel=$('#apiPanel');if(!btn||!panel)return;const open=panel.classList.contains("open");btn.textContent=open?"Skrýt nastavení AI ▴":"Nastavení AI ▾";btn.setAttribute("aria-expanded",open?"true":"false")}
+$('#apiToggle').onclick=()=>{$('#apiPanel').classList.toggle("open");updateApiToggleText()};
 updateApiToggleText();
-$("keyInput").addEventListener("input",()=>{
+$('#keyInput').addEventListener("input",()=>{
   geminiApiKey=inputKey();
   if(geminiApiKey){if(!geminiKeyScope)geminiKeyScope="memory"}else geminiKeyScope="";
   updateKeyStatus();
@@ -53,14 +53,14 @@ function requireApiKeyForAction(actionLabel){
   updateApiToggleText();
   setStatus('statusKey','chybí klíč','warn');
   showMessage('Chybí API klíč',msg);
-  setTimeout(()=>{try{(apiStep||api||document.body).scrollIntoView({behavior:'smooth',block:'start'});const input=$('#keyInput');if(input)input.focus()}catch(_){}},80);
+  setTimeout(()=>{safeScrollIntoView(apiStep||api||document.body,{behavior:'smooth',block:'start'});const input=$('#keyInput');if(input)input.focus()},80);
   return false;
 }
 
 function normalizeModelProfile(n){const v=String(n||"").trim().toLowerCase();return MODEL_PROFILES.includes(v)?v:MODEL_PROFILE_DEFAULT}
 function migrateStoredModelProfile(n){const v=String(n||"").trim().toLowerCase();return MODEL_PROFILES.includes(v)?v:/flash-lite/.test(v)?"economy":v==="gemini-3.5-flash"?"quality":/^gemini-.*flash/.test(v)?"balanced":MODEL_PROFILE_DEFAULT}
-function setModelProfile(n){selectedModelProfile=normalizeModelProfile(n);try{localStorage.setItem(MODEL_PROFILE_SK,selectedModelProfile)}catch(_){}updateModelUI()}
-function loadModelProfile(){let s="";try{s=localStorage.getItem(MODEL_PROFILE_SK)||""}catch(_){}selectedModelProfile=migrateStoredModelProfile(s);try{localStorage.setItem(MODEL_PROFILE_SK,selectedModelProfile)}catch(_){}updateModelUI()}
+function setModelProfile(n){selectedModelProfile=normalizeModelProfile(n);try{localStorage.setItem(MODEL_PROFILE_SK,selectedModelProfile);localStorage.removeItem(LEGACY_STORAGE_KEYS.model)}catch(_){}updateModelUI()}
+function loadModelProfile(){const s=storageReadMigrated('local',MODEL_PROFILE_SK,LEGACY_STORAGE_KEYS.model)||"";selectedModelProfile=migrateStoredModelProfile(s);try{localStorage.setItem(MODEL_PROFILE_SK,selectedModelProfile);localStorage.removeItem(LEGACY_STORAGE_KEYS.model)}catch(_){}updateModelUI()}
 function updateModelUI(){
   document.querySelectorAll("[data-model-profile]").forEach(btn=>{const active=btn.dataset.modelProfile===selectedModelProfile;btn.classList.toggle("active",active);btn.setAttribute("aria-pressed",active?"true":"false")});
   setStatus("statusModel",MODEL_PROFILE_LABELS[selectedModelProfile]||MODEL_PROFILE_LABELS[MODEL_PROFILE_DEFAULT],"ok");
@@ -68,7 +68,6 @@ function updateModelUI(){
 document.querySelectorAll("[data-model-profile]").forEach(btn=>{btn.onclick=()=>setModelProfile(btn.dataset.modelProfile)});
 loadKey();loadModelProfile();applyAiRuntimeUi();
 
-const GEMINI_TIMEOUT_MS=60000;
 // Přímé volání generateContent posílá média jako inline_data. Oficiální dokumentace uvádí limit celého inline požadavku pod 20 MB,
 // proto držíme bezpečnou rezervu 18 MB včetně promptu, textu a base64 dat.
 const MAX_INLINE_REQUEST_BYTES=18*1024*1024;
@@ -88,9 +87,9 @@ function utf8Bytes(s){try{return new TextEncoder().encode(String(s||'')).length}
 function assertTextLength(text,label){if(String(text||'').length>MAX_TEXT_CHARS)throw makeAppError((label||'Text')+' je příliš dlouhý ('+String(text||'').length+' znaků). Limit je '+MAX_TEXT_CHARS+' znaků. Rozděl zadání na části, aby model stihl bezpečně vytvořit všechny verze.','TEXT_TOO_LONG')}
 function officeExtractNote(kind,text){
   const count=String(text||'').trim().split(/\s+/).filter(Boolean).length;
-  return kind+' byl načten lokálně jako textová vrstva ('+count+' slov). Před generováním zkontroluj přepis: složité tabulky, textová pole, vzorce, obrázky a pořadí prvků se mohou v Office souborech převést jen částečně.';
+  const math=kind==='DOCX'?' Word Equation zlomky, exponenty, indexy a běžné odmocniny se převádějí do zachovatelného textového zápisu; složité matice a nestandardní rovnicové objekty je potřeba ověřit v náhledu.':'';
+  return kind+' byl načten lokálně jako textová vrstva ('+count+' slov).'+math+' Před generováním zkontroluj přepis: složité tabulky, textová pole, některé speciální vzorce, obrázky a pořadí prvků se mohou v Office souborech převést jen částečně.';
 }
-function assertInlineRequestSize(body){const bytes=utf8Bytes(JSON.stringify(body));if(bytes>MAX_INLINE_REQUEST_BYTES)throw makeAppError('Vstup je po převodu pro API příliš velký ('+humanBytes(bytes)+'). Bezpečný limit této přímé verze je '+humanBytes(MAX_INLINE_REQUEST_BYTES)+'. Uber počet obrázků, zmenši PDF, nebo vlož jen text.','REQUEST_TOO_LARGE')}
 function makeAppError(message,code){const e=new Error(message);e.code=code||"APP";return e}
 function friendlyApiMessage(e){
   if(!e)return "Neznámá chyba.";
@@ -109,15 +108,13 @@ function friendlyApiMessage(e){
 /* Produkční implementaci callGemini doplní následující integrační modul GHRAB AI Core. */
 let callGemini;
 
-function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
-function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function openGuide(auto=false){
   $('#guide').classList.add('show');
-  if(auto)lsSet('dpl_guide_seen','1');
+  if(auto){try{localStorage.setItem(GUIDE_SEEN_SK,'1');localStorage.removeItem(LEGACY_STORAGE_KEYS.guide)}catch(_){}}
 }
 function closeGuide(){
   $('#guide').classList.remove('show');
-  lsSet('dpl_guide_seen','1');
+  try{localStorage.setItem(GUIDE_SEEN_SK,'1');localStorage.removeItem(LEGACY_STORAGE_KEYS.guide)}catch(_){}
 }
 function bindGuideButton(id){const btn=$(id);if(btn)btn.addEventListener('click',()=>openGuide(false));}
 bindGuideButton('#helpBtn');
@@ -165,21 +162,20 @@ const FullscreenControl={
 };
 FullscreenControl.init();
 
-const THEME_SK='dpl_theme';
 function applyTheme(mode){
   const dark=mode==='dark';
   document.body.classList.toggle('dark',dark);
   const btn=$('#themeToggle'); if(btn){btn.textContent=dark?'☀️':'🌙';btn.setAttribute('aria-label',dark?'Přepnout na světlý režim':'Přepnout na tmavý režim')}
   const themeMeta=document.querySelector('meta[name="theme-color"]');if(themeMeta)themeMeta.setAttribute('content',dark?'#161A20':'#3F9270');
 }
-function loadTheme(){let m='light';try{m=localStorage.getItem(THEME_SK)||'light'}catch(_){}applyTheme(m)}
+function loadTheme(){const m=storageReadMigrated('local',THEME_SK,LEGACY_STORAGE_KEYS.theme)||'light';applyTheme(m)}
 $('#themeToggle').addEventListener('click',()=>{
   const next=document.body.classList.contains('dark')?'light':'dark';
   applyTheme(next); try{localStorage.setItem(THEME_SK,next)}catch(_){}
 });
 loadTheme();
 
-if(!IS_TEST_MODE&&!lsGet('dpl_guide_seen'))openGuide(true);
+if(!IS_TEST_MODE&&!storageReadMigrated('local',GUIDE_SEEN_SK,LEGACY_STORAGE_KEYS.guide))openGuide(true);
 $('#copyClose').addEventListener('click',()=>$('#copyOverlay').classList.remove('show'));
 $('#copyOverlay').addEventListener('click',e=>{if(e.target.id==='copyOverlay')$('#copyOverlay').classList.remove('show')});
 $('#pasteText').addEventListener('input',()=>{if($('#pasteText').value.trim())setStatus('statusInput','vložený text','ok');else if(!uploaded)setStatus('statusInput','čeká na zadání','warn')});
@@ -225,10 +221,11 @@ async function blobToBase64(blob){return dataUrlToBase64(await fileToDataUrl(blo
 async function resizeImage(file,forceCompress=false,totalCount=1){
   if(file.size>MAX_IMAGE_SOURCE_BYTES)throw makeAppError('Obrázek '+file.name+' je příliš velký ('+humanBytes(file.size)+'). Maximum pro zpracování v prohlížeči je '+humanBytes(MAX_IMAGE_SOURCE_BYTES)+'.','FILE_TOO_LARGE');
   const originalType=(file.type&&/^image\//.test(file.type))?file.type:'image/jpeg';
-  const keepOriginal=!forceCompress&&totalCount===1&&file.size<=MAX_SINGLE_MEDIA_ORIGINAL_BYTES;
+  const svgSource=originalType==='image/svg+xml',providerNative=isImageMime(originalType);
+  const keepOriginal=providerNative&&!forceCompress&&totalCount===1&&file.size<=MAX_SINGLE_MEDIA_ORIGINAL_BYTES;
   const originalDataUrl=await fileToDataUrl(file);
   if(keepOriginal){return {mime_type:originalType,data:dataUrlToBase64(originalDataUrl),name:file.name,bytes:file.size,originalBytes:file.size,compressed:false}}
-  const img=await loadImg(originalDataUrl);
+  let img;try{img=await loadImg(originalDataUrl)}catch(_){throw makeAppError('Obrázek '+file.name+' je ve formátu, který tento prohlížeč neumí bezpečně převést. Ulož ho jako JPG/PNG/WebP nebo PDF a zkus znovu.','UNSUPPORTED_IMAGE')}
   let maxDim=totalCount>1?1900:2300;
   const perImageTarget=Math.max(900*1024,Math.floor(IMAGE_TOTAL_TARGET_BYTES/Math.max(1,totalCount)));
   let quality=0.88, blob=null, canvas=document.createElement('canvas'), ctx=canvas.getContext('2d');
@@ -238,15 +235,193 @@ async function resizeImage(file,forceCompress=false,totalCount=1){
     canvas.height=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(img,0,0,canvas.width,canvas.height);
-    blob=await canvasToBlob(canvas,'image/jpeg',quality);
+    blob=await canvasToBlob(canvas,svgSource?'image/png':'image/jpeg',svgSource?undefined:quality);
     if(!blob)throw new Error('Obrázek se nepodařilo zmenšit.');
     if(blob.size<=perImageTarget||maxDim<=1200)break;
     if(quality>0.72)quality-=0.08;else maxDim=Math.round(maxDim*0.82);
   }
-  return {mime_type:'image/jpeg',data:await blobToBase64(blob),name:file.name,bytes:blob.size,originalBytes:file.size,compressed:true,width:canvas.width,height:canvas.height};
+  return {mime_type:svgSource?'image/png':'image/jpeg',data:await blobToBase64(blob),name:file.name,bytes:blob.size,originalBytes:file.size,compressed:true,width:canvas.width,height:canvas.height};
 }
-function mediaParts(items){return items.map(it=>({inline_data:{mime_type:it.mime_type,data:it.data}}))}
+function visualAnalysisPayload(asset){if(!asset)return null;const mime=isImageMime(asset.analysis_mime_type)?asset.analysis_mime_type:asset.mime_type,data=String(asset.analysis_data||asset.data||'').replace(/\s+/g,'');return isImageMime(mime)&&data?{mime_type:mime,data}:null}
+function extractionMediaParts(upload){
+  const out=[];
+  for(const it of ((upload&&upload.items)||[])){if(!isImageMime(it&&it.mime_type))out.push({inline_data:{mime_type:it.mime_type,data:it.data}})}
+  for(const asset of sourceVisualAssets){const payload=visualAnalysisPayload(asset);if(!payload)continue;out.push({text:String(asset.id||'VISUAL')+' — zdrojový obrázek '+String(asset.name||'')+(asset.analysis_data?' (AI dostává lokálně vylepšenou čtecí kopii; originál je zachován pro výstup).':'.')});out.push({inline_data:payload})}
+  return out;
+}
 function mediaBytes(items){return items.reduce((sum,it)=>sum+utf8Bytes(it.data||''),0)}
+
+const VISUAL_MODES=Object.freeze(['preserve','reference','ignore']);
+const VISUAL_ROLES=Object.freeze(['critical','supporting','page_scan','decorative','unknown']);
+const VISUAL_TYPES=Object.freeze(['map','graph','diagram','geometry','biology','chemistry','table','notation','other']);
+let sourceVisualAssets=[];
+let sourceDocumentVisualNotes=[];
+let sourceScanReport=null;
+let visualAssetSeq=0;
+let cropState=null;
+function nextVisualId(){visualAssetSeq+=1;return 'VISUAL_'+visualAssetSeq}
+function isImageMime(mime){return /^image\/(?:png|jpe?g|webp|gif)$/i.test(String(mime||''))}
+function visualDataUrl(asset){return asset&&isImageMime(asset.mime_type)&&/^[A-Za-z0-9+/=\r\n]+$/.test(String(asset.data||''))?'data:'+asset.mime_type+';base64,'+String(asset.data||'').replace(/\s+/g,''):''}
+function visualRoleLabel(role){return ({critical:'obrazově klíčový podklad',supporting:'podpůrný obrázek',page_scan:'fotografie / sken celé stránky',decorative:'dekorativní obrázek',unknown:'nerozpoznaný obrázek'})[role]||'nerozpoznaný obrázek'}
+function visualTypeLabel(type){return ({map:'mapa',graph:'graf',diagram:'schéma',geometry:'geometrický nákres',biology:'biologický obrázek',chemistry:'chemický obrazový podklad',table:'tabulka jako obraz',notation:'speciální zápis / notace',other:'jiný obrazový podklad'})[type]||'jiný obrazový podklad'}
+function normalizeVisualMode(value){return VISUAL_MODES.includes(value)?value:'reference'}
+function defaultVisualMode(role){return role==='critical'?'preserve':role==='decorative'?'ignore':'reference'}
+function cloneVisualAsset(asset){return asset?{id:String(asset.id||''),name:String(asset.name||''),mime_type:String(asset.mime_type||''),data:String(asset.data||''),role:VISUAL_ROLES.includes(asset.role)?asset.role:'unknown',type:VISUAL_TYPES.includes(asset.type)?asset.type:'other',description:String(asset.description||'').slice(0,500),mode:normalizeVisualMode(asset.mode),source:String(asset.source||'upload'),optimized:!!asset.optimized,width:Number(asset.width)||0,height:Number(asset.height)||0} : null}
+function cloneSourceVisualAsset(asset){const out=cloneVisualAsset(asset);if(!out)return null;out.analysis_data=String(asset.analysis_data||'');out.analysis_mime_type=String(asset.analysis_mime_type||'');out.analysis_mode=String(asset.analysis_mode||'');out.quality=asset.quality?{...asset.quality,warnings:[...(asset.quality.warnings||[])]}:null;out.modeTouched=!!asset.modeTouched;return out}
+function setSourceVisualAssetsFromItems(items,source='upload'){
+  visualAssetSeq=0;
+  sourceVisualAssets=(items||[]).filter(it=>isImageMime(it&&it.mime_type)).map(it=>({id:nextVisualId(),name:String(it.name||'obrázek'),mime_type:it.mime_type,data:String(it.data||''),bytes:Number(it.bytes)||0,role:'unknown',type:'other',description:'',mode:'reference',source,optimized:!!it.compressed,width:Number(it.width)||0,height:Number(it.height)||0,analysis_data:'',analysis_mime_type:'',analysis_mode:'',quality:null,modeTouched:false}));
+  sourceDocumentVisualNotes=[];sourceScanReport=null;
+  renderSourceVisualPanel();
+  for(const asset of sourceVisualAssets)analyzeVisualQuality(asset).then(()=>renderSourceVisualPanel()).catch(()=>{});
+}
+function resetSourceVisualAssets(){sourceVisualAssets=[];sourceDocumentVisualNotes=[];sourceScanReport=null;visualAssetSeq=0;renderSourceVisualPanel()}
+function parseVisualManifestLine(line){
+  const raw=String(line||'').trim();if(!raw)return null;
+  const parts=raw.split('|').map(x=>x.trim()).filter(Boolean),head=parts.shift()||'',out={};
+  if(/^VISUAL_\d+$/i.test(head))out.id=head.toUpperCase();
+  else if(/^PDF_VISUAL$/i.test(head))out.id='PDF_VISUAL';
+  else if(/^SCAN_REPORT$/i.test(head))out.id='SCAN_REPORT';
+  else return null;
+  for(const part of parts){const m=part.match(/^([a-z_]+)\s*=\s*(.*)$/i);if(m)out[m[1].toLowerCase()]=m[2].trim()}
+  return out;
+}
+function splitVisualManifest(raw){
+  const src=String(raw||'');
+  const m=src.match(/<<<VISUAL_MANIFEST>>>([\s\S]*?)<<<END_VISUAL_MANIFEST>>>/i);
+  if(!m)return {text:src.trim(),entries:[],documentEntries:[],scanReports:[]};
+  const entries=[],documentEntries=[],scanReports=[];
+  for(const line of m[1].split(/\r?\n/)){const item=parseVisualManifestLine(line);if(!item)continue;if(item.id==='PDF_VISUAL')documentEntries.push(item);else if(item.id==='SCAN_REPORT')scanReports.push(item);else entries.push(item)}
+  const text=(src.slice(0,m.index)+src.slice((m.index||0)+m[0].length)).trim();
+  return {text,entries,documentEntries,scanReports};
+}
+function applyVisualManifest(entries,documentEntries,scanReports=[]){
+  const byId=new Map((entries||[]).map(x=>[String(x.id||'').toUpperCase(),x]));
+  sourceVisualAssets=sourceVisualAssets.map(asset=>{
+    const meta=byId.get(String(asset.id).toUpperCase());if(!meta)return asset;
+    const role=VISUAL_ROLES.includes(String(meta.role||'').toLowerCase())?String(meta.role).toLowerCase():'unknown';
+    const type=VISUAL_TYPES.includes(String(meta.type||'').toLowerCase())?String(meta.type).toLowerCase():'other';
+    return {...asset,role,type,description:String(meta.description||meta.desc||'').slice(0,500),mode:asset.modeTouched?normalizeVisualMode(asset.mode):defaultVisualMode(role)};
+  });
+  sourceDocumentVisualNotes=(documentEntries||[]).map(x=>({page:String(x.page||''),role:VISUAL_ROLES.includes(String(x.role||'').toLowerCase())?String(x.role).toLowerCase():'unknown',type:VISUAL_TYPES.includes(String(x.type||'').toLowerCase())?String(x.type).toLowerCase():'other',description:String(x.description||x.desc||'').slice(0,500)}));
+  const report=(scanReports||[])[0]||null;sourceScanReport=report?{status:/^(good|fair|poor)$/i.test(String(report.status||''))?String(report.status).toLowerCase():'fair',pages:Math.max(0,Number.parseInt(report.pages,10)||0),issues:String(report.issues||report.description||'').slice(0,700)}:null;
+  renderSourceVisualPanel();
+}
+function visualManifestPrompt(actualCount,isPdf=false){
+  const rows=actualCount?'Pro KAŽDÝ přiložený obrázek '+Array.from({length:actualCount},(_,i)=>'VISUAL_'+(i+1)).join(', ')+' přidej právě jeden řádek. ':'';
+  return 'Po samotném přepisu přidej technický blok pro aplikaci. Tento blok se žákům nezobrazí.\n<<<VISUAL_MANIFEST>>>\n'+rows+'Formát řádku obrázku: VISUAL_1|role=critical|type=map|description=stručný popis. role použij jen critical / supporting / page_scan / decorative. type použij jen map / graph / diagram / geometry / biology / chemistry / table / notation / other. critical znamená, že bez tohoto obrazu úloha nedává smysl a originální obraz je vhodné přesně zachovat. page_scan znamená fotografii nebo sken celé stránky, ze které se obvykle nemá vkládat celý obraz do nové verze bez výřezu. '+(isPdf?'Pokud PDF obsahuje obrazově klíčový prvek, který není samostatným obrázkem, přidej navíc řádek PDF_VISUAL|page=číslo|role=critical|type=map|description=stručný popis. ':'')+'VŽDY přidej právě jeden řádek SCAN_REPORT|status=good|pages=1|issues=none. status použij good, fair nebo poor podle čitelnosti zdroje; pages je počet zpracovaných stran/obrázků, pokud ho lze určit; do issues stručně napiš stín, rozmazání, ořez, šikmou perspektivu, nečitelnou část nebo none. Nehádej nečitelný obsah. Nevymýšlej obrazové prvky, které ve zdroji nejsou.\n<<<END_VISUAL_MANIFEST>>>';
+}
+function sourceVisualPromptLines(){
+  const active=sourceVisualAssets.filter(a=>a.mode!=='ignore');if(!active.length&&!sourceDocumentVisualNotes.length)return [];
+  const lines=['OBRAZOVÉ PODKLADY:'];
+  for(const a of active){
+    const action=a.mode==='preserve'?'ZACHOVAT PŮVODNÍ OBRAZ VE VÝSTUPU':'POUŽÍT JEN JAKO REFERENCI';
+    lines.push(a.id+': '+action+'; '+visualTypeLabel(a.type)+'; '+(a.description||visualRoleLabel(a.role))+'.');
+    if(a.mode==='preserve')lines.push('Pro '+a.id+' vlož do tasks marker [['+a.id+']] přesně tam, kde má původní obraz v žákovské verzi být. Obraz nepřekresluj, nepřepisuj do textu a neměň jeho obsah; aplikace marker nahradí uloženým zdrojovým obrázkem.');
+  }
+  if(sourceDocumentVisualNotes.length)lines.push('Zdrojový PDF/dokument obsahuje obrazově důležitý prvek. Pokud k němu učitel přidal samostatný snímek nebo výřez mezi VISUAL_n, použij přesně tento zachovaný obraz. Pokud samostatný obraz přidán není, nevymýšlej náhradu a v teacher_note upozorni, že původní obraz z PDF nelze pixelově přenést bez doplňkového snímku.');
+  return [lines.join(' ')];
+}
+function generationVisualParts(){
+  const parts=[];
+  for(const a of sourceVisualAssets.filter(x=>x.mode!=='ignore'&&visualDataUrl(x))){const payload=visualAnalysisPayload(a)||{mime_type:a.mime_type,data:a.data};parts.push({text:a.id+' — '+(a.description||visualTypeLabel(a.type))+'; režim '+(a.mode==='preserve'?'zachovat přesně':'pouze reference')+(a.analysis_data?'; pro čtení je přiložena lokálně vylepšená kopie, ale marker ve výstupu použije originál':'')+'.'});parts.push({inline_data:payload})}
+  return parts;
+}
+function preservedSourceVisualAssets(){return sourceVisualAssets.filter(a=>a.mode==='preserve'&&visualDataUrl(a)).map(cloneVisualAsset).filter(Boolean)}
+function sheetVisualAiParts(sheet){const parts=[];for(const a of ((sheet&&sheet._visualAssets)||[])){if(!visualDataUrl(a))continue;parts.push({text:String(a.id||'VISUAL')+' — přesně zachovaný obrazový podklad: '+(a.description||visualTypeLabel(a.type))+'.'});parts.push({inline_data:{mime_type:a.mime_type,data:a.data}})}return parts}
+function hasPdfUpload(){return !!(uploaded&&Array.isArray(uploaded.items)&&uploaded.items.some(it=>it&&it.mime_type==='application/pdf'))}
+function scanStatusLabel(status){return ({good:'dobrá',fair:'omezená – zkontroluj přepis',poor:'nízká – nutná ruční kontrola'})[status]||'nezjištěná'}
+async function analyzeVisualQuality(asset){
+  const url=visualDataUrl(asset);if(!asset||!url)return null;
+  const img=await loadImg(url),max=420,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,c.width,c.height);const px=ctx.getImageData(0,0,c.width,c.height).data,lums=new Float32Array(c.width*c.height);let sum=0,sum2=0,edge=0,edgeN=0;
+  for(let i=0,j=0;i<px.length;i+=4,j++){const y=.2126*px[i]+.7152*px[i+1]+.0722*px[i+2];lums[j]=y;sum+=y;sum2+=y*y}
+  for(let y=1;y<c.height;y++)for(let x=1;x<c.width;x++){const i=y*c.width+x;edge+=Math.abs(lums[i]-lums[i-1])+Math.abs(lums[i]-lums[i-c.width]);edgeN+=2}
+  const n=Math.max(1,lums.length),mean=sum/n,std=Math.sqrt(Math.max(0,sum2/n-mean*mean)),sharp=edge/Math.max(1,edgeN),warnings=[];
+  if(Math.min(img.naturalWidth,img.naturalHeight)<700||Math.max(img.naturalWidth,img.naturalHeight)<1100)warnings.push('nižší rozlišení');
+  if(std<26)warnings.push('nízký kontrast');
+  if(sharp<5.5&&Math.min(img.naturalWidth,img.naturalHeight)>=500)warnings.push('obraz může být rozmazaný');
+  asset.width=img.naturalWidth;asset.height=img.naturalHeight;asset.quality={contrast:Math.round(std*10)/10,sharpness:Math.round(sharp*10)/10,warnings};return asset.quality;
+}
+async function rotateVisualAsset(id,dir=1){
+  const asset=sourceVisualAssets.find(a=>a.id===id),url=visualDataUrl(asset);if(!asset||!url)return;const img=await loadImg(url),c=document.createElement('canvas'),turn=dir<0?-1:1;c.width=img.naturalHeight;c.height=img.naturalWidth;const ctx=c.getContext('2d');ctx.translate(c.width/2,c.height/2);ctx.rotate(turn*Math.PI/2);ctx.drawImage(img,-img.naturalWidth/2,-img.naturalHeight/2);const mime=asset.mime_type==='image/png'?'image/png':'image/jpeg',blob=await canvasToBlob(c,mime,mime==='image/jpeg'?0.95:undefined);if(!blob)return;asset.mime_type=mime;asset.data=await blobToBase64(blob);asset.bytes=blob.size;asset.width=c.width;asset.height=c.height;asset.analysis_data='';asset.analysis_mime_type='';asset.analysis_mode='';await analyzeVisualQuality(asset).catch(()=>{});renderSourceVisualPanel();
+}
+async function enhanceVisualForAnalysis(id){
+  const asset=sourceVisualAssets.find(a=>a.id===id),url=visualDataUrl(asset);if(!asset||!url)return;
+  if(asset.analysis_data){asset.analysis_data='';asset.analysis_mime_type='';asset.analysis_mode='';renderSourceVisualPanel();return}
+  const img=await loadImg(url),maxDim=2300,scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,c.width,c.height);const image=ctx.getImageData(0,0,c.width,c.height),px=image.data,hist=new Uint32Array(256),count=c.width*c.height;
+  for(let i=0;i<px.length;i+=4){const y=Math.max(0,Math.min(255,Math.round(.2126*px[i]+.7152*px[i+1]+.0722*px[i+2])));hist[y]++}
+  const percentile=q=>{const target=count*q;let acc=0;for(let i=0;i<256;i++){acc+=hist[i];if(acc>=target)return i}return q<.5?0:255},lo=percentile(.02),hi=Math.max(lo+24,percentile(.98)),gain=255/(hi-lo);
+  for(let i=0;i<px.length;i+=4){px[i]=Math.max(0,Math.min(255,(px[i]-lo)*gain));px[i+1]=Math.max(0,Math.min(255,(px[i+1]-lo)*gain));px[i+2]=Math.max(0,Math.min(255,(px[i+2]-lo)*gain))}
+  ctx.putImageData(image,0,0);const blob=await canvasToBlob(c,'image/jpeg',0.92);if(!blob)return;asset.analysis_data=await blobToBase64(blob);asset.analysis_mime_type='image/jpeg';asset.analysis_mode='contrast';renderSourceVisualPanel();
+}
+function moveVisualAsset(id,delta){
+  const i=sourceVisualAssets.findIndex(a=>a.id===id),j=i+delta;if(i<0||j<0||j>=sourceVisualAssets.length)return;const [a]=sourceVisualAssets.splice(i,1);sourceVisualAssets.splice(j,0,a);renderSourceVisualPanel();
+}
+async function appendSupplementalVisualFiles(fileList){
+  const files=[...fileList].filter(f=>(f.type||'').startsWith('image/'));if(!files.length)return;
+  if(sourceVisualAssets.length+files.length>MAX_IMAGE_COUNT)throw makeAppError('Celkem lze držet maximálně '+MAX_IMAGE_COUNT+' obrazových podkladů.','TOO_MANY_IMAGES');
+  const items=[];for(const f of files)items.push(await resizeImage(f,true,Math.max(1,files.length)));
+  for(const it of items){const asset={id:nextVisualId(),name:String(it.name||'doplňkový obrázek'),mime_type:it.mime_type,data:String(it.data||''),bytes:Number(it.bytes)||0,role:'critical',type:'other',description:'Doplňkový snímek nebo výřez přidaný učitelem k PDF/skenu',mode:'preserve',source:'pdf-supplement',optimized:!!it.compressed,width:Number(it.width)||0,height:Number(it.height)||0,analysis_data:'',analysis_mime_type:'',analysis_mode:'',quality:null,modeTouched:true};sourceVisualAssets.push(asset);analyzeVisualQuality(asset).then(()=>renderSourceVisualPanel()).catch(()=>{})}
+  renderSourceVisualPanel();showMessage('Obrazový podklad přidán','Snímek/výřez je nastavený na zachování. Pokud obsahuje jen část stránky, můžeš ho ještě otočit, vylepšit pro čtení AI nebo dále vyříznout.');
+}
+function renderSourceVisualPanel(){
+  const panel=$('#visualSourcePanel'),list=$('#visualSourceList'),summary=$('#visualSourceSummary'),badge=$('#visualSourceBadge'),warning=$('#visualSourceWarning'),supp=$('#visualSupplementBtn');if(!panel||!list)return;
+  list.replaceChildren();
+  const pdf=hasPdfUpload(),has=sourceVisualAssets.length||sourceDocumentVisualNotes.length||sourceScanReport||pdf;panel.classList.toggle('hide',!has);if(supp)supp.classList.toggle('hide',!pdf&&!sourceDocumentVisualNotes.length);
+  if(!has)return;
+  if(badge)badge.textContent=sourceVisualAssets.length+' '+(sourceVisualAssets.length===1?'podklad':sourceVisualAssets.length<5?'podklady':'podkladů');
+  const critical=sourceVisualAssets.filter(a=>a.role==='critical').length;
+  if(summary){
+    if(sourceScanReport)summary.textContent='Čitelnost zdroje: '+scanStatusLabel(sourceScanReport.status)+(sourceScanReport.pages?' · '+sourceScanReport.pages+' stran':'')+'.';
+    else if(critical)summary.textContent='Rozpoznáno obrazově klíčových podkladů: '+critical+'. Zkontroluj jejich režim před generováním.';
+    else summary.textContent=pdf?'PDF je připravené. Pokud potřebuješ přesně zachovat mapu, graf nebo schéma, přidej snímek příslušné stránky.':'Zkontroluj, které obrázky mají být součástí nové verze.';
+  }
+  for(let index=0;index<sourceVisualAssets.length;index++){
+    const asset=sourceVisualAssets[index],card=document.createElement('div');card.className='visual-source-card';card.dataset.visualId=asset.id;
+    const prev=document.createElement('div');prev.className='visual-source-preview';const img=document.createElement('img');img.src=visualDataUrl(asset);img.alt=asset.description||asset.name||'Zdrojový obrazový podklad';prev.appendChild(img);
+    const copy=document.createElement('div');copy.className='visual-source-copy';const title=document.createElement('strong');title.textContent=(sourceVisualAssets.length>1?'#'+(index+1)+' · ':'')+asset.id+' · '+visualTypeLabel(asset.type);
+    const meta=document.createElement('div');meta.className='visual-source-meta';const bits=[asset.description||asset.name||'Bez popisu',visualRoleLabel(asset.role)];if(asset.width&&asset.height)bits.push(asset.width+' × '+asset.height+' px');if(asset.optimized)bits.push('technicky zmenšená kopie');if(asset.analysis_data)bits.push('AI čte vylepšenou kopii');if(asset.quality&&asset.quality.warnings&&asset.quality.warnings.length)bits.push('pozor: '+asset.quality.warnings.join(', '));meta.textContent=bits.join(' · ');
+    const controls=document.createElement('div');controls.className='visual-source-controls';const lab=document.createElement('label');lab.textContent='Použití';const sel=document.createElement('select');sel.id='visualMode_'+asset.id;lab.htmlFor=sel.id;sel.dataset.visualMode=asset.id;[['preserve','Zachovat původní obraz ve výstupu'],['reference','Použít jen jako předlohu'],['ignore','Nevkládat / ignorovat']].forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;if(asset.mode===v)o.selected=true;sel.appendChild(o)});sel.addEventListener('change',()=>{asset.mode=normalizeVisualMode(sel.value);asset.modeTouched=true;renderSourceVisualPanel()});controls.append(lab,sel);
+    const left=document.createElement('button');left.type='button';left.className='btn ghost small';left.textContent='↺ Otočit';left.title='Otočí zdrojový obraz o 90° doleva. Operace je lokální.';left.addEventListener('click',()=>rotateVisualAsset(asset.id,-1));
+    const right=document.createElement('button');right.type='button';right.className='btn ghost small';right.textContent='↻ Otočit';right.title='Otočí zdrojový obraz o 90° doprava. Operace je lokální.';right.addEventListener('click',()=>rotateVisualAsset(asset.id,1));
+    const enhance=document.createElement('button');enhance.type='button';enhance.className='btn ghost small';enhance.textContent=asset.analysis_data?'Zrušit vylepšení AI':'Vylepšit čitelnost pro AI';enhance.title='Lokálně zvýší kontrast kopie, kterou čte AI. Původní obraz pro pracovní list se nemění.';enhance.addEventListener('click',()=>enhanceVisualForAnalysis(asset.id));
+    const crop=document.createElement('button');crop.type='button';crop.className='btn ghost small';crop.textContent='Vyříznout oblast';crop.title='Vytvoří lokální výřez mapy, grafu nebo schématu bez dalšího AI dotazu.';crop.addEventListener('click',()=>openVisualCrop(asset.id));controls.append(left,right,enhance,crop);
+    if(sourceVisualAssets.length>1){const earlier=document.createElement('button');earlier.type='button';earlier.className='btn ghost small';earlier.textContent='↑ Dříve';earlier.disabled=index===0;earlier.title='Posune fotografii dříve v pořadí stran.';earlier.addEventListener('click',()=>moveVisualAsset(asset.id,-1));const later=document.createElement('button');later.type='button';later.className='btn ghost small';later.textContent='↓ Později';later.disabled=index===sourceVisualAssets.length-1;later.title='Posune fotografii později v pořadí stran.';later.addEventListener('click',()=>moveVisualAsset(asset.id,1));controls.append(earlier,later)}
+    copy.append(title,meta,controls);card.append(prev,copy);list.appendChild(card);
+  }
+  const notes=[];
+  if(sourceScanReport&&sourceScanReport.status!=='good')notes.push('AI označila čitelnost zdroje jako '+scanStatusLabel(sourceScanReport.status)+'. '+(sourceScanReport.issues&&sourceScanReport.issues!=='none'?'Problém: '+sourceScanReport.issues+'. ':'')+'Před generováním porovnej přepis se zdrojem; nečitelná čísla nebo značky neopravuj odhadem.');
+  if(sourceVisualAssets.some(a=>a.quality&&a.quality.warnings&&a.quality.warnings.length))notes.push('Lokální kontrola obrazu našla potenciální problém s kvalitou alespoň u jednoho snímku. Tlačítko „Vylepšit čitelnost pro AI“ mění jen čtecí kopii a nepoškozuje originál ve výstupu.');
+  if(sourceVisualAssets.some(a=>a.mode==='preserve'&&a.optimized))notes.push('Alespoň jeden zachovaný obraz je kvůli původní velikosti technicky zmenšený. U velmi jemných map nebo schémat zkontroluj čitelnost v náhledu PDF.');
+  if(sourceVisualAssets.some(a=>a.role==='page_scan'&&a.mode==='preserve'))notes.push('Celá fotografovaná stránka je nastavená na zachování ve výstupu. Obvykle je lepší tlačítkem „Vyříznout oblast“ ponechat jen mapu, graf nebo schéma, aby se do nové verze nekopírovalo původní zadání.');
+  if(sourceDocumentVisualNotes.length){const pages=[...new Set(sourceDocumentVisualNotes.map(x=>x.page).filter(Boolean))].join(', ');notes.push('PDF obsahuje obrazově klíčový prvek'+(pages?' na straně '+pages:'')+'. Pro pixelově přesné zachování použij „Přidat snímek / výřez k PDF“. Samotné PDF model vizuálně přečte, ale prohlížeč z něj bez samostatného snímku bezpečně nevyjímá originální mapu nebo schéma.')}
+  if(!sourceVisualAssets.some(a=>a.mode==='preserve')&&sourceVisualAssets.some(a=>a.role==='critical'))notes.push('Žádný obrazově klíčový podklad není nastaven na „Zachovat původní obraz ve výstupu“. Pokud je mapa nebo schéma součástí samotné úlohy, změň režim na zachování.');
+  if(warning){warning.textContent=notes.join(' ');warning.classList.toggle('hide',!notes.length)}
+}
+function drawCropCanvas(){
+  if(!cropState||!cropState.ctx)return;const {ctx,canvas,img,rect}=cropState;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);if(rect&&rect.w>2&&rect.h>2){ctx.save();ctx.fillStyle='rgba(0,0,0,.42)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.clearRect(rect.x,rect.y,rect.w,rect.h);ctx.drawImage(img,rect.x*(img.naturalWidth/canvas.width),rect.y*(img.naturalHeight/canvas.height),rect.w*(img.naturalWidth/canvas.width),rect.h*(img.naturalHeight/canvas.height),rect.x,rect.y,rect.w,rect.h);ctx.strokeStyle='#4ea3ff';ctx.lineWidth=3;ctx.strokeRect(rect.x+1.5,rect.y+1.5,Math.max(0,rect.w-3),Math.max(0,rect.h-3));ctx.restore()}}
+function cropCanvasPoint(ev){const c=cropState&&cropState.canvas,r=c&&c.getBoundingClientRect();if(!c||!r)return {x:0,y:0};return {x:Math.max(0,Math.min(c.width,(ev.clientX-r.left)*(c.width/r.width))),y:Math.max(0,Math.min(c.height,(ev.clientY-r.top)*(c.height/r.height)))}}
+async function openVisualCrop(id){
+  const asset=sourceVisualAssets.find(a=>a.id===id),url=visualDataUrl(asset);if(!asset||!url)return;
+  const img=await loadImg(url),canvas=$('#visualCropCanvas'),ctx=canvas&&canvas.getContext('2d');if(!canvas||!ctx)return;
+  const maxW=900,maxH=620,scale=Math.min(1,maxW/img.naturalWidth,maxH/img.naturalHeight);canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));cropState={asset,img,canvas,ctx,dragging:false,start:null,rect:{x:0,y:0,w:canvas.width,h:canvas.height}};drawCropCanvas();const hint=$('#visualCropHint');if(hint){hint.textContent='Je vybraný celý obrázek. Tažením můžeš označit jen potřebnou oblast.';hint.classList.add('has-selection')}$('#visualCropOverlay')?.classList.add('show');
+}
+function closeVisualCrop(){const ov=$('#visualCropOverlay');if(ov)ov.classList.remove('show');cropState=null}
+function resetVisualCrop(){if(!cropState)return;cropState.rect={x:0,y:0,w:cropState.canvas.width,h:cropState.canvas.height};drawCropCanvas();const hint=$('#visualCropHint');if(hint){hint.textContent='Je vybraný celý obrázek.';hint.classList.add('has-selection')}}
+async function applyVisualCrop(){
+  if(!cropState||!cropState.rect)return;const {asset,img,canvas,rect}=cropState;if(rect.w<8||rect.h<8){showMessage('Výřez je příliš malý','Označ větší oblast mapy, grafu nebo schématu.');return}
+  const sx=Math.round(rect.x*img.naturalWidth/canvas.width),sy=Math.round(rect.y*img.naturalHeight/canvas.height),sw=Math.max(1,Math.round(rect.w*img.naturalWidth/canvas.width)),sh=Math.max(1,Math.round(rect.h*img.naturalHeight/canvas.height));const out=document.createElement('canvas');out.width=sw;out.height=sh;out.getContext('2d').drawImage(img,sx,sy,sw,sh,0,0,sw,sh);const mime=asset.mime_type==='image/png'?'image/png':'image/jpeg',blob=await canvasToBlob(out,mime,mime==='image/jpeg'?0.94:undefined);if(!blob)return;
+  asset.mode='reference';asset.modeTouched=true;const newAsset={id:nextVisualId(),name:'výřez-'+asset.name,mime_type:mime,data:await blobToBase64(blob),bytes:blob.size,role:'critical',type:asset.type||'other',description:'Ručně vybraný klíčový výřez z '+(asset.description||asset.name),mode:'preserve',source:'crop',optimized:false,width:sw,height:sh,analysis_data:'',analysis_mime_type:'',analysis_mode:'',quality:null,modeTouched:true};sourceVisualAssets.push(newAsset);await analyzeVisualQuality(newAsset).catch(()=>{});closeVisualCrop();renderSourceVisualPanel();showMessage('Výřez je připravený','Původní celá stránka zůstala jen jako reference a nový výřez je nastavený na „Zachovat původní obraz ve výstupu“.');
+}
+function visualAssetMap(assets){return new Map((assets||[]).filter(Boolean).map(a=>[String(a.id||'').toUpperCase(),a]))}
+function visualMarkerRegex(){return /\[\[(VISUAL_\d+)\]\]/gi}
+function sanitizeVisualMarkers(text,assets){const allowed=visualAssetMap(assets);return String(text||'').replace(visualMarkerRegex(),(m,id)=>allowed.has(String(id).toUpperCase())?'[['+String(id).toUpperCase()+']]':'')}
+function ensureVisualMarkers(text,assets){let out=sanitizeVisualMarkers(text,assets);const missing=[];for(const a of (assets||[])){const id=String(a.id||'').toUpperCase();if(!id)continue;const re=new RegExp('\\[\\['+id+'\\]\\]','i');if(!re.test(out))missing.push('[['+id+']]')}return (missing.length?missing.join('\n\n')+'\n\n':'')+out.trim()}
+function appendRichSegment(parent,text){if(typeof appendEducationalRichText==='function'){appendEducationalRichText(parent,text);return}if(typeof appendStemRichText==='function'){appendStemRichText(parent,text);return}const src=String(text||'');const re=/\*\*(.+?)\*\*/g;let last=0,m;while((m=re.exec(src))){if(m.index>last)parent.appendChild(document.createTextNode(src.slice(last,m.index)));const b=document.createElement('b');b.textContent=m[1];parent.appendChild(b);last=re.lastIndex}if(last<src.length)parent.appendChild(document.createTextNode(src.slice(last)))}
+function makeVisualFigure(asset,printMode=false){const url=visualDataUrl(asset);if(!url)return null;const fig=document.createElement('figure');fig.className=printMode?'print-visual':'worksheet-visual';fig.dataset.visualId=String(asset.id||'');const img=document.createElement('img');img.src=url;img.alt=asset.description||visualTypeLabel(asset.type)||'Obrazový podklad';fig.appendChild(img);return fig}
+function setRichTextWithVisuals(el,text,assets){if(!el)return;const map=visualAssetMap(assets),frag=document.createDocumentFragment(),src=String(text||''),re=visualMarkerRegex();let last=0,m;while((m=re.exec(src))){if(m.index>last)appendRichSegment(frag,src.slice(last,m.index));const a=map.get(String(m[1]).toUpperCase()),fig=makeVisualFigure(a,false);if(fig)frag.appendChild(fig);last=re.lastIndex}if(last<src.length)appendRichSegment(frag,src.slice(last));el.replaceChildren(frag)}
+function visualFigureHtml(asset,printMode=true){const url=visualDataUrl(asset);if(!url)return '';const cls=printMode?'print-visual':'worksheet-visual';return '<figure class="'+cls+'" data-visual-id="'+esc(String(asset.id||''))+'"><img src="'+url+'" alt="'+esc(asset.description||visualTypeLabel(asset.type)||'Obrazový podklad')+'"></figure>'}
+function renderTextWithVisuals(text,assets,printMode=true){const map=visualAssetMap(assets),src=String(text||''),re=visualMarkerRegex();let out='',last=0,m;while((m=re.exec(src))){out+=render(src.slice(last,m.index));const a=map.get(String(m[1]).toUpperCase());if(a)out+=visualFigureHtml(a,printMode);last=re.lastIndex}out+=render(src.slice(last));return out}
 function setUploadInfo(msg){const el=$('#uploadInfo');if(msg){el.textContent=msg;el.classList.add('show');setStatus('statusInput','soubor připraven','ok')}else{el.textContent='';el.classList.remove('show');if(!$('#pasteText')||!$('#pasteText').value.trim())setStatus('statusInput','čeká na zadání','warn')}}
 function htmlToPlainText(html){const doc=new DOMParser().parseFromString(String(html||''),'text/html');doc.querySelectorAll('script,style,noscript').forEach(el=>el.remove());return (doc.body?doc.body.innerText:doc.documentElement.textContent||'').replace(/\n{3,}/g,'\n\n').trim()}
 
@@ -292,10 +467,13 @@ async function readZipEntries(file,kind){
 function xmlUnescape(t){return String(t||'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'")}
 function officeXmlText(xml){return [...String(xml||'').matchAll(/<(?:w:t|a:t)\b[^>]*>([\s\S]*?)<\/(?:w:t|a:t)>|<(?:w:tab|a:tab)\b[^>]*\/?>(?:<\/(?:w:tab|a:tab)>)?|<(?:w:br|w:cr|a:br)\b[^>]*\/?>(?:<\/(?:w:br|w:cr|a:br)>)?/g)].map(m=>m[1]!=null?xmlUnescape(m[1]):'\n').join('').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim()}
 function officeBlockText(xml,blockRe){
+  if(typeof officeDomBlockText==='function'){
+    const enhanced=officeDomBlockText(xml);if(String(enhanced||'').trim())return enhanced;
+  }
   const blocks=[...String(xml||'').matchAll(blockRe)].map(m=>officeXmlText(m[0])).map(t=>t.trim()).filter(Boolean);
   return blocks.length?blocks.join('\n'):officeXmlText(xml);
 }
-function officeImageMime(name){const n=String(name||'').toLowerCase();if(n.endsWith('.png'))return 'image/png';if(/\.jpe?g$/.test(n))return 'image/jpeg';if(n.endsWith('.webp'))return 'image/webp';if(n.endsWith('.gif'))return 'image/gif';return ''}
+function officeImageMime(name){const n=String(name||'').toLowerCase();if(n.endsWith('.png'))return 'image/png';if(/\.jpe?g$/.test(n))return 'image/jpeg';if(n.endsWith('.webp'))return 'image/webp';if(n.endsWith('.gif'))return 'image/gif';if(n.endsWith('.svg'))return 'image/svg+xml';return ''}
 function docxReferencedMediaPaths(documentXml,relsXml){
   const rels=new Map();
   for(const m of String(relsXml||'').matchAll(/<Relationship\b[^>]*>/gi)){
@@ -321,8 +499,10 @@ async function readDocxRich(file){
   const relEntry=zip.entries.find(e=>/^word\/_rels\/document\.xml\.rels$/i.test(e.name));
   const relsXml=relEntry?new TextDecoder('utf-8').decode(await zip.extract(relEntry)):'';
   let paths=docxReferencedMediaPaths(documentXml,relsXml);
-  if(!paths.length)paths=zip.entries.filter(e=>/^word\/media\//i.test(e.name)&&officeImageMime(e.name)).map(e=>e.name);
-  paths=[...new Set(paths)].filter(name=>officeImageMime(name));
+  if(!paths.length)paths=zip.entries.filter(e=>/^word\/media\//i.test(e.name)).map(e=>e.name);
+  paths=[...new Set(paths)];
+  const unsupportedImagePaths=paths.filter(name=>!officeImageMime(name));
+  paths=paths.filter(name=>officeImageMime(name));
   if(paths.length>MAX_IMAGE_COUNT)throw makeAppError('DOCX obsahuje '+paths.length+' vložených obrázků. Tato verze bezpečně zpracuje maximálně '+MAX_IMAGE_COUNT+'. Ulož dokument jako PDF nebo rozděl materiál na menší části.','TOO_MANY_IMAGES');
   const items=[];
   for(const path of paths){
@@ -333,9 +513,8 @@ async function readDocxRich(file){
     items.push(await resizeImage(imageFile,paths.length>1,Math.max(1,paths.length)));
   }
   if(!text&&!items.length)throw new Error('V .docx se nenašel čitelný text ani podporované vložené obrázky.');
-  return {text,items,imageCount:items.length};
+  return {text,items,imageCount:items.length,unsupportedImageCount:unsupportedImagePaths.length,unsupportedImageNames:unsupportedImagePaths.slice(0,8).map(x=>x.split('/').pop())};
 }
-async function readDocx(file){return (await readDocxRich(file)).text}
 async function readPptx(file){
   const zip=await readZipEntries(file,'.pptx');
   const slides=zip.entries.filter(e=>/^ppt\/slides\/slide\d+\.xml$/i.test(e.name)).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
@@ -403,33 +582,43 @@ drop.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDe
 ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over')}));
 drop.addEventListener('drop',e=>{if(e.dataTransfer.files&&e.dataTransfer.files.length)handleFiles(e.dataTransfer.files)});
 fileInput.addEventListener('change',e=>{if(e.target.files&&e.target.files.length)handleFiles(e.target.files)});
+const visualCropCanvas=$('#visualCropCanvas');
+if(visualCropCanvas){
+  visualCropCanvas.addEventListener('pointerdown',ev=>{if(!cropState)return;const p=cropCanvasPoint(ev);cropState.dragging=true;cropState.start=p;cropState.rect={x:p.x,y:p.y,w:0,h:0};try{visualCropCanvas.setPointerCapture(ev.pointerId)}catch(_){}drawCropCanvas()});
+  visualCropCanvas.addEventListener('pointermove',ev=>{if(!cropState||!cropState.dragging)return;const p=cropCanvasPoint(ev),x=Math.min(cropState.start.x,p.x),y=Math.min(cropState.start.y,p.y);cropState.rect={x,y,w:Math.abs(p.x-cropState.start.x),h:Math.abs(p.y-cropState.start.y)};drawCropCanvas();const hint=$('#visualCropHint');if(hint){hint.textContent='Vybraná oblast: '+Math.round(cropState.rect.w)+' × '+Math.round(cropState.rect.h)+' px v náhledu.';hint.classList.add('has-selection')}});
+  const stop=ev=>{if(!cropState)return;cropState.dragging=false;try{visualCropCanvas.releasePointerCapture(ev.pointerId)}catch(_){}};visualCropCanvas.addEventListener('pointerup',stop);visualCropCanvas.addEventListener('pointercancel',stop);
+}
+$('#visualCropCancel')?.addEventListener('click',closeVisualCrop);$('#visualCropReset')?.addEventListener('click',resetVisualCrop);$('#visualCropApply')?.addEventListener('click',applyVisualCrop);$('#visualCropOverlay')?.addEventListener('click',e=>{if(e.target.id==='visualCropOverlay')closeVisualCrop()});
+const visualSupplementFile=$('#visualSupplementFile'),visualSupplementBtn=$('#visualSupplementBtn');
+if(visualSupplementBtn&&visualSupplementFile){visualSupplementBtn.addEventListener('click',()=>visualSupplementFile.click());visualSupplementFile.addEventListener('change',async e=>{try{await appendSupplementalVisualFiles(e.target.files||[])}catch(err){showMessage('Podklad se nepodařilo přidat',friendlyApiMessage(err))}finally{visualSupplementFile.value=''}})}
 
 async function handleFiles(fileList){
-  const previous={uploaded,filename:$('#filename').textContent,info:$('#uploadInfo').textContent,chip:$('#filechip').classList.contains('show'),thumb:$('#thumb').classList.contains('show'),thumbSrc:$('#thumbImg').src};
+  const previous={uploaded,filename:$('#filename').textContent,info:$('#uploadInfo').textContent,chip:$('#filechip').classList.contains('show'),thumb:$('#thumb').classList.contains('show'),thumbSrc:$('#thumbImg').src,visualAssets:sourceVisualAssets.map(cloneSourceVisualAsset),visualNotes:sourceDocumentVisualNotes.map(x=>({...x})),scanReport:sourceScanReport?{...sourceScanReport}:null,visualSeq:visualAssetSeq};
   clearErr($('#inputErr'));setUploadInfo('');$('#thumb').classList.remove('show');
   const files=[...fileList];
   if(!files.length)return;
   try{
     if(files.length>1){
-      if(files.length>MAX_IMAGE_COUNT)throw makeAppError('Najednou lze nahrát maximálně '+MAX_IMAGE_COUNT+' obrázků. U větší sady je rozděl na více částí.','TOO_MANY_IMAGES');
-      if(!files.every(f=>(f.type||'').startsWith('image/')))throw makeAppError('Více souborů najednou je podporováno jen pro obrázky/fotky. PDF, Word, PowerPoint nebo Excel nahraj po jednom.','TOO_MANY_IMAGES');
-      const totalSource=files.reduce((sum,f)=>sum+f.size,0);
-      if(totalSource>MAX_IMAGE_SOURCE_TOTAL_BYTES)throw makeAppError('Vybrané obrázky mají dohromady '+humanBytes(totalSource)+'. Maximum pro bezpečné zpracování v prohlížeči je '+humanBytes(MAX_IMAGE_SOURCE_TOTAL_BYTES)+'.','FILE_TOO_LARGE');
+      const images=files.filter(f=>(f.type||'').startsWith('image/')),pdfs=files.filter(f=>f.type==='application/pdf'||/\.pdf$/i.test(f.name||'')),other=files.filter(f=>!images.includes(f)&&!pdfs.includes(f));
+      if(other.length||pdfs.length>1||(!pdfs.length&&images.length!==files.length))throw makeAppError('Více souborů najednou lze použít jako sadu fotografií, nebo jako jedno PDF doplněné obrázky/výřezy. Office a textové soubory nahraj po jednom.','TOO_MANY_IMAGES');
+      if(images.length>MAX_IMAGE_COUNT)throw makeAppError('Najednou lze použít maximálně '+MAX_IMAGE_COUNT+' obrázků. U větší sady je rozděl na více částí.','TOO_MANY_IMAGES');
+      const totalSource=files.reduce((sum,f)=>sum+f.size,0);if(totalSource>MAX_IMAGE_SOURCE_TOTAL_BYTES+MAX_PDF_BYTES)throw makeAppError('Vybrané soubory jsou dohromady příliš velké pro bezpečné zpracování.','FILE_TOO_LARGE');
+      const imageItems=[];for(const f of images)imageItems.push(await resizeImage(f,true,Math.max(1,images.length)));
       const items=[];
-      for(const f of files)items.push(await resizeImage(f,true,files.length));
-      if(mediaBytes(items)>MAX_INLINE_REQUEST_BYTES)throw makeAppError('Obrázky jsou i po zmenšení pro přímé API volání příliš velké ('+humanBytes(mediaBytes(items))+'). Uber počet fotek nebo je rozděl na části.','REQUEST_TOO_LARGE');
-      uploaded={kind:'media',items};
-      $('#thumbImg').src='data:'+items[0].mime_type+';base64,'+items[0].data;$('#thumb').classList.add('show');
-      $('#filename').textContent='🖼️ '+files.length+' obrázků';
-      const saved=files.reduce((sum,f)=>sum+f.size,0)-items.reduce((sum,it)=>sum+it.bytes,0);
-      setUploadInfo('Obrázky byly automaticky zmenšeny pro bezpečné odeslání do API. Úspora přibližně '+humanBytes(Math.max(0,saved))+'.');
+      if(pdfs.length){const pdf=pdfs[0];if(pdf.size>MAX_PDF_BYTES)throw makeAppError('PDF je příliš velké pro přímé odeslání ('+humanBytes(pdf.size)+'). Bezpečný limit je '+humanBytes(MAX_PDF_BYTES)+'.','FILE_TOO_LARGE');items.push({mime_type:'application/pdf',data:await fileToBase64(pdf),name:pdf.name,bytes:pdf.size,originalBytes:pdf.size,compressed:false})}
+      items.push(...imageItems);if(mediaBytes(items)>MAX_INLINE_REQUEST_BYTES)throw makeAppError('Média jsou i po zmenšení pro přímé API volání příliš velká ('+humanBytes(mediaBytes(items))+'). Uber počet fotek, zmenši PDF nebo materiál rozděl.','REQUEST_TOO_LARGE');
+      uploaded={kind:'media',items};setSourceVisualAssetsFromItems(imageItems,pdfs.length?'pdf-supplement':'multi-image');
+      if(imageItems.length){$('#thumbImg').src='data:'+imageItems[0].mime_type+';base64,'+imageItems[0].data;$('#thumb').classList.add('show')}
+      $('#filename').textContent=pdfs.length?'📑 '+pdfs[0].name+' + '+images.length+' obrázků':'🖼️ '+images.length+' obrázků';
+      const saved=images.reduce((sum,f)=>sum+f.size,0)-imageItems.reduce((sum,it)=>sum+it.bytes,0);
+      setUploadInfo(pdfs.length?'PDF se odešle přímo a přiložené obrázky slouží jako samostatné stránky nebo přesné vizuální podklady. Obrázky byly bezpečně optimalizovány; úspora přibližně '+humanBytes(Math.max(0,saved))+'.':'Obrázky byly automaticky zmenšeny pro bezpečné odeslání do API. Úspora přibližně '+humanBytes(Math.max(0,saved))+'.');
     } else {
       await handleSingleFile(files[0]);
     }
     $('#filechip').classList.add('show');
     $('#pasteText').value='';
   }catch(err){
-    uploaded=previous.uploaded;if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';$('#filename').textContent=previous.filename;$('#filechip').classList.toggle('show',previous.chip);$('#thumb').classList.toggle('show',previous.thumb);if(previous.thumbSrc)$('#thumbImg').src=previous.thumbSrc;if(previous.info)setUploadInfo(previous.info);else if(previous.uploaded)setUploadInfo('Původní soubor zůstal vybraný.');
+    uploaded=previous.uploaded;sourceVisualAssets=previous.visualAssets.map(cloneSourceVisualAsset).filter(Boolean);sourceDocumentVisualNotes=previous.visualNotes.map(x=>({...x}));sourceScanReport=previous.scanReport?{...previous.scanReport}:null;visualAssetSeq=previous.visualSeq;renderSourceVisualPanel();if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';$('#filename').textContent=previous.filename;$('#filechip').classList.toggle('show',previous.chip);$('#thumb').classList.toggle('show',previous.thumb);if(previous.thumbSrc)$('#thumbImg').src=previous.thumbSrc;if(previous.info)setUploadInfo(previous.info);else if(previous.uploaded)setUploadInfo('Původní soubor zůstal vybraný.');
     errBox($('#inputErr'),friendlyApiMessage(err)||err.message)
   }
 }
@@ -446,38 +635,38 @@ async function handleSingleFile(file){
   const isRtf=name.endsWith('.rtf');
   if(isImg){
     const item=await resizeImage(file,false,1);
-    uploaded={kind:'media',items:[item]};
+    uploaded={kind:'media',items:[item]};setSourceVisualAssetsFromItems([item],'image');
     $('#thumbImg').src='data:'+item.mime_type+';base64,'+item.data;$('#thumb').classList.add('show');
     $('#filename').textContent='🖼️ '+file.name;
-    setUploadInfo(item.compressed?'Obrázek byl automaticky zmenšen z '+humanBytes(item.originalBytes)+' na '+humanBytes(item.bytes)+' kvůli bezpečnému API limitu.':'Obrázek se odešle v původní kvalitě.');
+    setUploadInfo((item.compressed?'Obrázek byl automaticky zmenšen z '+humanBytes(item.originalBytes)+' na '+humanBytes(item.bytes)+' kvůli bezpečnému API limitu.':'Obrázek se odešle v původní kvalitě.')+' Před načtením můžeš v panelu obrazových podkladů upravit pořadí, otočení, čtecí kontrast nebo výřez.');
   } else if(isPdf){
     if(file.size>MAX_PDF_BYTES)throw makeAppError('PDF je příliš velké pro přímé odeslání ('+humanBytes(file.size)+'). Bezpečný limit pro PDF je '+humanBytes(MAX_PDF_BYTES)+'. Zkus PDF zmenšit, rozdělit nebo vložit text.','FILE_TOO_LARGE');
     const data=await fileToBase64(file);
-    uploaded={kind:'media',items:[{mime_type:'application/pdf',data,name:file.name,bytes:file.size,originalBytes:file.size,compressed:false}]};
+    uploaded={kind:'media',items:[{mime_type:'application/pdf',data,name:file.name,bytes:file.size,originalBytes:file.size,compressed:false}]};resetSourceVisualAssets();
     $('#filename').textContent='📑 '+file.name;
-    setUploadInfo('PDF se odešle přímo. Bezpečný limit je nastaven s rezervou pod inline limitem API.');
+    setUploadInfo('PDF se odešle přímo a model vizuálně projde i stránky bez textové vrstvy. Pokud obsahuje mapu, graf nebo schéma, které chceš přesně zachovat v novém listu, po načtení přidej snímek příslušné stránky nebo výřez.');
   } else if(isDocx){
     const rich=await readDocxRich(file);if(rich.text)assertTextLength(rich.text,'Text z .docx');
     if(rich.items.length&&mediaBytes(rich.items)>MAX_INLINE_REQUEST_BYTES)throw makeAppError('Vložené obrázky v DOCX jsou po převodu příliš velké. Ulož dokument jako PDF nebo obrázky zmenši.','REQUEST_TOO_LARGE');
-    uploaded=rich.items.length?{kind:'mixed',text:rich.text,items:rich.items}:{kind:'text',text:rich.text};$('#filename').textContent='📝 '+file.name;
-    setUploadInfo(rich.items.length?'DOCX byl načten včetně '+rich.items.length+' vložených obrázků. Textová vrstva má '+String(rich.text||'').trim().split(/\s+/).filter(Boolean).length+' slov. Při načtení zadání se modelu pošle text i obrázky, takže cvičení vložená jako screenshoty nezmizí.':officeExtractNote('DOCX',rich.text));
+    uploaded=rich.items.length?{kind:'mixed',text:rich.text,items:rich.items}:{kind:'text',text:rich.text};if(rich.items.length)setSourceVisualAssetsFromItems(rich.items,'docx');else resetSourceVisualAssets();$('#filename').textContent='📝 '+file.name;
+    const docxNote=(rich.items.length?'DOCX byl načten včetně '+rich.items.length+' podporovaných vložených obrázků. Textová vrstva má '+String(rich.text||'').trim().split(/\s+/).filter(Boolean).length+' slov. Word Equation zlomky, exponenty, indexy a běžné odmocniny se převádějí do zachovatelného textového zápisu. Při načtení zadání se modelu pošle text i obrázky, takže cvičení vložená jako screenshoty nezmizí.':officeExtractNote('DOCX',rich.text))+(rich.unsupportedImageCount?' Upozornění: '+rich.unsupportedImageCount+' obrazový prvek je ve formátu, který prohlížeč neumí bezpečně zachovat ('+rich.unsupportedImageNames.join(', ')+'). Pro tento prvek použij PDF nebo obrázek.':'');setUploadInfo(docxNote);
   } else if(isPptx){
-    const text=await readPptx(file);assertTextLength(text,'Text z .pptx');uploaded={kind:'text',text};$('#filename').textContent='🖼️ '+file.name;setUploadInfo(officeExtractNote('PPTX',text));
+    const text=await readPptx(file);assertTextLength(text,'Text z .pptx');uploaded={kind:'text',text};resetSourceVisualAssets();$('#filename').textContent='🖼️ '+file.name;setUploadInfo(officeExtractNote('PPTX',text));
   } else if(isXlsx){
-    const text=await readXlsx(file);assertTextLength(text,'Text z .xlsx');uploaded={kind:'text',text};$('#filename').textContent='📊 '+file.name;setUploadInfo(officeExtractNote('XLSX',text));
+    const text=await readXlsx(file);assertTextLength(text,'Text z .xlsx');uploaded={kind:'text',text};resetSourceVisualAssets();$('#filename').textContent='📊 '+file.name;setUploadInfo(officeExtractNote('XLSX',text));
   } else if(isTxt){
-    const text=await fileToText(file);assertTextLength(text,'Text ze souboru');uploaded={kind:'text',text};$('#filename').textContent='📝 '+file.name;setUploadInfo('Textový soubor byl načten lokálně. Před pokračováním zkontroluj jeho obsah.');
+    const text=await fileToText(file);assertTextLength(text,'Text ze souboru');uploaded={kind:'text',text};resetSourceVisualAssets();$('#filename').textContent='📝 '+file.name;setUploadInfo('Textový soubor byl načten lokálně. Před pokračováním zkontroluj jeho obsah.');
   } else if(isHtml){
-    const text=htmlToPlainText(await fileToText(file));assertTextLength(text,'Text z HTML');uploaded={kind:'text',text};$('#filename').textContent='🌐 '+file.name;setUploadInfo('HTML byl převeden lokálně na čistý text. Zkontroluj tabulky a pořadí prvků.');
+    const text=htmlToPlainText(await fileToText(file));assertTextLength(text,'Text z HTML');uploaded={kind:'text',text};resetSourceVisualAssets();$('#filename').textContent='🌐 '+file.name;setUploadInfo('HTML byl převeden lokálně na čistý text. Zkontroluj tabulky a pořadí prvků.');
   } else if(isRtf){
-    const text=readRtf(await fileToText(file));assertTextLength(text,'Text z .rtf');uploaded={kind:'text',text};$('#filename').textContent='📝 '+file.name;setUploadInfo('RTF byl převeden lokálně na čistý text. Zkontroluj formátování a speciální znaky.');
+    const text=readRtf(await fileToText(file));assertTextLength(text,'Text z .rtf');uploaded={kind:'text',text};resetSourceVisualAssets();$('#filename').textContent='📝 '+file.name;setUploadInfo('RTF byl převeden lokálně na čistý text. Zkontroluj formátování a speciální znaky.');
   } else if(isOldOffice){
     throw makeAppError('Starý binární formát '+name.split('.').pop().toUpperCase()+' appka přímo nepřečte. Otevři ho v Office/Google aplikaci a ulož jako .docx/.pptx/.xlsx, nebo vlož text ručně.','FILE_TOO_LARGE');
   } else {
     throw makeAppError('Nepodporovaný formát. Appka umí: fotky/obrázky, PDF, .docx, .pptx, .xlsx, .txt, .rtf, .md, .csv, .tsv, .html a .json.','FILE_TOO_LARGE');
   }
 }
-$('#filex').addEventListener('click',()=>{uploaded=null;fileInput.value='';$('#filechip').classList.remove('show');$('#thumb').classList.remove('show');setUploadInfo('');setStatus('statusInput',$('#pasteText').value.trim()?'vložený text':'čeká na zadání',$('#pasteText').value.trim()?'ok':'warn')});
+$('#filex').addEventListener('click',()=>{uploaded=null;resetSourceVisualAssets();fileInput.value='';$('#filechip').classList.remove('show');$('#thumb').classList.remove('show');setUploadInfo('');setStatus('statusInput',$('#pasteText').value.trim()?'vložený text':'čeká na zadání',$('#pasteText').value.trim()?'ok':'warn')});
 
 $('#extractBtn').addEventListener('click',async()=>{
   clearErr($('#inputErr'));
@@ -487,6 +676,7 @@ $('#extractBtn').addEventListener('click',async()=>{
   if(uploaded&&pasted){errBox($('#inputErr'),'Je vybraný soubor i vložený text. Jeden vstup odeber, aby bylo jasné, ze kterého zadání se má vycházet.');return}
   if(!uploaded&&pasted){
     $('#baseText').value=pasted;
+    syncScoringModeFromSource(true);
     if($('#cefr')&&$('#cefr').checked&&subjectAllowsCefr()){
       applyCefrLevels(null);
       setCefrNote('Ručně vložený čistý text byl načten bez AI přepisu. CEFR odhad se kvůli úspoře dotazu nespouští automaticky; použij tlačítko „Odhadnout CEFR úroveň“.','warn');updateCefrRunButton();
@@ -496,36 +686,41 @@ $('#extractBtn').addEventListener('click',async()=>{
     }
     setStatus('statusFlow','zadání načteno lokálně','ok');
     hide($('#inputPanel'));show($('#configPanel'));
-    $('#configPanel').scrollIntoView({behavior:'smooth',block:'start'});
+    safeScrollIntoView($('#configPanel'),{behavior:'smooth',block:'start'});
     return;
   }
   if(!requireApiKeyForAction('načtení souboru')){errBox($('#inputErr'),'Bez API klíče se soubor nezačne zpracovávat. Vlož klíč v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“.');return}
   const btn=$('#extractBtn'),extractLabel=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="mini"></span> Načítám zadání…';setStatus('statusFlow','načítám zadání','busy');
-  const prompt="Toto je zadání školního testu, pracovního listu nebo učebního materiálu libovolného předmětu. Přepiš jeho obsah do čistého, čitelného textu. Zachovej přesně původní jazyk nebo kombinaci jazyků u každé části; nic nepřekládej jen proto, že aplikace má české UI. Zachovej odbornou terminologii, matematický/chemický/fyzikální zápis, jednotky, značky, symboly, tabulkové údaje, číslování a také veškeré původní bodování: body za úlohy, celkové součty, váhy a případné bodové hranice. U českých pasáží oprav jen zjevné OCR překlepy, ale výsledná čeština musí být gramaticky, stylisticky i lexikálně bezchybná. Na první řádek dej téma/nadpis, pak očíslované úlohy s plným zněním. Obsah zachovej věrně, nic nepřidávej a nevymýšlej nové úlohy. Pokud jde o více fotek, zpracuj je v pořadí nahrání jako pokračování jednoho materiálu. Odpověz POUZE přepsaným zadáním, bez úvodu a komentáře.";
+  const extractionCore="Toto je zadání školního testu, pracovního listu nebo učebního materiálu libovolného předmětu. Vstup může být digitální dokument, fotografie, sken nebo PDF bez textové vrstvy. Vizuálně projdi KAŽDOU stránku a všechny přiložené snímky v daném pořadí; nespoléhej jen na textovou vrstvu PDF. Přepiš jeho obsah do čistého, čitelného textu. Zachovej přesně původní jazyk nebo kombinaci jazyků u každé části; nic nepřekládej jen proto, že aplikace má české UI. Zachovej odbornou terminologii, matematický/chemický/fyzikální zápis, jednotky, značky, symboly, tabulkové údaje, číslování a také veškeré původní bodování: body za úlohy, celkové součty, váhy a případné bodové hranice. STEM přepis musí být znak po znaku věrný v číslech, desetinných čárkách/tečkách, znaménkách, indexech, exponentech, závorkách, zlomcích, odmocninách, chemických koeficientech a nábojích; nesmíš opravovat domnělou věcnou chybu tím, že změníš data zadání. Běžné matematické objekty můžeš zapsat čitelně pomocí standardních symbolů nebo podporovaného zápisu \\frac{a}{b}, \\sqrt{x}, x^{2}, a_{1}; chemické vzorce zapisuj např. H2SO4 a koeficienty odděluj mezerou (2 H2O), aby aplikace rozlišila index od koeficientu. U českých pasáží oprav jen zjevné OCR překlepy, ale výsledná čeština musí být gramaticky, stylisticky i lexikálně bezchybná. Na první řádek dej téma/nadpis, pak očíslované úlohy s plným zněním. Obsah zachovej věrně, nic nepřidávej a nevymýšlej nové úlohy. Pokud část kvůli rozmazání, stínu, ořezu nebo nízkému rozlišení skutečně nejde bezpečně přečíst, NEHÁDEJ čísla, značky ani slova; napiš [NEČITELNÉ] nebo [ČÁSTEČNĚ NEČITELNÉ] a problém uveď v SCAN_REPORT. Pokud jde o více fotek, zpracuj je v pořadí nahrání jako pokračování jednoho materiálu. Pokud úloha závisí na mapě, grafu, schématu, geometrickém nákresu, biologickém obrázku nebo jiném vizuálním podkladu, v textovém přepisu jasně zachovej instrukci, co s ním má žák dělat; samotný obraz ale nenahrazuj vymyšleným slovním popisem.";
+  const hasPdf=!!(uploaded&&Array.isArray(uploaded.items)&&uploaded.items.some(it=>it&&it.mime_type==='application/pdf'));
+  const prompt=extractionCore+'\n\n'+visualManifestPrompt(sourceVisualAssets.length,hasPdf);
   let parts;
   try{
     if(uploaded&&uploaded.kind==='media'){
-      parts=[{text:'Zpracuj následující mediální vstup nebo vstupy v pořadí nahrání.'},...mediaParts(uploaded.items),{text:prompt}];
+      parts=[{text:'Zpracuj následující mediální vstup nebo vstupy. PDF projdi stránku po stránce; samostatné obrázky VISUAL_n zpracuj v pořadí, v jakém jsou zde přiloženy. Pokud je přiloženo PDF i obrázky, obrázky mohou být přesné snímky/výřezy obrazových prvků z PDF.'},...extractionMediaParts(uploaded),{text:prompt}];
     } else if(uploaded&&uploaded.kind==='mixed'){
-      parts=[{text:'Tento Office dokument obsahuje textovou vrstvu i vložené obrázky. Všechny části patří do jednoho materiálu. Přepiš obsah z textu i ze všech obrázků; nic nevynechávej a nedoplňuj úlohy, které ve zdroji nejsou.\n\nTEXTOVÁ VRSTVA DOKUMENTU:\n'+uploaded.text},...mediaParts(uploaded.items),{text:prompt}];
+      parts=[{text:'Tento Office dokument obsahuje textovou vrstvu i vložené obrázky. Všechny části patří do jednoho materiálu. Přepiš obsah z textu i ze všech obrázků; nic nevynechávej a nedoplňuj úlohy, které ve zdroji nejsou. Každý vložený obrázek je označen VISUAL_n a stejný identifikátor použij v technickém manifestu.\n\nTEXTOVÁ VRSTVA DOKUMENTU:\n'+uploaded.text},...extractionMediaParts(uploaded),{text:prompt}];
     } else if(uploaded&&uploaded.kind==='text'){
       parts=[{text:prompt+"\n\nZADÁNÍ:\n"+uploaded.text}];
     } else {
       parts=[{text:prompt+"\n\nZADÁNÍ:\n"+pasted}];
     }
     const out=await callGemini(parts,{operation:'material-extraction'});
-    const extracted=String(out||pasted||(uploaded&&uploaded.text)||'').trim();
+    const visualSplit=splitVisualManifest(String(out||pasted||(uploaded&&uploaded.text)||''));
+    const extracted=String(visualSplit.text||pasted||(uploaded&&uploaded.text)||'').trim();
     if(!extracted)throw makeAppError('Ze vstupu se nepodařilo získat žádný čitelný text.','EMPTY_EXTRACT');
+    applyVisualManifest(visualSplit.entries,visualSplit.documentEntries,visualSplit.scanReports);
     $('#baseText').value=extracted;
+    syncScoringModeFromSource(true);
     if($('#cefr').checked && subjectAllowsCefr()){
-      await detectCefrForBase(out||pasted||'');
+      await detectCefrForBase(extracted||pasted||'');
     } else {
       if($('#cefr').checked && !subjectAllowsCefr()){$('#cefr').checked=false;saveCefrPreference(false);applyCefrLevels(null)}
       syncCefrHintFromSubject();
       if(!looksLikeLanguageSubject(getSubjectValue()))setCefrNote('CEFR je vypnutý. U tohoto materiálu se použijí jen úrovně obtížnosti.');
     }
     hide($('#inputPanel'));show($('#configPanel'));
-    $('#configPanel').scrollIntoView({behavior:'smooth',block:'start'});
+    safeScrollIntoView($('#configPanel'),{behavior:'smooth',block:'start'});
   }catch(err){setStatus('statusFlow','chyba načtení','warn');errBox($('#inputErr'),friendlyApiMessage(err))}
   finally{btn.disabled=false;btn.innerHTML=extractLabel}
 });
@@ -553,18 +748,42 @@ function metaLine(isKey){
 /* Rozdělí vyrenderovaný list na samostatné bloky cvičení.
    Každé cvičení začíná řádkem typu "1.", "2)", "Cvičení 3", "Exercise 4", "Úloha 5".
    Bloky se v tisku nesmí rozpůlit (CSS .pa-ex { break-inside:avoid }). */
-function buildPrintBody(text){
-  const lines=String(text||'').split(/\r?\n/);
-  // Odsazené číslované možnosti jsou podpoložky, ne nové úlohy; čtyřciferný letopočet také nový blok nezakládá.
-  const reStart=/^(?:(?:cvičení|úloha|exercise|task|part)\s*\d{1,2}[.):]?\s+\S|\d{1,2}[.):]\s+\S)/i;
-  const blocks=[];let cur=[];
+function isMainTaskStartLine(line){
+  const clean=String(line||'').trim().replace(/^\*{1,2}/,'').replace(/\*{1,2}$/,'').trim();
+  return /^(?:(?:cvičení|úloha|exercise|task|part)\s*\d{1,2}[.):]?\s+\S|\d{1,2}[.):]\s+\S)/i.test(clean);
+}
+function splitPrintBlocks(text){
+  const lines=String(text||'').split(/\r?\n/),blocks=[];let cur=[];
   for(const ln of lines){
-    if(reStart.test(ln)&&cur.length){blocks.push(cur.join('\n'));cur=[ln]}
+    if(isMainTaskStartLine(ln)&&cur.length){blocks.push({text:cur.join('\n'),isTask:isMainTaskStartLine(cur.find(x=>String(x).trim())||'')});cur=[ln]}
     else cur.push(ln);
   }
-  if(cur.length)blocks.push(cur.join('\n'));
-  if(blocks.length<=1)return '<div class="pa-ex">'+render(text)+'</div>';
-  return blocks.map(b=>'<div class="pa-ex">'+render(b)+'</div>').join('');
+  if(cur.length)blocks.push({text:cur.join('\n'),isTask:isMainTaskStartLine(cur.find(x=>String(x).trim())||'')});
+  return blocks.filter(b=>String(b.text||'').trim());
+}
+function manualScoreValue(scores,index){
+  if(!scores||typeof scores!=='object')return null;const v=Number(scores[index]);return Number.isFinite(v)&&v>=0?v:null;
+}
+function formatScoreNumber(v){const n=Number(v);return Number.isInteger(n)?String(n):String(Math.round(n*10)/10).replace('.',',')}
+function renderPrintBlock(block,index,scores,visualAssets){
+  const score=block.isTask?manualScoreValue(scores,index):null;
+  if(score==null)return renderTextWithVisuals(block.text,visualAssets||[],true);
+  const lines=String(block.text||'').split(/\r?\n/),first=lines.shift()||'';
+  return renderTextWithVisuals(first,visualAssets||[],true)+' <span class="pa-points">('+formatScoreNumber(score)+' b.)</span>'+(lines.length?'\n'+renderTextWithVisuals(lines.join('\n'),visualAssets||[],true):'');
+}
+function buildPrintBody(text,manualScores,visualAssets){
+  const blocks=splitPrintBlocks(text);
+  if(!blocks.length)return '<div class="pa-ex">'+renderTextWithVisuals(text,visualAssets||[],true)+'</div>';
+  return blocks.map((b,i)=>'<div class="pa-ex" data-print-block="'+i+'">'+renderPrintBlock(b,i,manualScores,visualAssets||[])+'</div>').join('');
+}
+function stripGeneratedScoring(text){
+  const total=/^(?:celkem|total|součet|soucet|maximum|max\.?)\s*[:=]?\s*\d+(?:[.,]\d+)?\s*(?:bod(?:ů|u|y)?|b\.?|points?|pts?)\s*$/i;
+  const suffix=/\s*(?:\(|\[)\s*\d+(?:[.,]\d+)?\s*(?:bod(?:ů|u|y)?|b\.?|points?|pts?)\s*(?:\)|\])\s*$/i;
+  return String(text||'').split(/\r?\n/).map(line=>{
+    const raw=String(line||''),lead=raw.match(/^\s*/)?.[0]||'',trimmed=raw.trim(),open=trimmed.startsWith('**')?'**':trimmed.startsWith('*')?'*':'',close=trimmed.endsWith('**')?'**':trimmed.endsWith('*')?'*':'';
+    const core=trimmed.slice(open.length,trimmed.length-close.length).trim();if(total.test(core))return '';
+    const cleaned=core.replace(suffix,'').trimEnd();return cleaned?lead+open+cleaned+close:'';
+  }).join('\n').replace(/\n{3,}/g,'\n\n').trim();
 }
 function openManualCopy(text){
   $('#copyManual').value=text||'';

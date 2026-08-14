@@ -1,4 +1,4 @@
-/* AI Studio GHRAB — GHRAB Material v1 adapter (Diferenciátor 1.3.17, bridge 2.0) */
+/* AI Studio GHRAB — GHRAB Material v1 adapter (Diferenciátor 1.3.25, bridge 2.0) */
 (function(){
   'use strict';
   const KEY='ghrab.handoff.v1',EVENTS='ghrab.pilot.events.v2',MAX_SOURCE=180000;
@@ -26,6 +26,12 @@
     remove(KEY);return p;
   }
   function setValue(id,v){const e=document.getElementById(id);if(!e)return;e.value=String(v??'').slice(0,MAX_SOURCE);e.dispatchEvent(new Event('input',{bubbles:true}))}
+  function setTargetGroup(m){
+    const el=document.getElementById('advTargetGroup');if(!el)return;
+    const candidates=[m&&m.yearGroup,m&&m.level,[m&&m.yearGroup,m&&m.level].filter(Boolean).join(' · ')];let key='';
+    if(typeof normalizeTargetGroupValue==='function')for(const candidate of candidates){key=normalizeTargetGroupValue(candidate);if(key)break}
+    el.value=key||'';el.dispatchEvent(new Event('change',{bubbles:true}));
+  }
   function tasks(m){
     return taskList(m).slice(0,200).map((t,i)=>{
       t=(t&&typeof t==='object')?t:{};
@@ -37,7 +43,7 @@
   function banner(m,p){const b=document.createElement('div');b.className='studio-import-banner';const span=document.createElement('span'),strong=document.createElement('b'),small=document.createElement('small'),link=document.createElement('a'),close=document.createElement('button');strong.textContent='⇄ Materiál převzat z AI Studia';small.textContent=String(m.title||'Bez názvu');span.append(strong,small);link.href=studioUrl(p);link.textContent='Zpět do Studia';close.type='button';close.setAttribute('aria-label','Zavřít');close.textContent='×';close.onclick=()=>b.remove();b.append(span,link,close);(document.querySelector('.wrap')||document.body).prepend(b)}
   function apply(m,p){
     const source=[String(m.content&&m.content.sourceText||'').slice(0,MAX_SOURCE),tasks(m)].filter(Boolean).join('\n\nÚLOHY:\n').slice(0,MAX_SOURCE);
-    setValue('pasteText',source);setValue('baseText',source);setValue('subject',m.subject);setValue('mSubject',m.subject);setValue('mTopic',m.title);setValue('mClass',[m.yearGroup,m.level].filter(Boolean).join(' · '));setValue('advTargetGroup',[m.yearGroup,m.level].filter(Boolean).join(' · '));setValue('advLearningGoal',objectives(m).map(String).join('; '));setValue('advTeacherInstruction','Zachovej společný výukový cíl a jasně popiš, jak se jednotlivé varianty liší mírou podpory a kognitivní náročností.');
+    setValue('pasteText',source);setValue('baseText',source);setValue('subject',m.subject);setValue('mSubject',m.subject);setValue('mTopic',m.title);setValue('mClass',[m.yearGroup,m.level].filter(Boolean).join(' · '));setTargetGroup(m);setValue('advLearningGoal',objectives(m).map(String).join('; '));setValue('advTeacherInstruction','Zachovej společný výukový cíl a jasně popiš, jak se jednotlivé varianty liší mírou podpory a kognitivní náročností.');
     try{syncCefrHintFromSubject();hide($('#inputPanel'));show($('#configPanel'));setStatus('statusFlow','materiál převzat z AI Studia','ok')}catch(_){}
     banner(m,p);record(m);
   }

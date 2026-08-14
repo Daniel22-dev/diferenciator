@@ -24,8 +24,16 @@ check('direct.mode',directAi.defaultMode==='direct-gemini'&&JSON.stringify(direc
 check('direct.profile-keys',JSON.stringify(Object.keys(map))===JSON.stringify(expected),Object.keys(map).join(','));
 check('direct.profile-models-distinct',new Set(expected.map(k=>map[k]).filter(Boolean)).size===3,expected.map(k=>`${k}=${map[k]||''}`).join(' | '));
 check('direct.provider-is-runtime-only',expected.every(k=>/^gemini-[a-z0-9.-]+$/i.test(String(map[k]||''))),'direct runtime owns Gemini IDs');
+const capabilityOrder=['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-3.7-flash'];
+const ranks=expected.map(k=>capabilityOrder.indexOf(String(map[k]||'')));
+check('direct.profile-capability-order',ranks.every(x=>x>=0)&&ranks[0]<ranks[1]&&ranks[1]<ranks[2],expected.map((k,i)=>`${k}=${map[k]||''}#${ranks[i]}`).join(' | '));
+const thinkingLevels=directAi.directGemini?.profileThinkingLevels||{};
+check('direct.profile-thinking-levels',expected.every(k=>Array.isArray(thinkingLevels[k])&&thinkingLevels[k].length>0),expected.map(k=>`${k}=${(thinkingLevels[k]||[]).join('/')}`).join(' | '));
+check('direct.quality-thinking-compat',!thinkingLevels.quality?.includes('minimal')&&thinkingLevels.quality?.includes('low')&&integration.includes('profileThinkingLevels')&&integration.includes("allowed.includes('low')?'low':allowed[0]"),'quality excludes minimal; integration normalizes unsupported levels');
 check('direct.fallback-economy',JSON.stringify(directAi.directGemini?.fallbackModels||[])===JSON.stringify([map.economy]),'fallback uses economy profile model');
 const schoolAi=school?.ai||{};
+check('timeout.direct-multimodal',directAi.requestTimeoutMs===120000,`${directAi.requestTimeoutMs||0} ms`);
+check('timeout.direct-school-aligned',directAi.requestTimeoutMs===schoolAi.requestTimeoutMs,`direct=${directAi.requestTimeoutMs||0} | school=${schoolAi.requestTimeoutMs||0}`);
 check('school.mode',schoolAi.defaultMode==='school-gateway'&&schoolAi.selectedMode==='school-gateway'&&JSON.stringify(schoolAi.allowedModes)===JSON.stringify(['school-gateway']),schoolAi.defaultMode||'');
 check('school.provider-neutral',!/gemini-|openai|anthropic|modelOverride/i.test(read('src/runtime-config.school-server.js')),'no provider/model in school runtime');
 check('index.loads-runtime',index.includes('<script src="./runtime-config.js" data-ghrab-runtime-config></script>'),'runtime loaded before app');

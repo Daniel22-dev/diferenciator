@@ -1,7 +1,7 @@
 {
   "schema": "ghrab-ai-operations-v1",
   "appId": "differentiator",
-  "appVersion": "1.3.17",
+  "appVersion": "1.3.25",
   "registryVersion": "1.1.0",
   "coreVersion": "1.0.0",
   "contractVersion": "1",
@@ -87,7 +87,8 @@
         "quality"
       ],
       "inputTypes": [
-        "text"
+        "text",
+        "image"
       ],
       "streaming": false,
       "expectedOutputs": 1,
@@ -103,7 +104,8 @@
         "quality"
       ],
       "inputTypes": [
-        "text"
+        "text",
+        "image"
       ],
       "streaming": false,
       "expectedOutputs": 1,
@@ -119,7 +121,8 @@
         "quality"
       ],
       "inputTypes": [
-        "text"
+        "text",
+        "image"
       ],
       "streaming": false,
       "expectedOutputs": 1,

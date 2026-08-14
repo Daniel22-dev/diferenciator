@@ -1,5 +1,5 @@
-/* ===================== GHRAB AI CORE 1.0.0 · DIFERENCIÁTOR 1.3.17 ===================== */
-const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.17'});
+/* ===================== GHRAB AI CORE 1.0.0 · DIFERENCIÁTOR 1.3.25 ===================== */
+const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.25'});
 const DPL_WORKSHEET_SCHEMA=Object.freeze({
   type:'object',
   properties:{
@@ -21,9 +21,9 @@ const DPL_AI_OPERATIONS=Object.freeze({schema:'ghrab-ai-operations-v1',appId:DPL
   'material-extraction':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'balanced',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text','image','document'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
   'worksheet-generation':{outputSchemaId:'differentiator.object.v1',defaultModelProfile:'balanced',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text','image','document'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
   'worksheet-structure-repair':{outputSchemaId:'differentiator.object.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
-  'answer-key-generation':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:16384},
-  'worksheet-quality-audit':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:8192},
-  'worksheet-quality-revision':{outputSchemaId:'differentiator.object.v1',defaultModelProfile:'balanced',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768}
+  'answer-key-generation':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text','image'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:16384},
+  'worksheet-quality-audit':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text','image'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:8192},
+  'worksheet-quality-revision':{outputSchemaId:'differentiator.object.v1',defaultModelProfile:'balanced',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text','image'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768}
 })});
 
 const DPL_EMAIL_RE=/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g;
@@ -69,6 +69,14 @@ function dplModelProfile(operation){
   if(!registration)return MODEL_PROFILE_DEFAULT;
   const desired=normalizeModelProfile(selectedModelProfile);
   return registration.allowedModelProfiles.includes(desired)?desired:registration.defaultModelProfile;
+}
+function dplReasoningHint(operation,requested){
+  const hint=String(requested||THINKING_DEFAULT||'medium').trim().toLowerCase();
+  if(dplSchoolMode())return hint;
+  const profile=dplModelProfile(operation);
+  const allowed=window.__GHRAB_RUNTIME_CONFIG__?.ai?.directGemini?.profileThinkingLevels?.[profile];
+  if(!Array.isArray(allowed)||!allowed.length||allowed.includes(hint))return hint;
+  return allowed.includes('low')?'low':allowed[0];
 }
 function dplCoreParts(parts){
   const out=[];
@@ -173,7 +181,7 @@ callGemini=async function callGeminiThroughCore(parts,opts={}){
       instructions,
       inputParts:preflight.parts,
       outputSchemaId:registration.outputSchemaId,
-      options:{reasoningHint:opts.thinking||THINKING_DEFAULT,maxOutputTokensHint:registration.maxOutputTokensHint},
+      options:{reasoningHint:dplReasoningHint(operation,opts.thinking),maxOutputTokensHint:registration.maxOutputTokensHint},
       privacy:{clientAnonymized:preflight.clientAnonymized,preflightPassed:true},
       usageContext:{expectedOutputs:registration.expectedOutputs||1},
       workflowId:opts.workflowId||undefined
@@ -191,15 +199,15 @@ callGemini=async function callGeminiThroughCore(parts,opts={}){
 };
 
 function dplRemoveLocalProviderKeys(){
-  try{localStorage.removeItem(KEY_SK)}catch(_){}
-  try{sessionStorage.removeItem(KEY_SESSION_SK)}catch(_){}
+  storageRemovePair('local',KEY_SK,LEGACY_STORAGE_KEYS.keyLocal);
+  storageRemovePair('session',KEY_SESSION_SK,LEGACY_STORAGE_KEYS.keySession);
   geminiApiKey='';geminiKeyScope='server';
 }
 function dplApplyServerKeyPolicy(){
   if(!dplSchoolMode()){if(typeof applyAiRuntimeUi==='function')applyAiRuntimeUi();return}
   const platform=window.GHRAB_PLATFORM||{};
   if(typeof platform.enforceLocalKeyPolicy==='function'){
-    try{platform.enforceLocalKeyPolicy({localStorageKeys:[KEY_SK],sessionStorageKeys:[KEY_SESSION_SK],onRemoved:dplRemoveLocalProviderKeys})}catch(_){dplRemoveLocalProviderKeys()}
+    try{platform.enforceLocalKeyPolicy({localStorageKeys:[KEY_SK,LEGACY_STORAGE_KEYS.keyLocal],sessionStorageKeys:[KEY_SESSION_SK,LEGACY_STORAGE_KEYS.keySession],onRemoved:dplRemoveLocalProviderKeys})}catch(_){dplRemoveLocalProviderKeys()}
   }else dplRemoveLocalProviderKeys();
   if(typeof applyAiRuntimeUi==='function')applyAiRuntimeUi();
   const input=document.getElementById('keyInput');

@@ -1,14 +1,14 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.17  
+**Aktuální verze:** 1.3.25  
 
-1.3.17 přidává výrazný hlavní nadpis, řízené bodování, opravu prázdné první strany u PDF řešení a omezený tok kontroly bez povinné auditní smyčky.
+1.3.25 je cílený GARP follow-up po auditu 1.3.24: sjednocuje multimodální timeout na 120 s, opravuje pořadí profilů AI tak, aby Důkladný byl skutečně nejsilnější, přidává kompatibilní thinking guard pro Gemini 3.7, odstraňuje duplicitní text ročníku a potvrzený mrtvý kód. Funkční rozsah 1.3.20–1.3.24 zůstává beze změny a výkonová baseline z 1.3.24 zůstává zmrazená.
 **Platforma:** GHRAB Platform 1.1.0 · etapa P5
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.17
+- **Verze:** 1.3.25
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž
@@ -26,7 +26,7 @@ npm ci
 npm test
 ```
 
-`npm test` nejprve znovu sestaví `dist/`, ověří centrální profily Úsporný / Doporučený / Důkladný přes `qa:profiles`, fyzickými Chromium kliknutími ověří jejich propsání do Core requestu, spustí regresní brány a zkontroluje PWA, bezpečnost, duplicity ID, manifest i interní testy. Test použije systémový Chromium/Chrome nebo prohlížeč nainstalovaný Playwrightem. Pokud na čistém stroji prohlížeč chybí, spusť jednou `npx playwright install chromium`.
+`npm test` nejprve znovu sestaví `dist/`, ověří centrální profily Úsporný / Doporučený / Důkladný přes `qa:profiles`, fyzickými Chromium kliknutími ověří jejich propsání do Core requestu, spustí regresní brány včetně skutečných `qa:visuals`, `qa:scan` a `qa:stem` Chromium/PDF testů a zkontroluje PWA, bezpečnost, duplicity ID, manifest i interní testy. Test použije systémový Chromium/Chrome nebo prohlížeč nainstalovaný Playwrightem. Pokud na čistém stroji prohlížeč chybí, spusť jednou `npx playwright install chromium`.
 
 ## Struktura
 

@@ -59,7 +59,7 @@
     "gatewayContract": "ghrab-ai-request-v1",
     "certificationStatus": "certified-p1",
     "certificationEvidence": "evidence/p1-ai-conformance.json",
-    "certifiedOperations": 6
+    "certifiedOperations": 7
   },
   "slug": "diferenciator",
   "paths": {
@@ -78,6 +78,6 @@
     "studioBridge": 2,
     "artifactEnvelope": 1,
     "storagePrefix": "ghrab.differentiator.",
-    "cacheName": "ghrab-differentiator-v1.3.17"
+    "cacheName": "ghrab-differentiator-v1.3.25"
   }
 }

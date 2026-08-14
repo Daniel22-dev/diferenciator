@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+import {readFileSync,existsSync} from 'node:fs';
+import {join,dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const ROOT=join(dirname(fileURLToPath(import.meta.url)),'..');
+const matrix=JSON.parse(readFileSync(join(ROOT,'src/config/all-subject-test-matrix.json'),'utf8'));
+const src=['src/js/20-zaklad-ui-projekty.js','src/js/30-api-gemini.js','src/js/36-all-subject-safety.js','src/js/40-vystup-pdf-kvalita.js','src/styles.css'].map(p=>readFileSync(join(ROOT,p),'utf8')).join('\n');
+const checks=[];const check=(id,ok,detail='')=>checks.push({id,ok:!!ok,detail});
+check('matrix.schema',matrix.schema==='ghrab-differentiator-all-subject-matrix-v1');
+check('matrix.domains',matrix.domains.length>=13,String(matrix.domains.length));
+for(const id of ['language','math','physics','chemistry','biology','geography','history','civics','informatics','music','art','pe','humanities'])check('domain.'+id,matrix.domains.some(d=>d.id===id));
+for(const key of ['answer-key-coverage','unreadable-source-markers','tables','unicode','visual-assets','scan-input','pdf-output','school-gateway'])check('cross.'+key,matrix.crossCutting.includes(key));
+for(const fn of ['subjectDomainKind','subjectGenerationPromptLines','subjectQualityPromptLines','subjectValidationIssues','appendEducationalRichText','renderEducationalTextHtml'])check('code.'+fn,new RegExp('function\\s+'+fn+'\\b').test(src));
+check('hook.generation',/subjectGenerationPromptLines\(subject\)/.test(src));
+check('hook.quality',/subjectQualityPromptLines\(getSubjectValue\(\)\)/.test(src));
+check('hook.validation',/subjectValidationIssues\(parsed/.test(src));
+check('hook.answer-key',/subjectAnswerKeyPromptLine/.test(src));
+check('render.table',/className='edu-table'/.test(src)&&/\.edu-table\{/.test(src));
+check('render.escape',/document\.createTextNode/.test(src));
+const failed=checks.filter(x=>!x.ok);console.log(JSON.stringify({schema:'ghrab-differentiator-all-subject-static-v1',version:matrix.version,checks,summary:{passed:checks.length-failed.length,failed:failed.length},status:failed.length?'failed':'passed'},null,2));if(failed.length)process.exitCode=1;

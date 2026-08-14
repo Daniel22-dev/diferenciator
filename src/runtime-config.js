@@ -13,7 +13,7 @@ window.__GHRAB_RUNTIME_CONFIG__ = {
     automaticFallback: false,
     gatewayUrl: "/api/v1/ai/generate",
     healthUrl: "/api/v1/ai/health",
-    requestTimeoutMs: 60000,
+    requestTimeoutMs: 120000,
     gatewayMaxRetries: 0,
     maxRequestBytes: 18874368,
     maxPartBytes: 12582912,
@@ -21,7 +21,12 @@ window.__GHRAB_RUNTIME_CONFIG__ = {
       profileModels: {
         economy: "gemini-3.5-flash-lite",
         balanced: "gemini-3.6-flash",
-        quality: "gemini-3.5-flash"
+        quality: "gemini-3.7-flash"
+      },
+      profileThinkingLevels: {
+        economy: ["minimal", "low", "medium", "high"],
+        balanced: ["minimal", "low", "medium", "high"],
+        quality: ["low", "medium", "high"]
       },
       fallbackModels: ["gemini-3.5-flash-lite"],
       useResponseSchema: false,

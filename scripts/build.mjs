@@ -4,6 +4,7 @@ import {execSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {verifySwCoreAssets} from './sw-assets.mjs';
 const ROOT=join(dirname(fileURLToPath(import.meta.url)),'..'),SRC=join(ROOT,'src'),DIST=join(ROOT,'dist');
 const APP_NAME='Diferenciátor pracovních listů a testů',APP_ID='differentiator',CORE_VERSION='1.0.0';
 const CORE_DIR=join(ROOT,'vendor',`ghrab-ai-core-${CORE_VERSION}`),CORE_FILE=`ghrab-ai-core-${CORE_VERSION}.js`,CORE_MANIFEST=`ghrab-ai-core-manifest-${CORE_VERSION}.json`;
@@ -29,3 +30,4 @@ writeFileSync(join(DIST,'.nojekyll'),'');log(`${APP_NAME}: verze ${rel[1]} · Co
 
 // P2: canonical cross-application platform post-processing.
 await import("./apply-ghrab-platform.mjs");
+const swCheck=verifySwCoreAssets(DIST,'dist');log(`service-worker precache: ${swCheck.checked} assetů existuje`);

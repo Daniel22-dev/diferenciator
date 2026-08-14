@@ -1,7 +1,7 @@
 {
   "schema": "ghrab-data-manifest-v1",
   "appId": "differentiator",
-  "appVersion": "1.3.17",
+  "appVersion": "1.3.25",
   "manifestVersion": 3,
   "dataCategories": [
     "settings",
@@ -30,7 +30,7 @@
       "kind": "sessionStorage",
       "category": "session-data",
       "patterns": [
-        "ghrab.differentiator.gemini_key_session"
+        "ghrab.differentiator.ai.key.session.v1"
       ],
       "sensitivity": "confidential",
       "authority": "client",
@@ -40,8 +40,8 @@
       "kind": "localStorage",
       "category": "credential",
       "patterns": [
-        "ghrab.differentiator.gemini_key",
-        "ghrab.differentiator.gemini_key_session"
+        "ghrab.differentiator.ai.key.local.v1",
+        "ghrab.differentiator.ai.key.session.v1"
       ],
       "sensitivity": "secret",
       "authority": "client-direct-mode-only",
@@ -51,8 +51,8 @@
       "kind": "sessionStorage",
       "category": "credential",
       "patterns": [
-        "ghrab.differentiator.gemini_key",
-        "ghrab.differentiator.gemini_key_session"
+        "ghrab.differentiator.ai.key.local.v1",
+        "ghrab.differentiator.ai.key.session.v1"
       ],
       "sensitivity": "secret",
       "authority": "client-direct-mode-only",

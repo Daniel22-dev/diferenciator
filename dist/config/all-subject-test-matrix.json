@@ -1,0 +1,20 @@
+{
+  "schema": "ghrab-differentiator-all-subject-matrix-v1",
+  "version": "1.3.25",
+  "domains": [
+    {"id":"language","examples":["Český jazyk","Anglický jazyk","Německý jazyk"],"risks":["grammar","target-language","multiple-valid-answers","tables"]},
+    {"id":"math","examples":["Matematika"],"risks":["calculation","equations","notation","geometry"]},
+    {"id":"physics","examples":["Fyzika"],"risks":["units","formulas","calculation","graphs"]},
+    {"id":"chemistry","examples":["Chemie"],"risks":["formulae","equations","charges","structures"]},
+    {"id":"biology","examples":["Biologie","Přírodopis"],"risks":["terminology","diagrams","processes","classification"]},
+    {"id":"geography","examples":["Zeměpis","Geografie"],"risks":["blind-maps","coordinates","scale","time-zones","current-data"]},
+    {"id":"history","examples":["Dějepis"],"risks":["chronology","dates","sources","quotes","interpretation"]},
+    {"id":"civics","examples":["ZSV","Občanská výchova","Ekonomie"],"risks":["current-law","office-holders","statistics","opinion-vs-fact"]},
+    {"id":"informatics","examples":["Informatika","ICT"],"risks":["code-syntax","escaping","expected-output","versions"]},
+    {"id":"music","examples":["Hudební výchova"],"risks":["accidentals","rhythm","meter","notation-image"]},
+    {"id":"art","examples":["Výtvarná výchova"],"risks":["image-fidelity","artwork-identification","visual-analysis"]},
+    {"id":"pe","examples":["Tělesná výchova"],"risks":["age-appropriateness","safety","health-boundaries"]},
+    {"id":"humanities","examples":["Literatura","Etika"],"risks":["source-fidelity","quotes","interpretation","open-answers"]}
+  ],
+  "crossCutting": ["answer-key-coverage","unreadable-source-markers","scoring","tables","unicode","long-content-layout","visual-assets","scan-input","pdf-output","school-gateway"]
+}

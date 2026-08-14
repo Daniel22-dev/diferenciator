@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { verifySwCoreAssets } from "./sw-assets.mjs";
 
 const root = process.cwd();
 const sourceDist = path.join(root, "dist");
@@ -103,4 +104,5 @@ writeJson(path.join(targetDist, "server-ready-build-info.json"), {
   aiCoreVersion: deployment.aiTransport === "school-gateway" ? "1.0.0" : null,
   contractVersion: deployment.aiTransport === "school-gateway" ? "1" : null,
 });
-console.log(`${pkg.name} ${pkg.version}: dist-school-server/ sestaven jako same-origin P3 school-server profil.`);
+const swCheck = verifySwCoreAssets(targetDist, "dist-school-server");
+console.log(`${pkg.name} ${pkg.version}: dist-school-server/ sestaven jako same-origin P3 school-server profil · SW ${swCheck.checked} assetů OK.`);
