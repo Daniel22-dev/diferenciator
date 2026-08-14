@@ -1,7 +1,7 @@
 {
   "schema": "ghrab-platform-app-integration-v1",
   "appId": "differentiator",
-  "appVersion": "1.3.16",
+  "appVersion": "1.3.17",
   "contract": "ghrab-platform-v1",
   "requiredPlatformRange": ">=1.1.0 <2.0.0",
   "platformVersion": "1.1.0",
@@ -27,7 +27,7 @@
     ]
   },
   "storagePrefix": "ghrab.differentiator.",
-  "cacheName": "ghrab-differentiator-v1.3.16",
+  "cacheName": "ghrab-differentiator-v1.3.17",
   "capabilities": [
     "ghrab-platform-v1",
     "canonical-branding",
@@ -46,12 +46,12 @@
     "moduleContract": "ghrab-lazy-modules-v1",
     "requireBudget": true,
     "performanceBudget": {
-      "distBytes": 850000,
-      "entryHtmlBytes": 360000,
-      "entryCriticalBytes": 540000,
-      "largestInlineScriptBytes": 260000,
-      "precacheBytes": 830000,
-      "largestFileBytes": 360000,
+      "distBytes": 865000,
+      "entryHtmlBytes": 370000,
+      "entryCriticalBytes": 545000,
+      "largestInlineScriptBytes": 270000,
+      "precacheBytes": 845000,
+      "largestFileBytes": 370000,
       "duplicateLargeBytes": 30000
     },
     "modules": {

@@ -8,7 +8,7 @@ import { createRequire } from "node:module";
 const require=createRequire(import.meta.url);
 
 const ROOT=join(dirname(fileURLToPath(import.meta.url)),".."),BASE=join(ROOT,"dist");
-const REPO="diferenciator",APP_ID="differentiator",APP_VERSION="1.3.16",CACHE_PREFIX="ghrab-differentiator-v";
+const REPO="diferenciator",APP_ID="differentiator",APP_VERSION="1.3.17",CACHE_PREFIX="ghrab-differentiator-v";
 let failures=0;const ok=m=>console.log("  ✓ "+m),bad=m=>{console.error("  ✗ "+m);failures++};
 if(!existsSync(join(BASE,"index.html"))){console.error("Chybí dist. Spusť nejdřív npm run build.");process.exit(1)}
 function testHtml(raw){

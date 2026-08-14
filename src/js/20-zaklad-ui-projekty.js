@@ -217,9 +217,10 @@ function getAdvancedOptions(){return {
   variantMode:($('#advVariantMode')?$('#advVariantMode').value:'auto'),
   structureMode:($('#advStructureMode')?$('#advStructureMode').value:'auto'),
   supportType:($('#advSupportType')?$('#advSupportType').value.trim():''),
+  scoringMode:($('#advScoringMode')?$('#advScoringMode').value:'teacher'),
   teacherInstruction:($('#advTeacherInstruction')?$('#advTeacherInstruction').value.trim():'')
 }}
-function resetAdvancedSettings(){['advTargetGroup','advWorkTime','advLearningGoal','advSupportType','advTeacherInstruction'].forEach(id=>{const el=$(id);if(el)el.value=''});const variant=$('#advVariantMode');if(variant)variant.value='auto';const mode=$('#advStructureMode');if(mode)mode.value='auto';const force=$('#cefrForce');if(force)force.checked=false;const det=$('#advancedSettings');if(det)det.open=false;updateTargetGroupHint();syncVariantTierRules()}
+function resetAdvancedSettings(){['advTargetGroup','advWorkTime','advLearningGoal','advSupportType','advTeacherInstruction'].forEach(id=>{const el=$(id);if(el)el.value=''});const variant=$('#advVariantMode');if(variant)variant.value='auto';const mode=$('#advStructureMode');if(mode)mode.value='auto';const scoring=$('#advScoringMode');if(scoring)scoring.value='teacher';const force=$('#cefrForce');if(force)force.checked=false;const det=$('#advancedSettings');if(det)det.open=false;updateTargetGroupHint();syncVariantTierRules()}
 function variantModePromptLine(key,batch=1){
   const a=getAdvancedOptions();
   const mode=a.variantMode||'auto';
@@ -243,6 +244,8 @@ function advancedPromptLines(key='core'){
   if(structure==='strict')out.push('Zachování struktury: co nejpřesněji zachovej původní strukturu, pořadí, počet položek a formát odpovědí.');
   if(structure==='flexible')out.push('Zachování struktury: strukturu můžeš rozumně upravit, pokud to pedagogicky pomůže diferenciaci, ale zachovej původní cíl materiálu.');
   if(a.supportType)out.push('Preferovaný způsob podpory nebo výzvy (neměň kvůli němu téma ani výukový cíl): '+a.supportType+'.');
+  if(a.scoringMode==='ai')out.push('BODOVÁNÍ: Pokud originál obsahuje explicitní body nebo celkový součet, jde o závaznou součást vzoru: zachovej bodové hodnoty srovnatelných úloh a celkový počet bodů přesně. Pokud je kvůli zvolené diferenciaci nutné změnit vnitřní členění úlohy, přerozděl body uvnitř této úlohy tak, aby její hodnota i celkový součet zůstaly stejné. Pokud originál žádné body neobsahuje, navrhni přiměřené body pro jednotlivé úlohy a uveď jasný celkový součet. Bodování musí odpovídat náročnosti a řešení.');
+  else out.push('BODOVÁNÍ: Pokud originál obsahuje explicitní body nebo celkový součet, jde o závaznou součást vzoru: zachovej bodové hodnoty srovnatelných úloh a celkový počet bodů přesně. Pokud je kvůli zvolené diferenciaci nutné změnit vnitřní členění úlohy, přerozděl body uvnitř této úlohy tak, aby její hodnota i celkový součet zůstaly stejné. Pokud originál žádné body neobsahuje, žádné nové body nevymýšlej — učitel je případně doplní ručně.');
   if(a.teacherInstruction)out.push('ZÁVAZNÝ VLASTNÍ POKYN UČITELE: '+a.teacherInstruction+' Tento pokyn má přednost před automatickými preferencemi, pokud není v rozporu se zvolenou úrovní, výslovně zvoleným režimem změny, bezpečností nebo věcnou správností.');
   return out;
 }
@@ -289,6 +292,7 @@ function applyAppFormState(s){
   if($('#advVariantMode'))$('#advVariantMode').value=a.variantMode||'auto';
   if($('#advStructureMode'))$('#advStructureMode').value=a.structureMode||'auto';
   if($('#advSupportType'))$('#advSupportType').value=a.supportType||'';
+  if($('#advScoringMode'))$('#advScoringMode').value=a.scoringMode==='ai'?'ai':'teacher';
   if($('#advTeacherInstruction'))$('#advTeacherInstruction').value=a.teacherInstruction||'';
   updateTargetGroupHint();syncVariantTierRules();syncCefrHintFromSubject();
 }
@@ -305,7 +309,7 @@ function normalizeProjectForm(form){
     pasteText:safeProjectText(form.pasteText),baseText:safeProjectText(form.baseText),subject:safeProjectText(form.subject,300),
     cefr:!!form.cefr,cefrForce:!!form.cefrForce,selectedTier:tier,
     meta:{subject:safeProjectText(meta.subject,300),topic:safeProjectText(meta.topic,500),className:safeProjectText(meta.className,200),date:safeProjectText(meta.date,100)},
-    advanced:{targetGroup:safeProjectText(advanced.targetGroup,500),workTime:safeProjectText(advanced.workTime,200),learningGoal:safeProjectText(advanced.learningGoal,1000),variantMode:['auto','same_content_diff_difficulty','same_format_new_content','same_content_same_format','same_goal_flexible'].includes(advanced.variantMode)?advanced.variantMode:'auto',structureMode:['auto','strict','flexible'].includes(advanced.structureMode)?advanced.structureMode:'auto',supportType:safeProjectText(advanced.supportType,500),teacherInstruction:safeProjectText(advanced.teacherInstruction,2000)}
+    advanced:{targetGroup:safeProjectText(advanced.targetGroup,500),workTime:safeProjectText(advanced.workTime,200),learningGoal:safeProjectText(advanced.learningGoal,1000),variantMode:['auto','same_content_diff_difficulty','same_format_new_content','same_content_same_format','same_goal_flexible'].includes(advanced.variantMode)?advanced.variantMode:'auto',structureMode:['auto','strict','flexible'].includes(advanced.structureMode)?advanced.structureMode:'auto',supportType:safeProjectText(advanced.supportType,500),scoringMode:advanced.scoringMode==='ai'?'ai':'teacher',teacherInstruction:safeProjectText(advanced.teacherInstruction,2000)}
   };
 }
 function normalizeProjectSheet(item){
@@ -315,7 +319,7 @@ function normalizeProjectSheet(item){
   const rawParts=(item.parts&&typeof item.parts==='object'&&!Array.isArray(item.parts))?item.parts:{};
   const parts={title:safeProjectText(rawParts.title,1000),instructions:safeProjectText(rawParts.instructions,5000),tasks:safeProjectText(rawParts.tasks||text),answerKey:safeProjectText(rawParts.answerKey||answerKey),teacherNote:safeProjectText(rawParts.teacherNote,5000)};
   const parsed={worksheet:text,answerKey,parts,structured:!!item.structured,structureType:item.structured?'json':'fallback'};
-  return {tierKey,text,answerKey,quality,parts,structured:!!item.structured,validation:validateWorksheetResponse(parsed)};
+  return {tierKey,text,answerKey,quality,qualityStage:['none','initial','revised','final','final-revised'].includes(item.qualityStage)?item.qualityStage:(quality?'initial':'none'),qualityApplied:Array.isArray(item.qualityApplied)?item.qualityApplied.filter(Number.isInteger).slice(0,100):[],finalAuditUsed:!!item.finalAuditUsed,parts,structured:!!item.structured,validation:validateWorksheetResponse(parsed)};
 }
 function normalizeProject(data){
   if(!data||typeof data!=='object'||Array.isArray(data)||data.app!==PROJECT_APP||Number(data.schemaVersion)!==PROJECT_SCHEMA_VERSION)throw makeAppError('Soubor není kompatibilní projekt této verze Diferenciátoru.','BAD_PROJECT');
@@ -323,7 +327,7 @@ function normalizeProject(data){
   return {...data,form:normalizeProjectForm(data.form),sheets};
 }
 function collectProjectSheets(){return Array.from(document.querySelectorAll('#results .sheet')).map(sheet=>({
-  tierKey:sheet._tierKey||'core',text:sheet._text||'',answerKey:sheet._key||'',quality:sheet._quality||'',parts:sheet._parts||{},structured:!!sheet._structured,validation:sheet._validation||{ok:true,issues:[]}
+  tierKey:sheet._tierKey||'core',text:sheet._text||'',answerKey:sheet._key||'',quality:sheet._quality||'',qualityStage:sheet._qualityStage||'none',qualityApplied:[...(sheet._qualityApplied||[])],finalAuditUsed:!!sheet._finalAuditUsed,parts:sheet._parts||{},structured:!!sheet._structured,validation:sheet._validation||{ok:true,issues:[]}
 })).filter(x=>x.text||x.answerKey||x.quality)}
 function serializeProject(){return {app:PROJECT_APP,schemaVersion:PROJECT_SCHEMA_VERSION,release:RELEASE.version,exportedAt:new Date().toISOString(),note:'Soubor neobsahuje API klíč.',form:getAppFormState(),sheets:collectProjectSheets()}}
 async function exportProject(){
@@ -337,8 +341,8 @@ async function exportProject(){
 }
 function restoreProjectSheet(item){
   const sheet=makeSheet(item.tierKey||'core',false);
-  sheet._tierKey=item.tierKey||'core';sheet._text=item.text||'';sheet._key=item.answerKey||'';sheet._quality=item.quality||'';sheet._parts=item.parts||{title:'',instructions:'',tasks:item.text||'',answerKey:item.answerKey||'',teacherNote:''};sheet._structured=!!item.structured;sheet._validation=item.validation||validateWorksheetResponse({worksheet:sheet._text,structured:true,structureType:'json',parts:sheet._parts});sheet._pdfWarningSkipped=false;
-  sheet.querySelector('.body').innerHTML=render(sheet._text||'');
+  sheet._tierKey=item.tierKey||'core';sheet._text=item.text||'';sheet._key=item.answerKey||'';sheet._quality=item.quality||'';sheet._qualityStage=item.qualityStage||(sheet._quality?'initial':'none');sheet._qualityApplied=[...(item.qualityApplied||[])];sheet._finalAuditUsed=!!item.finalAuditUsed;sheet._parts=item.parts||{title:'',instructions:'',tasks:item.text||'',answerKey:item.answerKey||'',teacherNote:''};sheet._structured=!!item.structured;sheet._validation=item.validation||validateWorksheetResponse({worksheet:sheet._text,structured:true,structureType:'json',parts:sheet._parts});sheet._pdfWarningSkipped=false;
+  renderSheetBody(sheet);
   renderTeacherNote(sheet);
   showStructureWarning(sheet,sheet._validation);
   if(sheet._quality){const q=sheet.querySelector('.qualitybox');if(q){q.innerHTML='<div class="kh"><span class="teacher-kicker">Učitelská část</span> Kontrola kvality</div>'+render(sheet._quality);q.classList.add('show')}}

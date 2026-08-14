@@ -1,16 +1,16 @@
 {
   "schema": "ghrab-platform-build-v1",
   "appId": "differentiator",
-  "appVersion": "1.3.16",
+  "appVersion": "1.3.17",
   "platformVersion": "1.1.0",
   "platformContract": "ghrab-platform-v1",
   "brandVersion": "1.0.0",
-  "cacheName": "ghrab-differentiator-v1.3.16",
+  "cacheName": "ghrab-differentiator-v1.3.17",
   "processedHtmlFiles": 2,
   "qualityContracts": {
     "accessibility": "ghrab-a11y-v1",
     "performance": "ghrab-performance-v1",
     "modules": "ghrab-lazy-modules-v1"
   },
-  "builtAt": "2026-08-14T13:10:49.936Z"
+  "builtAt": "2026-08-14T14:00:32.731Z"
 }

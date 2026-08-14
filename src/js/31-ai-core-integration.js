@@ -1,5 +1,5 @@
-/* ===================== GHRAB AI CORE 1.0.0 · DIFERENCIÁTOR 1.3.16 ===================== */
-const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.16'});
+/* ===================== GHRAB AI CORE 1.0.0 · DIFERENCIÁTOR 1.3.17 ===================== */
+const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.17'});
 const DPL_WORKSHEET_SCHEMA=Object.freeze({
   type:'object',
   properties:{

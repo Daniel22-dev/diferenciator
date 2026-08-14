@@ -501,7 +501,7 @@ $('#extractBtn').addEventListener('click',async()=>{
   }
   if(!requireApiKeyForAction('načtení souboru')){errBox($('#inputErr'),'Bez API klíče se soubor nezačne zpracovávat. Vlož klíč v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“.');return}
   const btn=$('#extractBtn'),extractLabel=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="mini"></span> Načítám zadání…';setStatus('statusFlow','načítám zadání','busy');
-  const prompt="Toto je zadání školního testu, pracovního listu nebo učebního materiálu libovolného předmětu. Přepiš jeho obsah do čistého, čitelného textu. Zachovej přesně původní jazyk nebo kombinaci jazyků u každé části; nic nepřekládej jen proto, že aplikace má české UI. Zachovej odbornou terminologii, matematický/chemický/fyzikální zápis, jednotky, značky, symboly, tabulkové údaje a číslování. U českých pasáží oprav jen zjevné OCR překlepy, ale výsledná čeština musí být gramaticky, stylisticky i lexikálně bezchybná. Na první řádek dej téma/nadpis, pak očíslované úlohy s plným zněním. Obsah zachovej věrně, nic nepřidávej a nevymýšlej nové úlohy. Pokud jde o více fotek, zpracuj je v pořadí nahrání jako pokračování jednoho materiálu. Odpověz POUZE přepsaným zadáním, bez úvodu a komentáře.";
+  const prompt="Toto je zadání školního testu, pracovního listu nebo učebního materiálu libovolného předmětu. Přepiš jeho obsah do čistého, čitelného textu. Zachovej přesně původní jazyk nebo kombinaci jazyků u každé části; nic nepřekládej jen proto, že aplikace má české UI. Zachovej odbornou terminologii, matematický/chemický/fyzikální zápis, jednotky, značky, symboly, tabulkové údaje, číslování a také veškeré původní bodování: body za úlohy, celkové součty, váhy a případné bodové hranice. U českých pasáží oprav jen zjevné OCR překlepy, ale výsledná čeština musí být gramaticky, stylisticky i lexikálně bezchybná. Na první řádek dej téma/nadpis, pak očíslované úlohy s plným zněním. Obsah zachovej věrně, nic nepřidávej a nevymýšlej nové úlohy. Pokud jde o více fotek, zpracuj je v pořadí nahrání jako pokračování jednoho materiálu. Odpověz POUZE přepsaným zadáním, bez úvodu a komentáře.";
   let parts;
   try{
     if(uploaded&&uploaded.kind==='media'){
@@ -594,6 +594,11 @@ function getMarkedSection(src,name){
   const m=String(src||'').match(re);
   return m?(m[1]||'').trim():'';
 }
+function normalizeWorksheetTitleText(value){
+  let title=String(value||'').trim().replace(/^\*{1,2}|\*{1,2}$/g,'').trim();
+  title=title.replace(/\s*(?:\(|[-–—])\s*(?:parallel version|parallel variant|paralelní verze|paralelní varianta|normální verze|jednodušší verze|obtížnější verze)\s*\)?\s*$/i,'').trim();
+  return title;
+}
 function normalizeJsonTextValue(v){
   if(Array.isArray(v))return v.map(normalizeJsonTextValue).filter(Boolean).join('\n');
   if(v&&typeof v==='object')return Object.entries(v).map(([k,val])=>String(k)+': '+normalizeJsonTextValue(val)).join('\n');
@@ -616,7 +621,7 @@ function tryParseWorksheetJson(src){
         return '';
       };
       const parts={
-        title:pick('worksheet_title','worksheetTitle','title','nazev'),
+        title:normalizeWorksheetTitleText(pick('worksheet_title','worksheetTitle','title','nazev')),
         instructions:pick('student_instructions','studentInstructions','instructions','instrukce'),
         tasks:pick('tasks','ulohy','exercises','worksheet','pracovni_list'),
         answerKey:pick('answer_key','answerKey','key','reseni','solutions'),

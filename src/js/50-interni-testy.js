@@ -86,7 +86,7 @@ const TestSystem={
     }
   },
   runSmokeUi(){
-    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','qualityApply','messageOverlay','privacyOverlay','privacyAnonymize','privacyContinue','advVariantMode','advLearningGoal','advTargetGroupDetected','tierChoiceHint','printTeacherConfirmed','cefrRunBtn'];
+    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','qualityApply','messageOverlay','privacyOverlay','privacyAnonymize','privacyContinue','advVariantMode','advLearningGoal','advTargetGroupDetected','advScoringMode','tierChoiceHint','printTeacherConfirmed','cefrRunBtn','qualityFinalRun'];
     ids.forEach(id=>this.assert(!!$('#'+id),'UI prvek: '+id,'Nalezen','Chybí prvek #'+id));
     this.assert(document.querySelectorAll('#tiers input[type="radio"]').length===3,'Výběr úrovně','K dispozici jsou 3 úrovně','Počet úrovní není 3');
     const checked=document.querySelector('#tiers input[type="radio"]:checked');
@@ -107,6 +107,11 @@ const TestSystem={
     this.assert(dplEmailMatches(emailProbe).length===1&&dplAnonymizeEmails(emailProbe)[0].text.includes('[e-mail anonymizován]'),'Anonymizace e-mailu','Preflight rozpozná a automaticky nahradí e-mailovou adresu.','Preflight e-mail nerozpoznal nebo nenahradil');
     const prompt=makePromptForTier('core',this.demoBase);
     this.assert(prompt.includes('VNITŘNÍ STRUKTURA VÝSTUPU')&&prompt.includes('worksheet_title')&&prompt.includes('answer_key'),'Prompt pro JSON schéma','Prompt výslovně vyžaduje JSON strukturu','Prompt neobsahuje očekávané JSON schéma');
+    this.assert(normalizeWorksheetTitleText('You and your body (Parallel Version)')==='You and your body','Čistý hlavní nadpis','Technický suffix Parallel Version se z hlavního nadpisu odstraní','Technický suffix zůstal v nadpisu');
+    const titleSheet=makeSheet('core',false);titleSheet._structured=true;titleSheet._text='You and your body\n\nWork carefully.\n\n1. Match.';titleSheet._parts={title:'You and your body',instructions:'Work carefully.',tasks:'1. Match.',answerKey:'1. A',teacherNote:''};renderSheetBody(titleSheet);
+    this.assert(!!titleSheet.querySelector('.worksheet-title')&&titleSheet.querySelector('.worksheet-title').textContent==='You and your body','Výrazný nadpis výsledku','Strukturovaný výstup vykresluje samostatný hlavní nadpis','Nadpis se stále zobrazuje jako obyčejný text');
+    const scoring=$('#advScoringMode'),oldScoring=scoring?scoring.value:'teacher';if(scoring)scoring.value='ai';const scoringAi=makePromptForTier('core',this.demoBase);if(scoring)scoring.value='teacher';const scoringTeacher=makePromptForTier('core',this.demoBase);if(scoring)scoring.value=oldScoring;
+    this.assert(/navrhni přiměřené body/i.test(scoringAi)&&/žádné nové body nevymýšlej/i.test(scoringTeacher)&&/Pokud originál obsahuje explicitní body nebo celkový součet/i.test(scoringAi)&&/celkový počet bodů přesně/i.test(scoringAi),'Bodování podle volby učitele','Existující body se zachovají a chybějící lze buď navrhnout AI, nebo nechat učiteli','Režimy bodování se do promptu nepropsaly správně');
     const mediaOrder=docxReferencedMediaPaths('<w:p><a:blip r:embed="rId4"/><a:blip r:embed="rId5"/><a:blip r:embed="rId5"/><a:blip r:embed="rId6"/></w:p>','<Relationships><Relationship Id="rId4" Type="x/image" Target="media/image1.png"/><Relationship Id="rId5" Type="x/image" Target="media/image2.png"/><Relationship Id="rId6" Type="x/image" Target="media/image3.jpeg"/></Relationships>');
     this.assert(mediaOrder.join(',')==='word/media/image1.png,word/media/image2.png,word/media/image3.jpeg','DOCX vložené obrázky','DOCX parser zachová pořadí a odstraní duplicitní reference vložených obrázků','DOCX parser neumí spolehlivě najít vložené obrázky');
     const oldTarget=$('#advTargetGroup')?$('#advTargetGroup').value:'';if($('#advTargetGroup'))$('#advTargetGroup').value='tercie';
@@ -309,7 +314,14 @@ const TestSystem={
       await checkQuality(sheet,{disabled:false,innerHTML:'Kontrola'});
       this.assert(!!sheet._quality,'Mock kontrola kvality','Kontrola kvality se vyplnila přes mock bez reálného API','Kontrola kvality se nevyplnila');
       const choice=$('#qualityBody')&&$('#qualityBody').querySelector('.qa-choice');if(choice){choice.checked=true;choice.dispatchEvent(new Event('change'));await applySelectedQualitySuggestions();}
-      this.assert(!sheet._quality&&/Past Simple/.test(sheet._text),'Selektivní zapracování kontroly','Vybraný bod lze zapracovat a starý audit se po změně zneplatní','Vybraný bod kontroly nešel bezpečně zapracovat');
+      this.assert(!!sheet._quality&&sheet._qualityStage==='revised'&&/Past Simple/.test(sheet._text),'Selektivní zapracování kontroly','Vybraný bod se zapracuje, audit se zachová a PDF už nevyžaduje povinný další audit','Zapracování znovu vytvořilo povinnou kontrolní smyčku nebo poškodilo výstup');
+      await checkQuality(sheet,{disabled:false,innerHTML:'Kontrola'});
+      this.assert($('#qualityFinalRun')&&!$('#qualityFinalRun').classList.contains('hide'),'Jedna volitelná finální kontrola','Po opravě je k dispozici právě jeden volitelný finální audit','Po opravě chybí řízená finální kontrola');
+      if($('#qualityOverlay'))$('#qualityOverlay').classList.remove('show');
+      if($('#printOverlay'))$('#printOverlay').classList.remove('show');if($('#pdfCheckOverlay'))$('#pdfCheckOverlay').classList.remove('show');
+      requestPdfForSheet(sheet,'PDF po opravě',sheet._text);
+      this.assert($('#printOverlay')&&$('#printOverlay').classList.contains('show')&&!$('#pdfCheckOverlay').classList.contains('show'),'PDF bez auditní smyčky','Po zapracování první kontroly lze přejít k PDF bez povinného dalšího requestu','PDF po opravě znovu vynutilo kontrolu');
+      if($('#printOverlay'))$('#printOverlay').classList.remove('show');
       if($('#qualityOverlay'))$('#qualityOverlay').classList.remove('show');if($('#messageOverlay'))$('#messageOverlay').classList.remove('show');
       this.add('ok','Mock generování dokončeno','Ukázková verze vznikla jen uvnitř testu a nepropsala se do běžné aplikace.');
     }finally{
@@ -338,6 +350,10 @@ const TestSystem={
     this.assert($('#printConfirm')&&$('#printConfirm').disabled,'Povinná učitelská kontrola','Tisk je do potvrzení učitele zablokovaný','Tisk nebyl zablokovaný před potvrzením');
     if($('#printTeacherConfirmed')){$('#printTeacherConfirmed').checked=true;$('#printTeacherConfirmed').dispatchEvent(new Event('change'));}
     this.assert($('#printConfirm')&&!$('#printConfirm').disabled,'Odemčení PDF','Potvrzení učitele odemklo tisk/PDF','Potvrzení učitele tisk neodemklo');
+    if($('#printOverlay'))$('#printOverlay').classList.remove('show');
+    sheet._structured=true;sheet._parts={title:'Výrazný testovací nadpis',instructions:'Pracuj pečlivě.',tasks:'1. První úloha\n2. Druhá úloha',answerKey:'1. A\n2. B\n3. C\n4. D\n5. E\n6. F',teacherNote:''};sheet._key=sheet._parts.answerKey;downloadKeyPdf(sheet);
+    this.assert(!!$('#printPreview .pa-title')&&$('#printPreview .pa-title').textContent==='Výrazný testovací nadpis','Nadpis v PDF','PDF používá skutečný výrazný název materiálu, ne jen technický název verze','PDF nemá výrazný skutečný nadpis');
+    this.assert(document.querySelectorAll('#printPreview .pa-key-body .pa-ex').length>1,'Řešení bez prázdné první strany','Klíč je v tisku rozdělen do zalomitelných bloků místo jednoho nedělitelného bloku','Celý klíč je stále jeden blok a může odsunout obsah na další stranu');
     if($('#printOverlay'))$('#printOverlay').classList.remove('show');
   },
   runLayoutTest(){

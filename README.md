@@ -1,12 +1,14 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.16  
+**Aktuální verze:** 1.3.17  
+
+1.3.17 přidává výrazný hlavní nadpis, řízené bodování, opravu prázdné první strany u PDF řešení a omezený tok kontroly bez povinné auditní smyčky.
 **Platforma:** GHRAB Platform 1.1.0 · etapa P5
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.16
+- **Verze:** 1.3.17
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž

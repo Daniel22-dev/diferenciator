@@ -18,7 +18,7 @@ function walk(dir, out=[]){
   return out;
 }
 
-console.log('Regresní brána Diferenciátoru 1.3.16');
+console.log('Regresní brána Diferenciátoru 1.3.17');
 
 // T1: every direct top-level GHRAB_PLATFORM method call must exist in the shipped vendor API.
 {
@@ -57,7 +57,7 @@ console.log('Regresní brána Diferenciátoru 1.3.16');
   const body=read('src/body.html');
   const ids=[...body.matchAll(/\bid=["']([^"']+)["']/g)].map(m=>m[1]);
   const code=['src/index.template.html',...readdirSync(join(ROOT,'src/js')).filter(x=>x.endsWith('.js')).map(x=>'src/js/'+x)].map(read).join('\n');
-  const allow=new Set(['manualLaunch','advTargetGroupHelp','supportTypeSuggestions','advTeacherInstructionHelp']);
+  const allow=new Set(['manualLaunch','advTargetGroupHelp','supportTypeSuggestions','advTeacherInstructionHelp','advScoringHelp']);
   const dataDrivenProfileIds=new Set(
     [...body.matchAll(/<[^>]+\bid=["']([^"']+)["'][^>]+\bdata-model-profile=["'][^"']+["'][^>]*>/g)].map(m=>m[1])
   );
@@ -78,7 +78,7 @@ console.log('Regresní brána Diferenciátoru 1.3.16');
   else ok(`T8: RELEASE.changes souvisle 1.3.${uniq[0]}–1.3.${uniq[uniq.length-1]}`);
 }
 
-// T9: user-facing differentiation rules from the 1.3.16 usability pass stay explicit and enforced.
+// T9: user-facing differentiation rules from the 1.3.17 usability pass stay explicit and enforced.
 {
   const body=read('src/body.html'),ui=read('src/js/20-zaklad-ui-projekty.js'),flow=read('src/js/60-pwa-start.js');
   const problems=[];
@@ -122,6 +122,20 @@ console.log('Regresní brána Diferenciátoru 1.3.16');
     &&/body\.dark \.qa-choice,body\.dark \.teacher-confirm input\{[^}]*background:#172030/s.test(css);
   if(!okCss)bad('T12: vlastní checkboxy nejsou explicitně stylované pro světlý i tmavý režim');
   else ok('T12: checkboxy kontroly/PDF mají vlastní light/dark vzhled');
+}
+
+
+// T13: 1.3.17 keeps the title/printing/scoring/quality-cost fixes in place.
+{
+  const body=read('src/body.html'),ui=read('src/js/20-zaklad-ui-projekty.js'),api=read('src/js/30-api-gemini.js'),quality=read('src/js/40-vystup-pdf-kvalita.js'),css=read('src/styles.css');
+  const problems=[];
+  if(!body.includes('id="advScoringMode"')||!ui.includes("scoringMode:($('#advScoringMode')")||!ui.includes('Pokud originál obsahuje explicitní body nebo celkový součet')||!ui.includes('celkový počet bodů přesně'))problems.push('chybí řízené zachování/doplnění bodování');
+  if(!api.includes('normalizeWorksheetTitleText')||!quality.includes('worksheet-title')||!css.includes('.sheet .worksheet-title')||!quality.includes('pa-title'))problems.push('hlavní nadpis není samostatně normalizovaný a zvýrazněný');
+  if(!quality.includes("keyBody:isKey")||!css.includes('.pa-key-body .pa-ex{break-inside:auto'))problems.push('řešení může znovu tvořit jeden nedělitelný blok a prázdnou první stranu');
+  if(!body.includes('id="qualityFinalRun"')||!quality.includes("sheet._qualityStage=wasFinal?'final-revised':'revised'")||!quality.includes('Další kontrola není povinná'))problems.push('kontrola po opravě znovu vytváří povinnou auditní smyčku');
+  if(quality.includes('upraveno podle kontroly · znovu ověř'))problems.push('vrácen stav vynucující nekonečné znovu ověřování');
+  if(!quality.includes('proveď interně dva průchody')||!quality.includes('thinking:THINKING_DEFAULT'))problems.push('hlavní audit není posílený na jeden souhrnný průchod');
+  if(problems.length)bad('T13: nadpis/PDF/bodování/efektivní kontrola: '+problems.join('; ')); else ok('T13: výrazný nadpis, bodování, řešení PDF a omezený auditní tok jsou chráněné');
 }
 
 // Guard the production integration against reintroducing the bypass/duplicate schema.

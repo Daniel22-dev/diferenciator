@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.17 — výrazný výstup, bodování a omezená kontrolní smyčka (2026-08-14)
+
+- Hlavní název materiálu je samostatný, výrazný a používá se i jako titul PDF; technické dodatky typu „Parallel Version“ se odstraňují.
+- Samostatné PDF řešení už není jeden nedělitelný tiskový blok, takže dlouhý klíč nezačíná po prázdné první straně.
+- V Pedagogickém zpřesnění je volba pro materiály bez bodování: buď body doplní AI v rámci stejného generování, nebo zůstanou prázdné pro ruční doplnění. Původní bodování se vždy zachovává co nejvěrněji.
+- Kontrola kvality provádí v jednom requestu dva interní průchody a má vrátit všechny konkrétní nálezy najednou. Po zapracování oprav se audit zachová a PDF už nevyžaduje další kontrolu; k dispozici je nejvýše jedna volitelná Finální kontrola.
+- Výkonová brána zůstává blokující; po rozšíření 1.3.17 byly limity jen mírně posunuty na entry HTML 370 kB, inline script 270 kB a precache 845 kB.
+
 ## 1.3.16 — UX, DOCX import a řízené zapracování kontroly (2026-08-14)
 
 - Cílová skupina rozpoznává česká označení osmiletého gymnázia `prima`–`oktáva` a při známém označení předává modelu ročník i orientační věk.
