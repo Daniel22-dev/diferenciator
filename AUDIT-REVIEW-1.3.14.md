@@ -71,3 +71,7 @@ Performance budgety nebyly zvýšeny. Po opravách je hlavní HTML 327 914 B / 3
 6. Po čistém `npm ci` spustit `npm run qa:p5:ci` v prostředí, kde Chromium smí otevřít lokální HTTP server.
 
 Teprve po těchto bodech je vhodné změnit stav z RC na GO / GO WITH KNOWN ISSUES.
+## CI follow-up 2026-08-14
+
+První GitHub Actions běh 1.3.14 odhalil chybu pouze v testovací konfiguraci reportéru: `reporter-test.config.json` odkazoval v `versionPaths` na neexistující `docs/AUDIT-1.3.14-ERROR-REPORTER.md`. Produkční kód ani AI integrační opravy tím dotčeny nebyly. Neexistující interní auditní dokument byl z povinných version paths odstraněn a kontrola byla zpevněna tak, aby budoucí chybějící soubor hlásila explicitním FAIL. Po opravě `npm run test:reporter` prošel 56/56 statických kontrol a celý `npm test` znovu prošel 94/94 interních testů.
+

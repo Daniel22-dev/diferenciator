@@ -191,6 +191,7 @@ function staticAudit() {
     check('Centrální app-guard respektuje errorReporter:false a denied fallback', guard.includes('options.errorReporter !== false') && guard.includes('options.errorReporterOnDenied !== false'));
   }
   for (const path of config.versionPaths || []) {
+    check(`${path}: existuje`, pathExists(path));
     check(`${path}: obsahuje verzi ${config.version}`, text(path).includes(config.version));
   }
   check('Nezůstala stará paralelní implementace KS', !pathExists('src/access/error-reporter-ks.js') && !pathExists('src/js/26-error-reporter-compat.js'));

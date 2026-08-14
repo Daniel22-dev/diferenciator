@@ -12,6 +12,7 @@
 - `npm test` umí použít Chromium instalované Playwrightem a při chybě dává návodnou instalační hlášku.
 - Bezpečnostní profil dostal HSTS pro školní server a pravdivou poznámku k dočasnému `unsafe-inline`.
 - Doplněny regresní kontroly platformního API, jediné consumer konfigurace, shody verzí, napojení ID a souvislosti řady 1.3.x v changelogu.
+- CI follow-up: regresní test reportéru už nevyžaduje chybějící interní auditní dokument a u chybějícího povinného souboru vypíše explicitní FAIL místo pádu na `ENOENT`.
 
 ## 1.3.13 — sjednocení reportéru (2026-08-13)
 

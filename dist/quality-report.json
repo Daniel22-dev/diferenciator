@@ -1,0 +1,243 @@
+{
+  "schema": "ghrab-p3-quality-result-v1",
+  "appId": "differentiator",
+  "appVersion": "1.3.14",
+  "contracts": {
+    "accessibility": "ghrab-a11y-v1",
+    "performance": "ghrab-performance-v1",
+    "modules": "ghrab-lazy-modules-v1"
+  },
+  "metrics": {
+    "schema": "ghrab-performance-report-v1",
+    "appId": "differentiator",
+    "appVersion": "1.3.14",
+    "platformVersion": "1.1.0",
+    "measuredAt": "2026-08-14T05:38:03.287Z",
+    "distBytes": 815881,
+    "jsBytes": 146485,
+    "cssBytes": 24284,
+    "htmlBytes": 376367,
+    "fileCount": 40,
+    "fullHtmlCount": 2,
+    "entryHtmlBytes": 327914,
+    "entryCriticalBytes": 501688,
+    "largestInlineScriptBytes": 235391,
+    "precacheBytes": 797747,
+    "precacheAssetCount": 31,
+    "largestFileBytes": 327914,
+    "largestFilePath": "index.html",
+    "duplicateLargeBytes": 23410
+  },
+  "budget": {
+    "distBytes": 820000,
+    "entryHtmlBytes": 330000,
+    "entryCriticalBytes": 510000,
+    "largestInlineScriptBytes": 240000,
+    "precacheBytes": 800000,
+    "largestFileBytes": 330000,
+    "duplicateLargeBytes": 30000
+  },
+  "precacheAssets": [
+    "access/access-gate.css",
+    "access/deployment-config.js",
+    "access/error-reporter-adapter.js",
+    "access/error-reporter.css",
+    "access/error-reporter.js",
+    "access/reporter-bootstrap.js",
+    "assets/brand/school-logo.png",
+    "config/brand-manifest.json",
+    "config/deployment.json",
+    "config/deployment.school-server-p0.json",
+    "config/deployment.school-server.example.json",
+    "config/platform-manifest.json",
+    "ghrab-platform.consumer.json",
+    "ghrab/ghrab-app-registry-v2.schema.json",
+    "ghrab/ghrab-artifact-envelope-v1.schema.json",
+    "ghrab/ghrab-platform-manifest-1.1.0.json",
+    "ghrab/ghrab-platform.css",
+    "ghrab/ghrab-platform.js",
+    "icons/apple-touch-icon.png",
+    "icons/icon-128.png",
+    "icons/icon-180.png",
+    "icons/icon-192.png",
+    "icons/icon-32.png",
+    "icons/icon-48.png",
+    "icons/icon-512.png",
+    "icons/icon-72.png",
+    "icons/icon-96.png",
+    "icons/icon-maskable-512.png",
+    "index.html",
+    "manifest.webmanifest",
+    "manual/index.html"
+  ],
+  "duplicateGroups": [
+    [
+      "icons/apple-touch-icon.png",
+      "icons/icon-180.png"
+    ]
+  ],
+  "checks": [
+    {
+      "id": "dist.exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "platform.version",
+      "ok": true,
+      "detail": "1.1.0"
+    },
+    {
+      "id": "contract.a11y",
+      "ok": true,
+      "detail": "ghrab-a11y-v1"
+    },
+    {
+      "id": "contract.performance",
+      "ok": true,
+      "detail": "ghrab-performance-v1"
+    },
+    {
+      "id": "contract.modules",
+      "ok": true,
+      "detail": "ghrab-lazy-modules-v1"
+    },
+    {
+      "id": "platform.runtime",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "platform.styles",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.reduced-motion",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.focus-visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.skip-link",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.html-documents",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "id": "a11y.lang:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.viewport:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.zoom:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.title:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.main:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.runtime:index.html",
+      "ok": true,
+      "detail": "platform=1; engine=0"
+    },
+    {
+      "id": "a11y.lang:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.viewport:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.zoom:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.title:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.main:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.runtime:manual/index.html",
+      "ok": true,
+      "detail": "platform=1; engine=0"
+    },
+    {
+      "id": "budget.distBytes",
+      "ok": true,
+      "detail": "815881 <= 820000"
+    },
+    {
+      "id": "budget.entryHtmlBytes",
+      "ok": true,
+      "detail": "327914 <= 330000"
+    },
+    {
+      "id": "budget.entryCriticalBytes",
+      "ok": true,
+      "detail": "501688 <= 510000"
+    },
+    {
+      "id": "budget.largestInlineScriptBytes",
+      "ok": true,
+      "detail": "235391 <= 240000"
+    },
+    {
+      "id": "budget.precacheBytes",
+      "ok": true,
+      "detail": "797747 <= 800000"
+    },
+    {
+      "id": "budget.largestFileBytes",
+      "ok": true,
+      "detail": "327914 <= 330000"
+    },
+    {
+      "id": "budget.duplicateLargeBytes",
+      "ok": true,
+      "detail": "23410 <= 30000"
+    },
+    {
+      "id": "budget.minimum-count",
+      "ok": true,
+      "detail": "7"
+    }
+  ],
+  "warnings": [],
+  "summary": {
+    "total": 31,
+    "passed": 31,
+    "failed": 0,
+    "warnings": 0
+  }
+}
