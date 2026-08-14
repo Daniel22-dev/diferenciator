@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="cs" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.14" data-ghrab-platform-contract="ghrab-platform-v1" data-theme="light" data-theme-preference="light">
+<html lang="cs" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.15" data-ghrab-platform-contract="ghrab-platform-v1" data-theme="light" data-theme-preference="light">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -17,6 +17,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <link rel="stylesheet" href="./access/access-gate.css">
+<script src="./runtime-config.js" data-ghrab-runtime-config></script>
 <style>html[data-ghrab-access="checking"] body{visibility:hidden}</style>
 <style>
   :root{
@@ -950,7 +951,7 @@ a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacit
 
     <!-- GHRAB Platform 1.1.0 · generated -->
     <link rel="stylesheet" href="./ghrab/ghrab-platform.css" data-ghrab-platform-style>
-    <script id="ghrab-platform-config" type="application/json">{"appId":"differentiator","appName":"Diferenciátor","appVersion":"1.3.14","requiredPlatformRange":">=1.1.0 \u003c2.0.0","platformContract":"ghrab-platform-v1","brandVersion":"1.0.0","autoFooter":true,"theme":{"supported":["light","dark"],"default":"light"},"storageMigration":{"id":"p2-storage-namespace-v1","backup":"full","mappings":[{"legacy":"dpl_theme","canonical":"ghrab.differentiator.theme.v1"},{"legacy":"dpl_cefr_language_pref","canonical":"ghrab.differentiator.cefr-language.v1"},{"legacy":"dpl_guide_seen","canonical":"ghrab.differentiator.guide-seen.v1"},{"legacy":"dpl_gemini_model","canonical":"ghrab.differentiator.ai.model.v1"},{"legacy":"dpl_gemini_key","canonical":"ghrab.differentiator.ai.key.local.v1"},{"legacy":"dpl_gemini_key_session","canonical":"ghrab.differentiator.ai.key.session.v1","store":"session"},{"legacyPrefix":"dpl_","canonicalPrefix":"ghrab.differentiator.legacy."}]},"bridgeMaxBytes":500000,"artifactContract":"ghrab-artifact-envelope-v1","quality":{"schema":"ghrab-quality-consumer-v1","accessibilityContract":"ghrab-a11y-v1","performanceContract":"ghrab-performance-v1","moduleContract":"ghrab-lazy-modules-v1","requireBudget":true,"performanceBudget":{"distBytes":820000,"entryHtmlBytes":330000,"entryCriticalBytes":510000,"largestInlineScriptBytes":240000,"precacheBytes":800000,"largestFileBytes":330000,"duplicateLargeBytes":30000},"modules":{"required":[]},"referenceProfile":{"cpuSlowdown":4,"viewport":"1366x768","memoryClassGb":4,"viewportWidths":[1280,390,320]},"stage":"P5","a11yContract":"ghrab-a11y-v1","requireRuntimeBudget":true,"runtimeBudget":{"maxDomNodes":1000,"maxRenderReadyMs":4000,"maxJsHeapUsedBytes":8000000,"maxLayoutDurationMs":3000,"maxTaskDurationMs":4000},"finalRelease":true,"cleanInstallRequired":true,"a11yGate":"ghrab-p5-runtime-a11y-v2","releaseGate":"ghrab-p5-release-v2","runtimeAudit":{"scriptsExecuted":true,"transport":"local-http","dialogStates":true,"viewports":[1280,390,320]}}}</script>
+    <script id="ghrab-platform-config" type="application/json">{"appId":"differentiator","appName":"Diferenciátor","appVersion":"1.3.15","requiredPlatformRange":">=1.1.0 \u003c2.0.0","platformContract":"ghrab-platform-v1","brandVersion":"1.0.0","autoFooter":true,"theme":{"supported":["light","dark"],"default":"light"},"storageMigration":{"id":"p2-storage-namespace-v1","backup":"full","mappings":[{"legacy":"dpl_theme","canonical":"ghrab.differentiator.theme.v1"},{"legacy":"dpl_cefr_language_pref","canonical":"ghrab.differentiator.cefr-language.v1"},{"legacy":"dpl_guide_seen","canonical":"ghrab.differentiator.guide-seen.v1"},{"legacy":"dpl_gemini_model","canonical":"ghrab.differentiator.ai.model.v1"},{"legacy":"dpl_gemini_key","canonical":"ghrab.differentiator.ai.key.local.v1"},{"legacy":"dpl_gemini_key_session","canonical":"ghrab.differentiator.ai.key.session.v1","store":"session"},{"legacyPrefix":"dpl_","canonicalPrefix":"ghrab.differentiator.legacy."}]},"bridgeMaxBytes":500000,"artifactContract":"ghrab-artifact-envelope-v1","quality":{"schema":"ghrab-quality-consumer-v1","accessibilityContract":"ghrab-a11y-v1","performanceContract":"ghrab-performance-v1","moduleContract":"ghrab-lazy-modules-v1","requireBudget":true,"performanceBudget":{"distBytes":820000,"entryHtmlBytes":330000,"entryCriticalBytes":510000,"largestInlineScriptBytes":240000,"precacheBytes":800000,"largestFileBytes":330000,"duplicateLargeBytes":30000},"modules":{"required":[]},"referenceProfile":{"cpuSlowdown":4,"viewport":"1366x768","memoryClassGb":4,"viewportWidths":[1280,390,320]},"stage":"P5","a11yContract":"ghrab-a11y-v1","requireRuntimeBudget":true,"runtimeBudget":{"maxDomNodes":1000,"maxRenderReadyMs":4000,"maxJsHeapUsedBytes":8000000,"maxLayoutDurationMs":3000,"maxTaskDurationMs":4000},"finalRelease":true,"cleanInstallRequired":true,"a11yGate":"ghrab-p5-runtime-a11y-v2","releaseGate":"ghrab-p5-release-v2","runtimeAudit":{"scriptsExecuted":true,"transport":"local-http","dialogStates":true,"viewports":[1280,390,320]}}}</script>
     <script defer src="./ghrab/ghrab-platform.js" data-ghrab-platform-loader></script>
   </head>
 <body>
@@ -990,7 +991,7 @@ a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacit
 
   <div class="statusbar" aria-label="Stav aplikace">
     <div class="status-pill warn" id="statusKey"><span class="k">API klíč</span><span class="v">nenastaven</span></div>
-    <div class="status-pill" id="statusModel"><span class="k">Model</span><span class="v">Flash</span></div>
+    <div class="status-pill ok" id="statusModel"><span class="k">Profil AI</span><span class="v">Doporučený</span></div>
     <div class="status-pill" id="statusInput"><span class="k">Vstup</span><span class="v">čeká na zadání</span></div>
     <div class="status-pill" id="statusFlow"><span class="k">Průběh</span><span class="v">připraveno</span></div>
   </div>
@@ -1018,29 +1019,33 @@ a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacit
     <div class="main-flow">
   <div class="flow-label setup"><span>Jednor&aacute;zov&eacute; nastaven&iacute;</span></div>
   <section class="panel api-step-panel" id="apiStepPanel">
-    <p class="step"><b>1</b> Vlož API klíč <span class="step-role tech">Technické nastavení</span></p>
-    <p class="api-step-lede">Klíč je potřeba pro tvorbu verzí, řešení a kontrolu kvality. Nastavení je schované, aby hlavní práce se zadáním zůstala nahoře přehledná.</p>
-    <button class="api-toggle" id="apiToggle">Nastavit / změnit API klíč ▾</button>
+    <p class="step"><b>1</b> Připojení k AI <span class="step-role tech">Technické nastavení</span></p>
+    <p class="api-step-lede">V serverless verzi použij osobní Gemini API klíč; ve školní verzi připojení zajišťuje školní AI služba.</p>
+    <button class="api-toggle" id="apiToggle" aria-expanded="false" aria-controls="apiPanel">Nastavení AI ▾</button>
     <div class="api" id="apiPanel">
       <div class="api-head">
-        <span class="api-title">⚡ Generování přes Gemini</span>
+        <span class="api-title">⚡ Generování přes AI</span>
         <span class="api-status" id="keyStatus">Klíč není nastaven</span>
       </div>
-      <label class="sr-only" for="keyInput">Gemini API klíč</label>
-      <input id="keyInput" type="password" placeholder="Gemini API klíč (AIza…)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" title="Klíč se posílá jen Googlu. Nikdy ho nevkládej do HTML na GitHubu." />
-      <div class="key-actions">
-        <button class="btn small" id="btnSession" title="Klíč se po zavření prohlížeče sám zapomene.">Použít jen pro relaci</button>
-        <button class="btn ghost small" id="btnClear" title="Odstraní klíč z relace a smaže případnou starou kopii.">Smazat klíč</button>
+      <div id="directGeminiSettings">
+        <label class="sr-only" for="keyInput">Gemini API klíč</label>
+        <input id="keyInput" type="password" placeholder="Gemini API klíč (AIza…)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" title="Klíč se posílá jen Googlu. Nikdy ho nevkládej do HTML na GitHubu." />
+        <div class="key-actions">
+          <button class="btn small" id="btnSession" title="Klíč se po zavření prohlížeče sám zapomene.">Použít jen pro relaci</button>
+          <button class="btn ghost small" id="btnClear" title="Odstraní klíč z relace a smaže případnou starou kopii.">Smazat klíč</button>
+        </div>
+        <p class="hint"><b>Relace</b> = klíč se po zavření prohlížeče sám zapomene. Každý kolega používá vlastní osobní API klíč; klíče se nesdílejí a nikdy se nevkládají do HTML na GitHubu. API klíč: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com</a> → Get API key.</p>
       </div>
-      <p class="hint"><b>Relace</b> = klíč se po zavření prohlížeče sám zapomene. Každý kolega používá vlastní osobní API klíč; klíče se nesdílejí a nikdy se nevkládají do HTML na GitHubu. API klíč: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com</a> → Get API key.</p>
 
       <div class="model-row">
-        <label>Model</label>
-        <div class="model-quick">
-          <button class="qm" id="qmStrong" title="Silnější model — lepší práce s obsahem, jazykem a odborným zápisem. Doporučeno.">⚡ Flash<span class="sub">gemini-3.6-flash</span></button>
-          <button class="qm" id="qmLite" title="Rychlejší a šetrnější k limitu. Pro jednoduché úkoly.">🪶 Flash-Lite<span class="sub">gemini-3.5-flash-lite</span></button>
+        <label>Profil AI</label>
+        <div class="model-quick" role="group" aria-label="Profil AI">
+          <button class="qm" id="profileEconomy" data-model-profile="economy" aria-pressed="false" title="Rychlé a úsporné.">◇ Úsporný<span class="sub">nižší spotřeba</span></button>
+          <button class="qm" id="profileBalanced" data-model-profile="balanced" aria-pressed="true" title="Výchozí profil.">⚡ Doporučený<span class="sub">výchozí volba</span></button>
+          <button class="qm" id="profileQuality" data-model-profile="quality" aria-pressed="false" title="Pro náročnější úlohy.">★ Důkladný<span class="sub">vyšší kvalita</span></button>
         </div>
-        <p class="hint">Při dočasném problému se zvoleným modelem se zkusí druhá dostupná volba. <strong>Podmínky práce s daty se liší podle regionu a fakturace.</strong> U neplacených služeb mimo EHP, Švýcarsko a Spojené království může Google odeslaný obsah a odpovědi použít ke zlepšování produktů a mohou je kontrolovat lidští hodnotitelé. V EHP, Švýcarsku a Spojeném království se podle aktuálních podmínek na data vztahují pravidla placených služeb i u neplacené kvóty; aplikace zpřístupněná uživatelům v těchto regionech má používat projekt s aktivní fakturací. Vždy posílej materiály bez jmen a osobních či citlivých údajů žáků.</p>
+        <p class="hint">Aplikace předává pouze profil AI; konkrétní model vybírá aktivní AI služba.</p>
+        <details class="model-terms"><summary>Fakturace a práce s daty</summary><p class="hint">Serverless používá osobní Gemini API klíč; školní režim spravuje server. Vždy posílej materiály bez osobních a citlivých údajů žáků.</p></details>
       </div>
     </div>
 
@@ -2314,11 +2319,12 @@ a.manual-launch-btn:hover::after,a.manual-launch-btn:focus-visible::after{opacit
 ;
 
 const RELEASE = Object.freeze({
-  version: '1.3.14',
-  date: '2026-08-13',
+  version: '1.3.15',
+  date: '2026-08-14',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    "1.3.15: sjednoceny modelové profily s referenčním KS 5.10.4 — uživatel vybírá pouze Úsporný / Doporučený / Důkladný (economy / balanced / quality), konkrétní Gemini modely jsou jen ve veřejné direct runtime konfiguraci a školní runtime je provider-neutrální. Odstraněn modelOverride, všech šest AI operací respektuje všechny tři profily a nová qa:profiles brána hlídá UI, Core requesty i school-server build.",
     "1.3.14: opraven blokátor produkční AI cesty — Diferenciátor už nevolá neexistující metody GHRAB Platform, sestavuje runtime konfiguraci Core lokálně, bezpečně rozlišuje GitHub a školní gateway, přepínač Flash / Flash-Lite se propisuje i do modelProfile a fallback je obousměrný. Přidán potvrzovací preflight e-mailových adres s automatickou anonymizací, odstraněn mrtvý dialog a duplicitní ukládání klíče a nové regresní brány hlídají platformní API, jediný consumer, verze kontraktů, ID prvků a souvislost changelogu.",
     "1.3.13: reportér používá ověřený dvoukrokový tok z KS 5.10.3 — skutečné stažení diagnostického ZIPu před odemčením Gmailu, jasný pokyn k ruční příloze, bezpečně skryté pomocné video bez rekurzivního obrazu a rozšířenou browserovou regresní kontrolu.",
     "1.3.12: P5 R2 — runtime audit se skripty a odemčeným UI, reprodukovatelné QA závislosti a blokující exact axe v CI.",
@@ -2730,8 +2736,8 @@ function updateDataSummary(){
 function openDataManagement(){updateDataSummary();$('#dataOverlay').classList.add('show')}
 function closeDataManagement(){$('#dataOverlay').classList.remove('show')}
 function clearPreferenceData(){
-  ['dpl_guide_seen',CEFR_PREF_SK,MODEL_SK,THEME_SK].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
-  resetAdvancedSettings();loadModel();loadTheme();restoreCefrPreference();closeDataManagement();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
+  ['dpl_guide_seen',CEFR_PREF_SK,MODEL_PROFILE_SK,THEME_SK].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
+  resetAdvancedSettings();loadModelProfile();loadTheme();restoreCefrPreference();closeDataManagement();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
 }
 function clearWorkingData(){
   uploaded=null;if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
@@ -2816,10 +2822,10 @@ function setResultSummary(count){
   if(banner)banner.classList.add('show');
 }
 
-const KEY_SK="dpl_gemini_key", KEY_SESSION_SK="dpl_gemini_key_session", MODEL_SK="dpl_gemini_model";
+const KEY_SK="dpl_gemini_key", KEY_SESSION_SK="dpl_gemini_key_session", MODEL_PROFILE_SK="dpl_gemini_model";
 
 ;
-/* AI Studio GHRAB — GHRAB Material v1 adapter (Diferenciátor 1.3.14, bridge 2.0) */
+/* AI Studio GHRAB — GHRAB Material v1 adapter (Diferenciátor 1.3.15, bridge 2.0) */
 (function(){
   'use strict';
   const KEY='ghrab.handoff.v1',EVENTS='ghrab.pilot.events.v2',MAX_SOURCE=180000;
@@ -2866,10 +2872,14 @@ const KEY_SK="dpl_gemini_key", KEY_SESSION_SK="dpl_gemini_key_session", MODEL_SK
 })();
 
 ;
-const MODEL_DEFAULT="gemini-3.6-flash", FALLBACK_MODELS=["gemini-3.5-flash-lite"];
+const MODEL_PROFILE_DEFAULT="balanced", MODEL_PROFILES=Object.freeze(["economy","balanced","quality"]);
+const MODEL_PROFILE_LABELS=Object.freeze({economy:"Úsporný",balanced:"Doporučený",quality:"Důkladný"});
 const THINKING_DEFAULT='medium',THINKING_CHEAP='minimal';
-let geminiApiKey="", geminiKeyScope="", geminiModel=MODEL_DEFAULT;
+let geminiApiKey="", geminiKeyScope="", selectedModelProfile=MODEL_PROFILE_DEFAULT;
 
+function currentAiMode(){return window.__GHRAB_RUNTIME_CONFIG__?.ai?.defaultMode==="school-gateway"?"school-gateway":"direct-gemini"}
+function applyAiRuntimeUi(){const direct=$("directGeminiSettings");if(direct)direct.hidden=currentAiMode()==="school-gateway";updateApiToggleText();updateKeyStatus()}
+window.addEventListener("ghrab:runtime-config-changed",applyAiRuntimeUi);
 function cleanKey(s){return String(s||"").replace(/[^\x21-\x7E]/g,"")}
 function inputKey(){return cleanKey($("keyInput").value)}
 function setKey(key,scope){geminiApiKey=cleanKey(key);geminiKeyScope=geminiApiKey?scope:"";$("keyInput").value=geminiApiKey;updateKeyStatus()}
@@ -2884,6 +2894,7 @@ function showMessage(title,message){
 function clearKey(){try{sessionStorage.removeItem(KEY_SESSION_SK)}catch(_){}try{localStorage.removeItem(KEY_SK)}catch(_){}setKey("","")}
 function updateKeyStatus(){
   const el=$("keyStatus");el.className="api-status";
+  if(currentAiMode()==="school-gateway"){el.textContent="✓ Školní AI služba";el.classList.add("ok");setStatus("statusKey","školní server","ok");return}
   if(geminiApiKey){
     if(geminiKeyScope==="session"){el.textContent="✓ Klíč uložen pro relaci";el.classList.add("ok");setStatus("statusKey","relace","ok")}
     else{el.textContent="✓ Klíč zadán (neuložen)";el.classList.add("ok")}
@@ -2897,10 +2908,7 @@ $("btnSession").onclick=()=>{const stored=useKeySession();if(stored)flashBtn($("
 $("btnClear").onclick=()=>{clearKey();$("keyInput").value=""};
 $("messageClose").onclick=()=>$("messageOverlay").classList.remove("show");
 $("messageOverlay").addEventListener("click",e=>{if(e.target.id==="messageOverlay")$("messageOverlay").classList.remove("show")});
-function updateApiToggleText(){
-  const btn=$("apiToggle"), panel=$("apiPanel");
-  if(btn&&panel)btn.textContent=panel.classList.contains("open")?"Skrýt nastavení API ▴":"Nastavit / změnit API klíč ▾";
-}
+function updateApiToggleText(){const btn=$("apiToggle"),panel=$("apiPanel");if(!btn||!panel)return;const open=panel.classList.contains("open");btn.textContent=open?"Skrýt nastavení AI ▴":"Nastavení AI ▾";btn.setAttribute("aria-expanded",open?"true":"false")}
 $("apiToggle").onclick=()=>{$("apiPanel").classList.toggle("open");updateApiToggleText()};
 updateApiToggleText();
 $("keyInput").addEventListener("input",()=>{
@@ -2909,7 +2917,7 @@ $("keyInput").addEventListener("input",()=>{
   updateKeyStatus();
 });
 function flashBtn(btn,msg){const o=btn.textContent;btn.textContent=msg;btn.disabled=true;setTimeout(()=>{btn.textContent=o;btn.disabled=false},1300)}
-function hasApiKey(){return (typeof dplSchoolMode==='function'&&dplSchoolMode())||!!cleanKey(geminiApiKey)}
+function hasApiKey(){return currentAiMode()==='school-gateway'||!!cleanKey(geminiApiKey)}
 function requireApiKeyForAction(actionLabel){
   if(hasApiKey())return true;
   const label=actionLabel||'tuto akci';
@@ -2923,22 +2931,16 @@ function requireApiKeyForAction(actionLabel){
   return false;
 }
 
-function migrateStoredModel(n){const v=String(n||"").trim().toLowerCase();
-  if(v==="gemini-2.5-flash"||v==="gemini-3.5-flash")return MODEL_DEFAULT;
-  if(v==="gemini-2.5-flash-lite"||v==="gemini-3.1-flash-lite")return FALLBACK_MODELS[0];
-  return v;}
-function isValidModel(n){return /^gemini[-a-z0-9.]+$/i.test(String(n||"").trim())}
-function setModel(n){const v=String(n||"").trim().toLowerCase();geminiModel=isValidModel(v)?v:MODEL_DEFAULT;try{localStorage.setItem(MODEL_SK,geminiModel)}catch(_){}updateModelUI()}
-function loadModel(){let s="";try{s=localStorage.getItem(MODEL_SK)||""}catch(_){}s=migrateStoredModel(s); geminiModel=isValidModel(s)?s:MODEL_DEFAULT;updateModelUI()}
+function normalizeModelProfile(n){const v=String(n||"").trim().toLowerCase();return MODEL_PROFILES.includes(v)?v:MODEL_PROFILE_DEFAULT}
+function migrateStoredModelProfile(n){const v=String(n||"").trim().toLowerCase();return MODEL_PROFILES.includes(v)?v:/flash-lite/.test(v)?"economy":v==="gemini-3.5-flash"?"quality":/^gemini-.*flash/.test(v)?"balanced":MODEL_PROFILE_DEFAULT}
+function setModelProfile(n){selectedModelProfile=normalizeModelProfile(n);try{localStorage.setItem(MODEL_PROFILE_SK,selectedModelProfile)}catch(_){}updateModelUI()}
+function loadModelProfile(){let s="";try{s=localStorage.getItem(MODEL_PROFILE_SK)||""}catch(_){}selectedModelProfile=migrateStoredModelProfile(s);try{localStorage.setItem(MODEL_PROFILE_SK,selectedModelProfile)}catch(_){}updateModelUI()}
 function updateModelUI(){
-  $("qmStrong").classList.toggle("active",geminiModel===MODEL_DEFAULT);$("qmLite").classList.toggle("active",geminiModel===FALLBACK_MODELS[0]);
-  const s=$("qmStrong").querySelector(".sub");if(s)s.textContent=MODEL_DEFAULT;
-  const l=$("qmLite").querySelector(".sub");if(l)l.textContent=FALLBACK_MODELS[0];
-  setStatus("statusModel",geminiModel===MODEL_DEFAULT?"Flash":(geminiModel===FALLBACK_MODELS[0]?"Flash-Lite":geminiModel),"ok");
+  document.querySelectorAll("[data-model-profile]").forEach(btn=>{const active=btn.dataset.modelProfile===selectedModelProfile;btn.classList.toggle("active",active);btn.setAttribute("aria-pressed",active?"true":"false")});
+  setStatus("statusModel",MODEL_PROFILE_LABELS[selectedModelProfile]||MODEL_PROFILE_LABELS[MODEL_PROFILE_DEFAULT],"ok");
 }
-$("qmStrong").onclick=()=>setModel(MODEL_DEFAULT);
-$("qmLite").onclick=()=>setModel(FALLBACK_MODELS[0]);
-loadKey();loadModel();
+document.querySelectorAll("[data-model-profile]").forEach(btn=>{btn.onclick=()=>setModelProfile(btn.dataset.modelProfile)});
+loadKey();loadModelProfile();applyAiRuntimeUi();
 
 const GEMINI_TIMEOUT_MS=60000;
 // Přímé volání generateContent posílá média jako inline_data. Oficiální dokumentace uvádí limit celého inline požadavku pod 20 MB,
@@ -2971,9 +2973,9 @@ function friendlyApiMessage(e){
   if(e.code==="TEXT_TOO_LONG"||e.code==="FILE_TOO_LARGE"||e.code==="REQUEST_TOO_LARGE"||e.code==="TOO_MANY_IMAGES")return e.message;
   if(e.code==="INCOMPLETE_RESPONSE")return "Model odpověď nedokončil, takže ji appka raději nepoužila. Zkrať zadání, vyber méně verzí nebo to spusť znovu.";
   if(e.code==="SAFETY_STOP")return "Model odpověď zastavil bezpečnostním filtrem. Uprav zadání nebo zkus vložit jen čistý text úloh.";
-  if(e.quota)return "Kvóta nebo limit API je vyčerpaný. Zkus to později nebo přepni model.";
+  if(e.quota)return "Kvóta nebo limit API je vyčerpaný. Zkus to později nebo přepni profil AI.";
   if(e.status===401||e.status===403)return "API klíč není platný nebo nemá oprávnění. Zkontroluj klíč v panelu nahoře.";
-  if(e.status===404)return "Zvolený model není dostupný. Přepni model v panelu nastavení nebo to zkus později.";
+  if(e.status===404)return "Zvolený profil AI není momentálně dostupný. Přepni profil v panelu nastavení nebo to zkus později.";
   if(e.status===400)return "Gemini odmítlo požadavek. Zkontroluj délku nebo obsah vstupu.";
   if(e.status>=500)return "Služba Gemini má dočasný problém. Zkus to znovu.";
   return e.message||"Nepovedlo se spojit s modelem.";
@@ -3464,8 +3466,8 @@ function tryParseWorksheetJson(src){
 }
 
 ;
-/* ===================== GHRAB AI CORE 1.0.0 · DIFERENCIÁTOR 1.3.14 ===================== */
-const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.14'});
+/* ===================== GHRAB AI CORE 1.0.0 · DIFERENCIÁTOR 1.3.15 ===================== */
+const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.15'});
 const DPL_WORKSHEET_SCHEMA=Object.freeze({
   type:'object',
   properties:{
@@ -3483,12 +3485,12 @@ const DPL_AI_SCHEMAS=Object.freeze({
   'differentiator.object.v1':DPL_WORKSHEET_SCHEMA
 });
 const DPL_AI_OPERATIONS=Object.freeze({schema:'ghrab-ai-operations-v1',appId:DPL_AI_APP.id,operations:Object.freeze({
-  'cefr-detection':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:4096},
+  'cefr-detection':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:4096},
   'material-extraction':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'balanced',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text','image','document'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
   'worksheet-generation':{outputSchemaId:'differentiator.object.v1',defaultModelProfile:'balanced',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text','image','document'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
-  'worksheet-structure-repair':{outputSchemaId:'differentiator.object.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
-  'answer-key-generation':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:16384},
-  'worksheet-quality-audit':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:8192}
+  'worksheet-structure-repair':{outputSchemaId:'differentiator.object.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
+  'answer-key-generation':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:16384},
+  'worksheet-quality-audit':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:8192}
 })});
 
 const DPL_EMAIL_RE=/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g;
@@ -3497,6 +3499,7 @@ let dplConfiguredSignature='';
 
 function dplDeployment(){return window.__GHRAB_DEPLOYMENT_CONFIG__||{}}
 function dplSchoolMode(){
+  if(window.__GHRAB_RUNTIME_CONFIG__?.ai?.defaultMode==='school-gateway')return true;
   const platformCheck=window.GHRAB_PLATFORM&&window.GHRAB_PLATFORM.isSchoolProfile;
   if(typeof platformCheck==='function'){
     try{return platformCheck.call(window.GHRAB_PLATFORM)===true}catch(_){}
@@ -3511,41 +3514,27 @@ function dplApiUrl(endpointKey,fallback){
   if(!base||!endpoint)return fallback;
   try{return new URL(endpoint,base.endsWith('/')?base:base+'/').href}catch(_){return fallback}
 }
-function dplFallbackModels(){
-  const lite=FALLBACK_MODELS[0];
-  return geminiModel===lite?[MODEL_DEFAULT]:[lite];
-}
 function dplRuntimeConfig(){
+  const raw=window.__GHRAB_RUNTIME_CONFIG__;
+  if(!raw||raw.schema!=="ghrab-runtime-config-v1"||!raw.ai)throw makeAppError("Veřejná runtime konfigurace AI není dostupná. Obnov stránku přes AI Studio.","CONFIGURATION_ERROR");
+  const cfg=JSON.parse(JSON.stringify(raw));
   const school=dplSchoolMode();
-  const mode=school?'school-gateway':'direct-gemini';
-  const deployment=dplDeployment();
-  return {
-    ai:{
-      defaultMode:mode,
-      selectedMode:mode,
-      allowedModes:[mode],
-      allowUserModeSelection:false,
-      automaticFallback:false,
-      gatewayUrl:dplApiUrl('aiGenerate','/api/v1/ai/generate'),
-      healthUrl:dplApiUrl('aiHealth','/api/v1/ai/health'),
-      requestTimeoutMs:GEMINI_TIMEOUT_MS,
-      gatewayMaxRetries:0,
-      maxRequestBytes:MAX_INLINE_REQUEST_BYTES,
-      maxPartBytes:MAX_SINGLE_MEDIA_ORIGINAL_BYTES,
-      directGemini:{
-        profileModels:{economy:FALLBACK_MODELS[0],balanced:MODEL_DEFAULT,quality:MODEL_DEFAULT},
-        fallbackModels:dplFallbackModels(),
-        useResponseSchema:false,
-        maxOutputTokens:60000
-      }
-    },
-    telemetry:{enabled:deployment.telemetryMode!=='off'}
-  };
+  if(school){
+    cfg.ai.defaultMode="school-gateway";cfg.ai.selectedMode="school-gateway";cfg.ai.allowedModes=["school-gateway"];cfg.ai.allowUserModeSelection=false;cfg.ai.automaticFallback=false;delete cfg.ai.directGemini;
+  }else{
+    const map=cfg.ai.directGemini&&cfg.ai.directGemini.profileModels;
+    if(cfg.ai.defaultMode!=="direct-gemini"||!map||!MODEL_PROFILES.every(profile=>typeof map[profile]==="string"&&map[profile]))throw makeAppError("Serverless runtime nemá úplné mapování profilů AI.","CONFIGURATION_ERROR");
+    cfg.ai.defaultMode="direct-gemini";cfg.ai.selectedMode="direct-gemini";cfg.ai.allowedModes=["direct-gemini"];cfg.ai.allowUserModeSelection=false;cfg.ai.automaticFallback=false;
+  }
+  cfg.ai.gatewayUrl=dplApiUrl("aiGenerate",cfg.ai.gatewayUrl||"/api/v1/ai/generate");
+  cfg.ai.healthUrl=dplApiUrl("aiHealth",cfg.ai.healthUrl||"/api/v1/ai/health");
+  cfg.telemetry={...(cfg.telemetry||{}),enabled:dplDeployment().telemetryMode!=="off"};
+  return cfg;
 }
 function dplModelProfile(operation){
   const registration=DPL_AI_OPERATIONS.operations[operation];
-  if(!registration)return'balanced';
-  const desired=geminiModel===FALLBACK_MODELS[0]?'economy':'balanced';
+  if(!registration)return MODEL_PROFILE_DEFAULT;
+  const desired=normalizeModelProfile(selectedModelProfile);
   return registration.allowedModelProfiles.includes(desired)?desired:registration.defaultModelProfile;
 }
 function dplCoreParts(parts){
@@ -3607,7 +3596,7 @@ async function dplPreflight(parts){
 }
 function dplAiSignature(){
   const runtime=dplRuntimeConfig();
-  return [runtime.ai.defaultMode,geminiModel,runtime.ai.gatewayUrl,runtime.ai.healthUrl].join('|');
+  return [runtime.ai.defaultMode,runtime.ai.gatewayUrl,runtime.ai.healthUrl].join('|');
 }
 function dplEnsureAiCore(){
   const ai=window.GHRAB_AI;
@@ -3626,7 +3615,7 @@ function dplEnsureAiCore(){
     runtimeConfig:dplRuntimeConfig(),
     operations:DPL_AI_OPERATIONS,
     outputSchemas:DPL_AI_SCHEMAS,
-    credentialProvider:async({mode})=>mode==='direct-gemini'?{apiKey:cleanKey(geminiApiKey),modelOverride:geminiModel}:null
+    credentialProvider:async({mode})=>mode==='direct-gemini'?{apiKey:cleanKey(geminiApiKey)}:null
   };
   if(typeof platform.authProvider==='function')config.authProvider=context=>platform.authProvider(context);
   if(typeof platform.recordTelemetry==='function')config.telemetrySink=event=>platform.recordTelemetry({type:'ai-usage',appId:DPL_AI_APP.id,appVersion:DPL_AI_APP.version,...event});
@@ -3674,17 +3663,14 @@ function dplRemoveLocalProviderKeys(){
   geminiApiKey='';geminiKeyScope='server';
 }
 function dplApplyServerKeyPolicy(){
-  if(!dplSchoolMode())return;
+  if(!dplSchoolMode()){if(typeof applyAiRuntimeUi==='function')applyAiRuntimeUi();return}
   const platform=window.GHRAB_PLATFORM||{};
   if(typeof platform.enforceLocalKeyPolicy==='function'){
     try{platform.enforceLocalKeyPolicy({localStorageKeys:[KEY_SK],sessionStorageKeys:[KEY_SESSION_SK],onRemoved:dplRemoveLocalProviderKeys})}catch(_){dplRemoveLocalProviderKeys()}
   }else dplRemoveLocalProviderKeys();
-  const panel=document.getElementById('apiPanel'),toggle=document.getElementById('apiToggle'),status=document.getElementById('keyStatus'),input=document.getElementById('keyInput');
-  if(panel)panel.classList.remove('open');
-  if(toggle){toggle.textContent='AI zajišťuje školní server';toggle.disabled=true}
-  if(input){input.value='';input.disabled=true;input.placeholder='Klíč je bezpečně uložen na školním serveru'}
-  for(const id of ['btnSession','btnClear']){const el=document.getElementById(id);if(el)el.hidden=true}
-  if(status){status.textContent='✓ Školní AI gateway';status.className='api-status ok'}
+  if(typeof applyAiRuntimeUi==='function')applyAiRuntimeUi();
+  const input=document.getElementById('keyInput');
+  if(input){input.value='';input.disabled=true;input.placeholder='Osobní klíč se ve školním režimu nepoužívá'}
   setStatus('statusKey','školní server','ok');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',dplApplyServerKeyPolicy,{once:true});else dplApplyServerKeyPolicy();
@@ -4176,7 +4162,7 @@ const TestSystem={
     await this.runStep('Parser',()=>this.runParserTests());
     await this.runStep('CEFR',()=>this.runCefrTests());
     await this.runStep('API guard',()=>this.runApiGuardTests());
-    await this.runStep('T6 model switch',()=>this.runModelSwitchIntegrationTest());
+    await this.runStep('T6 AI profile switch',()=>this.runModelSwitchIntegrationTest());
     await this.runStep('Stav a bezpečnost projektu',()=>this.runStatusAndProjectSafetyTests());
     await this.runStep('Roundtrip projektu',()=>this.runProjectRoundtripTest());
     await this.runStep('Mock generování',()=>this.runMockGeneration());
@@ -4220,8 +4206,6 @@ const TestSystem={
     this.assert(!fallbackValidation.ok,'Fallback kontrola','Nestrukturovaný výstup je označen k ověření','Fallback měl být označen jako varování');
     const emailProbe=[{type:'text',text:'Kontakt: teacher@example.com'}];
     this.assert(dplEmailMatches(emailProbe).length===1&&dplAnonymizeEmails(emailProbe)[0].text.includes('[e-mail anonymizován]'),'Anonymizace e-mailu','Preflight rozpozná a automaticky nahradí e-mailovou adresu.','Preflight e-mail nerozpoznal nebo nenahradil');
-    const oldModel=geminiModel;setModel(FALLBACK_MODELS[0]);const liteProfile=dplModelProfile('worksheet-generation');setModel(MODEL_DEFAULT);const strongProfile=dplModelProfile('worksheet-generation');setModel(oldModel);
-    this.assert(liteProfile==='economy'&&strongProfile==='balanced','Modelový profil AI Core','Flash-Lite mapuje na economy a Flash na balanced i pro školní gateway.','Přepínač modelu se nepropsal do modelProfile');
     const prompt=makePromptForTier('core',this.demoBase);
     this.assert(prompt.includes('VNITŘNÍ STRUKTURA VÝSTUPU')&&prompt.includes('worksheet_title')&&prompt.includes('answer_key'),'Prompt pro JSON schéma','Prompt výslovně vyžaduje JSON strukturu','Prompt neobsahuje očekávané JSON schéma');
     const batchPrompt=makePromptForTier('core',this.demoBase,3),singlePrompt=makePromptForTier('core',this.demoBase,1);
@@ -4298,31 +4282,24 @@ const TestSystem={
     }
   },
   async runModelSwitchIntegrationTest(){
-    const oldModel=geminiModel,oldDeployment=window.__GHRAB_DEPLOYMENT_CONFIG__,testing=window.GHRAB_AI&&window.GHRAB_AI.__testing;
-    if(!testing||typeof testing.snapshot!=='function'||typeof testing.setTestHooks!=='function')throw new Error('GHRAB AI Core neposkytuje test hooks pro T6.');
-    const lite=FALLBACK_MODELS[0];
+    const oldProfile=selectedModelProfile,oldDeployment=window.__GHRAB_DEPLOYMENT_CONFIG__,testing=window.GHRAB_AI?.__testing;
+    if(!testing?.snapshot||!testing?.setTestHooks)throw new Error("Core test hooks chybí.");
+    const oldHooks=testing.snapshot()?.state?.testHooks||{};
     try{
-      setModel(lite);dplEnsureAiCore();
-      let state=testing.snapshot().state;
-      let credentials=await state.credentialProvider({mode:'direct-gemini',operation:'worksheet-generation',modelProfile:'economy'});
-      const liteSignature=dplAiSignature();
-      setModel(MODEL_DEFAULT);dplEnsureAiCore();
-      state=testing.snapshot().state;
-      const strongCredentials=await state.credentialProvider({mode:'direct-gemini',operation:'worksheet-generation',modelProfile:'balanced'});
-      const strongSignature=dplAiSignature();
-      this.assert(credentials.modelOverride===lite&&strongCredentials.modelOverride===MODEL_DEFAULT&&liteSignature!==strongSignature,'T6 přepnutí modelu · direct','Po setModel() další přímé volání používá aktuální Flash / Flash-Lite a mění konfigurační podpis.','Přímá AI cesta po setModel() zůstala na starém modelu');
-
-      window.__GHRAB_DEPLOYMENT_CONFIG__={...(oldDeployment||{}),profile:'school-server',aiTransport:'school-gateway',apiBaseUrl:'https://school.example/api/v1/',endpoints:{...(oldDeployment?.endpoints||{}),aiGenerate:'ai/generate',aiHealth:'ai/health'}};
-      const seen=[];
-      const response=payload=>({schema:window.GHRAB_AI.responseSchema,requestId:'mock-gateway',clientRequestId:payload.clientRequestId,result:JSON.parse(this.sampleStructured()),usage:{providerRequests:1,retryRequests:0,generatedOutputs:1},meta:{latencyMs:0}});
-      setModel(lite);dplEnsureAiCore();testing.setTestHooks({isEnabled:()=>true,schoolGateway:async payload=>{seen.push(payload.modelProfile);return response(payload)}});
-      await callGemini([{text:'Test T6 gateway Lite'}],{json:true,operation:'worksheet-generation'});
-      setModel(MODEL_DEFAULT);dplEnsureAiCore();testing.setTestHooks({isEnabled:()=>true,schoolGateway:async payload=>{seen.push(payload.modelProfile);return response(payload)}});
-      await callGemini([{text:'Test T6 gateway Flash'}],{json:true,operation:'worksheet-generation'});
-      this.assert(seen.length===2&&seen[0]==='economy'&&seen[1]==='balanced','T6 přepnutí modelu · gateway','Školní gateway dostala po setModel() postupně profily economy a balanced.','Školní gateway po přepnutí modelu použila starý modelProfile');
+      dplConfiguredSignature="";dplEnsureAiCore();
+      const state=testing.snapshot().state,credentials=await state.credentialProvider({mode:"direct-gemini",operation:"worksheet-generation",modelProfile:"balanced"}),map=state.runtime.ai.directGemini.profileModels;
+      this.assert(!("modelOverride" in credentials)&&MODEL_PROFILES.every(p=>map[p])&&new Set(MODEL_PROFILES.map(p=>map[p])).size===3,"T6 direct runtime","3 profily bez modelOverride.","Neplatný direct runtime.");
+      const direct=[];testing.setTestHooks({isEnabled:()=>true,directGemini:async({modelProfile})=>{direct.push(modelProfile);return JSON.parse(this.sampleStructured())}});
+      for(const p of MODEL_PROFILES){setModelProfile(p);await callGemini([{text:"T6"}],{json:true,operation:"worksheet-generation"})}
+      this.assert(direct.join(",")==="economy,balanced,quality","T6 direct routing","3 profily dorazily do Core.","Chybný direct modelProfile.");
+      window.__GHRAB_DEPLOYMENT_CONFIG__={...(oldDeployment||{}),profile:"school-server",aiTransport:"school-gateway",apiBaseUrl:"https://school.example/api/v1/",endpoints:{...(oldDeployment?.endpoints||{}),aiGenerate:"ai/generate",aiHealth:"ai/health"}};
+      dplConfiguredSignature="";dplEnsureAiCore();
+      const seen=[],response=p=>({schema:window.GHRAB_AI.responseSchema,requestId:"mock",clientRequestId:p.clientRequestId,result:JSON.parse(this.sampleStructured()),usage:{providerRequests:1,retryRequests:0,generatedOutputs:1},meta:{latencyMs:0}});
+      testing.setTestHooks({isEnabled:()=>true,schoolGateway:async p=>{seen.push(p.modelProfile);return response(p)}});
+      for(const p of MODEL_PROFILES){setModelProfile(p);await callGemini([{text:"T6"}],{json:true,operation:"worksheet-generation"})}
+      this.assert(seen.join(",")==="economy,balanced,quality","T6 gateway routing","3 profily dorazily na gateway.","Chybný gateway modelProfile.");
     }finally{
-      if(oldDeployment===undefined)delete window.__GHRAB_DEPLOYMENT_CONFIG__;else window.__GHRAB_DEPLOYMENT_CONFIG__=oldDeployment;
-      setModel(oldModel);dplConfiguredSignature='';dplEnsureAiCore();
+      testing.setTestHooks(oldHooks);if(oldDeployment===undefined)delete window.__GHRAB_DEPLOYMENT_CONFIG__;else window.__GHRAB_DEPLOYMENT_CONFIG__=oldDeployment;setModelProfile(oldProfile);dplConfiguredSignature="";dplEnsureAiCore();
     }
   },
   runProjectRoundtripTest(){

@@ -1,7 +1,11 @@
-const MODEL_DEFAULT="gemini-3.6-flash", FALLBACK_MODELS=["gemini-3.5-flash-lite"];
+const MODEL_PROFILE_DEFAULT="balanced", MODEL_PROFILES=Object.freeze(["economy","balanced","quality"]);
+const MODEL_PROFILE_LABELS=Object.freeze({economy:"Úsporný",balanced:"Doporučený",quality:"Důkladný"});
 const THINKING_DEFAULT='medium',THINKING_CHEAP='minimal';
-let geminiApiKey="", geminiKeyScope="", geminiModel=MODEL_DEFAULT;
+let geminiApiKey="", geminiKeyScope="", selectedModelProfile=MODEL_PROFILE_DEFAULT;
 
+function currentAiMode(){return window.__GHRAB_RUNTIME_CONFIG__?.ai?.defaultMode==="school-gateway"?"school-gateway":"direct-gemini"}
+function applyAiRuntimeUi(){const direct=$("directGeminiSettings");if(direct)direct.hidden=currentAiMode()==="school-gateway";updateApiToggleText();updateKeyStatus()}
+window.addEventListener("ghrab:runtime-config-changed",applyAiRuntimeUi);
 function cleanKey(s){return String(s||"").replace(/[^\x21-\x7E]/g,"")}
 function inputKey(){return cleanKey($("keyInput").value)}
 function setKey(key,scope){geminiApiKey=cleanKey(key);geminiKeyScope=geminiApiKey?scope:"";$("keyInput").value=geminiApiKey;updateKeyStatus()}
@@ -16,6 +20,7 @@ function showMessage(title,message){
 function clearKey(){try{sessionStorage.removeItem(KEY_SESSION_SK)}catch(_){}try{localStorage.removeItem(KEY_SK)}catch(_){}setKey("","")}
 function updateKeyStatus(){
   const el=$("keyStatus");el.className="api-status";
+  if(currentAiMode()==="school-gateway"){el.textContent="✓ Školní AI služba";el.classList.add("ok");setStatus("statusKey","školní server","ok");return}
   if(geminiApiKey){
     if(geminiKeyScope==="session"){el.textContent="✓ Klíč uložen pro relaci";el.classList.add("ok");setStatus("statusKey","relace","ok")}
     else{el.textContent="✓ Klíč zadán (neuložen)";el.classList.add("ok")}
@@ -29,10 +34,7 @@ $("btnSession").onclick=()=>{const stored=useKeySession();if(stored)flashBtn($("
 $("btnClear").onclick=()=>{clearKey();$("keyInput").value=""};
 $("messageClose").onclick=()=>$("messageOverlay").classList.remove("show");
 $("messageOverlay").addEventListener("click",e=>{if(e.target.id==="messageOverlay")$("messageOverlay").classList.remove("show")});
-function updateApiToggleText(){
-  const btn=$("apiToggle"), panel=$("apiPanel");
-  if(btn&&panel)btn.textContent=panel.classList.contains("open")?"Skrýt nastavení API ▴":"Nastavit / změnit API klíč ▾";
-}
+function updateApiToggleText(){const btn=$("apiToggle"),panel=$("apiPanel");if(!btn||!panel)return;const open=panel.classList.contains("open");btn.textContent=open?"Skrýt nastavení AI ▴":"Nastavení AI ▾";btn.setAttribute("aria-expanded",open?"true":"false")}
 $("apiToggle").onclick=()=>{$("apiPanel").classList.toggle("open");updateApiToggleText()};
 updateApiToggleText();
 $("keyInput").addEventListener("input",()=>{
@@ -41,7 +43,7 @@ $("keyInput").addEventListener("input",()=>{
   updateKeyStatus();
 });
 function flashBtn(btn,msg){const o=btn.textContent;btn.textContent=msg;btn.disabled=true;setTimeout(()=>{btn.textContent=o;btn.disabled=false},1300)}
-function hasApiKey(){return (typeof dplSchoolMode==='function'&&dplSchoolMode())||!!cleanKey(geminiApiKey)}
+function hasApiKey(){return currentAiMode()==='school-gateway'||!!cleanKey(geminiApiKey)}
 function requireApiKeyForAction(actionLabel){
   if(hasApiKey())return true;
   const label=actionLabel||'tuto akci';
@@ -55,22 +57,16 @@ function requireApiKeyForAction(actionLabel){
   return false;
 }
 
-function migrateStoredModel(n){const v=String(n||"").trim().toLowerCase();
-  if(v==="gemini-2.5-flash"||v==="gemini-3.5-flash")return MODEL_DEFAULT;
-  if(v==="gemini-2.5-flash-lite"||v==="gemini-3.1-flash-lite")return FALLBACK_MODELS[0];
-  return v;}
-function isValidModel(n){return /^gemini[-a-z0-9.]+$/i.test(String(n||"").trim())}
-function setModel(n){const v=String(n||"").trim().toLowerCase();geminiModel=isValidModel(v)?v:MODEL_DEFAULT;try{localStorage.setItem(MODEL_SK,geminiModel)}catch(_){}updateModelUI()}
-function loadModel(){let s="";try{s=localStorage.getItem(MODEL_SK)||""}catch(_){}s=migrateStoredModel(s); geminiModel=isValidModel(s)?s:MODEL_DEFAULT;updateModelUI()}
+function normalizeModelProfile(n){const v=String(n||"").trim().toLowerCase();return MODEL_PROFILES.includes(v)?v:MODEL_PROFILE_DEFAULT}
+function migrateStoredModelProfile(n){const v=String(n||"").trim().toLowerCase();return MODEL_PROFILES.includes(v)?v:/flash-lite/.test(v)?"economy":v==="gemini-3.5-flash"?"quality":/^gemini-.*flash/.test(v)?"balanced":MODEL_PROFILE_DEFAULT}
+function setModelProfile(n){selectedModelProfile=normalizeModelProfile(n);try{localStorage.setItem(MODEL_PROFILE_SK,selectedModelProfile)}catch(_){}updateModelUI()}
+function loadModelProfile(){let s="";try{s=localStorage.getItem(MODEL_PROFILE_SK)||""}catch(_){}selectedModelProfile=migrateStoredModelProfile(s);try{localStorage.setItem(MODEL_PROFILE_SK,selectedModelProfile)}catch(_){}updateModelUI()}
 function updateModelUI(){
-  $("qmStrong").classList.toggle("active",geminiModel===MODEL_DEFAULT);$("qmLite").classList.toggle("active",geminiModel===FALLBACK_MODELS[0]);
-  const s=$("qmStrong").querySelector(".sub");if(s)s.textContent=MODEL_DEFAULT;
-  const l=$("qmLite").querySelector(".sub");if(l)l.textContent=FALLBACK_MODELS[0];
-  setStatus("statusModel",geminiModel===MODEL_DEFAULT?"Flash":(geminiModel===FALLBACK_MODELS[0]?"Flash-Lite":geminiModel),"ok");
+  document.querySelectorAll("[data-model-profile]").forEach(btn=>{const active=btn.dataset.modelProfile===selectedModelProfile;btn.classList.toggle("active",active);btn.setAttribute("aria-pressed",active?"true":"false")});
+  setStatus("statusModel",MODEL_PROFILE_LABELS[selectedModelProfile]||MODEL_PROFILE_LABELS[MODEL_PROFILE_DEFAULT],"ok");
 }
-$("qmStrong").onclick=()=>setModel(MODEL_DEFAULT);
-$("qmLite").onclick=()=>setModel(FALLBACK_MODELS[0]);
-loadKey();loadModel();
+document.querySelectorAll("[data-model-profile]").forEach(btn=>{btn.onclick=()=>setModelProfile(btn.dataset.modelProfile)});
+loadKey();loadModelProfile();applyAiRuntimeUi();
 
 const GEMINI_TIMEOUT_MS=60000;
 // Přímé volání generateContent posílá média jako inline_data. Oficiální dokumentace uvádí limit celého inline požadavku pod 20 MB,
@@ -103,9 +99,9 @@ function friendlyApiMessage(e){
   if(e.code==="TEXT_TOO_LONG"||e.code==="FILE_TOO_LARGE"||e.code==="REQUEST_TOO_LARGE"||e.code==="TOO_MANY_IMAGES")return e.message;
   if(e.code==="INCOMPLETE_RESPONSE")return "Model odpověď nedokončil, takže ji appka raději nepoužila. Zkrať zadání, vyber méně verzí nebo to spusť znovu.";
   if(e.code==="SAFETY_STOP")return "Model odpověď zastavil bezpečnostním filtrem. Uprav zadání nebo zkus vložit jen čistý text úloh.";
-  if(e.quota)return "Kvóta nebo limit API je vyčerpaný. Zkus to později nebo přepni model.";
+  if(e.quota)return "Kvóta nebo limit API je vyčerpaný. Zkus to později nebo přepni profil AI.";
   if(e.status===401||e.status===403)return "API klíč není platný nebo nemá oprávnění. Zkontroluj klíč v panelu nahoře.";
-  if(e.status===404)return "Zvolený model není dostupný. Přepni model v panelu nastavení nebo to zkus později.";
+  if(e.status===404)return "Zvolený profil AI není momentálně dostupný. Přepni profil v panelu nastavení nebo to zkus později.";
   if(e.status===400)return "Gemini odmítlo požadavek. Zkontroluj délku nebo obsah vstupu.";
   if(e.status>=500)return "Služba Gemini má dočasný problém. Zkus to znovu.";
   return e.message||"Nepovedlo se spojit s modelem.";

@@ -61,7 +61,7 @@ const TestSystem={
     await this.runStep('Parser',()=>this.runParserTests());
     await this.runStep('CEFR',()=>this.runCefrTests());
     await this.runStep('API guard',()=>this.runApiGuardTests());
-    await this.runStep('T6 model switch',()=>this.runModelSwitchIntegrationTest());
+    await this.runStep('T6 AI profile switch',()=>this.runModelSwitchIntegrationTest());
     await this.runStep('Stav a bezpečnost projektu',()=>this.runStatusAndProjectSafetyTests());
     await this.runStep('Roundtrip projektu',()=>this.runProjectRoundtripTest());
     await this.runStep('Mock generování',()=>this.runMockGeneration());
@@ -105,8 +105,6 @@ const TestSystem={
     this.assert(!fallbackValidation.ok,'Fallback kontrola','Nestrukturovaný výstup je označen k ověření','Fallback měl být označen jako varování');
     const emailProbe=[{type:'text',text:'Kontakt: teacher@example.com'}];
     this.assert(dplEmailMatches(emailProbe).length===1&&dplAnonymizeEmails(emailProbe)[0].text.includes('[e-mail anonymizován]'),'Anonymizace e-mailu','Preflight rozpozná a automaticky nahradí e-mailovou adresu.','Preflight e-mail nerozpoznal nebo nenahradil');
-    const oldModel=geminiModel;setModel(FALLBACK_MODELS[0]);const liteProfile=dplModelProfile('worksheet-generation');setModel(MODEL_DEFAULT);const strongProfile=dplModelProfile('worksheet-generation');setModel(oldModel);
-    this.assert(liteProfile==='economy'&&strongProfile==='balanced','Modelový profil AI Core','Flash-Lite mapuje na economy a Flash na balanced i pro školní gateway.','Přepínač modelu se nepropsal do modelProfile');
     const prompt=makePromptForTier('core',this.demoBase);
     this.assert(prompt.includes('VNITŘNÍ STRUKTURA VÝSTUPU')&&prompt.includes('worksheet_title')&&prompt.includes('answer_key'),'Prompt pro JSON schéma','Prompt výslovně vyžaduje JSON strukturu','Prompt neobsahuje očekávané JSON schéma');
     const batchPrompt=makePromptForTier('core',this.demoBase,3),singlePrompt=makePromptForTier('core',this.demoBase,1);
@@ -183,31 +181,24 @@ const TestSystem={
     }
   },
   async runModelSwitchIntegrationTest(){
-    const oldModel=geminiModel,oldDeployment=window.__GHRAB_DEPLOYMENT_CONFIG__,testing=window.GHRAB_AI&&window.GHRAB_AI.__testing;
-    if(!testing||typeof testing.snapshot!=='function'||typeof testing.setTestHooks!=='function')throw new Error('GHRAB AI Core neposkytuje test hooks pro T6.');
-    const lite=FALLBACK_MODELS[0];
+    const oldProfile=selectedModelProfile,oldDeployment=window.__GHRAB_DEPLOYMENT_CONFIG__,testing=window.GHRAB_AI?.__testing;
+    if(!testing?.snapshot||!testing?.setTestHooks)throw new Error("Core test hooks chybí.");
+    const oldHooks=testing.snapshot()?.state?.testHooks||{};
     try{
-      setModel(lite);dplEnsureAiCore();
-      let state=testing.snapshot().state;
-      let credentials=await state.credentialProvider({mode:'direct-gemini',operation:'worksheet-generation',modelProfile:'economy'});
-      const liteSignature=dplAiSignature();
-      setModel(MODEL_DEFAULT);dplEnsureAiCore();
-      state=testing.snapshot().state;
-      const strongCredentials=await state.credentialProvider({mode:'direct-gemini',operation:'worksheet-generation',modelProfile:'balanced'});
-      const strongSignature=dplAiSignature();
-      this.assert(credentials.modelOverride===lite&&strongCredentials.modelOverride===MODEL_DEFAULT&&liteSignature!==strongSignature,'T6 přepnutí modelu · direct','Po setModel() další přímé volání používá aktuální Flash / Flash-Lite a mění konfigurační podpis.','Přímá AI cesta po setModel() zůstala na starém modelu');
-
-      window.__GHRAB_DEPLOYMENT_CONFIG__={...(oldDeployment||{}),profile:'school-server',aiTransport:'school-gateway',apiBaseUrl:'https://school.example/api/v1/',endpoints:{...(oldDeployment?.endpoints||{}),aiGenerate:'ai/generate',aiHealth:'ai/health'}};
-      const seen=[];
-      const response=payload=>({schema:window.GHRAB_AI.responseSchema,requestId:'mock-gateway',clientRequestId:payload.clientRequestId,result:JSON.parse(this.sampleStructured()),usage:{providerRequests:1,retryRequests:0,generatedOutputs:1},meta:{latencyMs:0}});
-      setModel(lite);dplEnsureAiCore();testing.setTestHooks({isEnabled:()=>true,schoolGateway:async payload=>{seen.push(payload.modelProfile);return response(payload)}});
-      await callGemini([{text:'Test T6 gateway Lite'}],{json:true,operation:'worksheet-generation'});
-      setModel(MODEL_DEFAULT);dplEnsureAiCore();testing.setTestHooks({isEnabled:()=>true,schoolGateway:async payload=>{seen.push(payload.modelProfile);return response(payload)}});
-      await callGemini([{text:'Test T6 gateway Flash'}],{json:true,operation:'worksheet-generation'});
-      this.assert(seen.length===2&&seen[0]==='economy'&&seen[1]==='balanced','T6 přepnutí modelu · gateway','Školní gateway dostala po setModel() postupně profily economy a balanced.','Školní gateway po přepnutí modelu použila starý modelProfile');
+      dplConfiguredSignature="";dplEnsureAiCore();
+      const state=testing.snapshot().state,credentials=await state.credentialProvider({mode:"direct-gemini",operation:"worksheet-generation",modelProfile:"balanced"}),map=state.runtime.ai.directGemini.profileModels;
+      this.assert(!("modelOverride" in credentials)&&MODEL_PROFILES.every(p=>map[p])&&new Set(MODEL_PROFILES.map(p=>map[p])).size===3,"T6 direct runtime","3 profily bez modelOverride.","Neplatný direct runtime.");
+      const direct=[];testing.setTestHooks({isEnabled:()=>true,directGemini:async({modelProfile})=>{direct.push(modelProfile);return JSON.parse(this.sampleStructured())}});
+      for(const p of MODEL_PROFILES){setModelProfile(p);await callGemini([{text:"T6"}],{json:true,operation:"worksheet-generation"})}
+      this.assert(direct.join(",")==="economy,balanced,quality","T6 direct routing","3 profily dorazily do Core.","Chybný direct modelProfile.");
+      window.__GHRAB_DEPLOYMENT_CONFIG__={...(oldDeployment||{}),profile:"school-server",aiTransport:"school-gateway",apiBaseUrl:"https://school.example/api/v1/",endpoints:{...(oldDeployment?.endpoints||{}),aiGenerate:"ai/generate",aiHealth:"ai/health"}};
+      dplConfiguredSignature="";dplEnsureAiCore();
+      const seen=[],response=p=>({schema:window.GHRAB_AI.responseSchema,requestId:"mock",clientRequestId:p.clientRequestId,result:JSON.parse(this.sampleStructured()),usage:{providerRequests:1,retryRequests:0,generatedOutputs:1},meta:{latencyMs:0}});
+      testing.setTestHooks({isEnabled:()=>true,schoolGateway:async p=>{seen.push(p.modelProfile);return response(p)}});
+      for(const p of MODEL_PROFILES){setModelProfile(p);await callGemini([{text:"T6"}],{json:true,operation:"worksheet-generation"})}
+      this.assert(seen.join(",")==="economy,balanced,quality","T6 gateway routing","3 profily dorazily na gateway.","Chybný gateway modelProfile.");
     }finally{
-      if(oldDeployment===undefined)delete window.__GHRAB_DEPLOYMENT_CONFIG__;else window.__GHRAB_DEPLOYMENT_CONFIG__=oldDeployment;
-      setModel(oldModel);dplConfiguredSignature='';dplEnsureAiCore();
+      testing.setTestHooks(oldHooks);if(oldDeployment===undefined)delete window.__GHRAB_DEPLOYMENT_CONFIG__;else window.__GHRAB_DEPLOYMENT_CONFIG__=oldDeployment;setModelProfile(oldProfile);dplConfiguredSignature="";dplEnsureAiCore();
     }
   },
   runProjectRoundtripTest(){

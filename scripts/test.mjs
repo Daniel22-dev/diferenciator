@@ -8,15 +8,17 @@ import { createRequire } from "node:module";
 const require=createRequire(import.meta.url);
 
 const ROOT=join(dirname(fileURLToPath(import.meta.url)),".."),BASE=join(ROOT,"dist");
-const REPO="diferenciator",APP_ID="differentiator",APP_VERSION="1.3.14",CACHE_PREFIX="ghrab-differentiator-v";
+const REPO="diferenciator",APP_ID="differentiator",APP_VERSION="1.3.15",CACHE_PREFIX="ghrab-differentiator-v";
 let failures=0;const ok=m=>console.log("  ✓ "+m),bad=m=>{console.error("  ✗ "+m);failures++};
 if(!existsSync(join(BASE,"index.html"))){console.error("Chybí dist. Spusť nejdřív npm run build.");process.exit(1)}
 function testHtml(raw){
+  const runtimeConfig=readFileSync(join(BASE,'runtime-config.js'),'utf-8').replace(/<\/script/gi,'<\\/script');
   const platform=readFileSync(join(BASE,'ghrab','ghrab-platform.js'),'utf-8')
     .replace(/const scriptUrl = scriptElement && scriptElement\.src \? new URL\(scriptElement\.src, location\.href\) : new URL\('\.\/ghrab\/ghrab-platform\.js', location\.href\);/,"const scriptUrl = new URL('https://qa.invalid/ghrab/ghrab-platform.js');")
     .replace(/<\/script/gi,'<\\/script');
   return raw
     .replace('<head>','<head><script>window.__testEarlyErrors=[];addEventListener(\"error\",e=>window.__testEarlyErrors.push(String(e.error&&e.error.stack||e.message||e.error||\"error\")));addEventListener(\"unhandledrejection\",e=>window.__testEarlyErrors.push(String(e.reason&&e.reason.stack||e.reason||\"rejection\")));<\/script>')
+    .replace(/<script[^>]*src="\.\/runtime-config\.js"[^>]*><\/script>/i,()=>`<script data-ghrab-runtime-config data-ghrab-test-inline>${runtimeConfig}<\/script>`)
     .replace(/<script[^>]*src="\.\/ghrab\/ghrab-platform\.js"[^>]*><\/script>/i,()=>`<script data-ghrab-platform-loader data-ghrab-test-inline>${platform}<\/script>`)
     .replace('type="application/ghrab-protected" data-ghrab-protected','type="text/javascript" data-ghrab-test-executable')
     .replace(/<script type="module" data-ghrab-access-bootstrap>[\s\S]*?<\/script>/,'');

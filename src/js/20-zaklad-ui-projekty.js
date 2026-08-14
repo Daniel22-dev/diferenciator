@@ -325,8 +325,8 @@ function updateDataSummary(){
 function openDataManagement(){updateDataSummary();$('#dataOverlay').classList.add('show')}
 function closeDataManagement(){$('#dataOverlay').classList.remove('show')}
 function clearPreferenceData(){
-  ['dpl_guide_seen',CEFR_PREF_SK,MODEL_SK,THEME_SK].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
-  resetAdvancedSettings();loadModel();loadTheme();restoreCefrPreference();closeDataManagement();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
+  ['dpl_guide_seen',CEFR_PREF_SK,MODEL_PROFILE_SK,THEME_SK].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
+  resetAdvancedSettings();loadModelProfile();loadTheme();restoreCefrPreference();closeDataManagement();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
 }
 function clearWorkingData(){
   uploaded=null;if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
@@ -411,4 +411,4 @@ function setResultSummary(count){
   if(banner)banner.classList.add('show');
 }
 
-const KEY_SK="dpl_gemini_key", KEY_SESSION_SK="dpl_gemini_key_session", MODEL_SK="dpl_gemini_model";
+const KEY_SK="dpl_gemini_key", KEY_SESSION_SK="dpl_gemini_key_session", MODEL_PROFILE_SK="dpl_gemini_model";

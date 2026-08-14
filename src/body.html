@@ -35,7 +35,7 @@
 
   <div class="statusbar" aria-label="Stav aplikace">
     <div class="status-pill warn" id="statusKey"><span class="k">API klíč</span><span class="v">nenastaven</span></div>
-    <div class="status-pill" id="statusModel"><span class="k">Model</span><span class="v">Flash</span></div>
+    <div class="status-pill ok" id="statusModel"><span class="k">Profil AI</span><span class="v">Doporučený</span></div>
     <div class="status-pill" id="statusInput"><span class="k">Vstup</span><span class="v">čeká na zadání</span></div>
     <div class="status-pill" id="statusFlow"><span class="k">Průběh</span><span class="v">připraveno</span></div>
   </div>
@@ -63,29 +63,33 @@
     <div class="main-flow">
   <div class="flow-label setup"><span>Jednor&aacute;zov&eacute; nastaven&iacute;</span></div>
   <section class="panel api-step-panel" id="apiStepPanel">
-    <p class="step"><b>1</b> Vlož API klíč <span class="step-role tech">Technické nastavení</span></p>
-    <p class="api-step-lede">Klíč je potřeba pro tvorbu verzí, řešení a kontrolu kvality. Nastavení je schované, aby hlavní práce se zadáním zůstala nahoře přehledná.</p>
-    <button class="api-toggle" id="apiToggle">Nastavit / změnit API klíč ▾</button>
+    <p class="step"><b>1</b> Připojení k AI <span class="step-role tech">Technické nastavení</span></p>
+    <p class="api-step-lede">V serverless verzi použij osobní Gemini API klíč; ve školní verzi připojení zajišťuje školní AI služba.</p>
+    <button class="api-toggle" id="apiToggle" aria-expanded="false" aria-controls="apiPanel">Nastavení AI ▾</button>
     <div class="api" id="apiPanel">
       <div class="api-head">
-        <span class="api-title">⚡ Generování přes Gemini</span>
+        <span class="api-title">⚡ Generování přes AI</span>
         <span class="api-status" id="keyStatus">Klíč není nastaven</span>
       </div>
-      <label class="sr-only" for="keyInput">Gemini API klíč</label>
-      <input id="keyInput" type="password" placeholder="Gemini API klíč (AIza…)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" title="Klíč se posílá jen Googlu. Nikdy ho nevkládej do HTML na GitHubu." />
-      <div class="key-actions">
-        <button class="btn small" id="btnSession" title="Klíč se po zavření prohlížeče sám zapomene.">Použít jen pro relaci</button>
-        <button class="btn ghost small" id="btnClear" title="Odstraní klíč z relace a smaže případnou starou kopii.">Smazat klíč</button>
+      <div id="directGeminiSettings">
+        <label class="sr-only" for="keyInput">Gemini API klíč</label>
+        <input id="keyInput" type="password" placeholder="Gemini API klíč (AIza…)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" title="Klíč se posílá jen Googlu. Nikdy ho nevkládej do HTML na GitHubu." />
+        <div class="key-actions">
+          <button class="btn small" id="btnSession" title="Klíč se po zavření prohlížeče sám zapomene.">Použít jen pro relaci</button>
+          <button class="btn ghost small" id="btnClear" title="Odstraní klíč z relace a smaže případnou starou kopii.">Smazat klíč</button>
+        </div>
+        <p class="hint"><b>Relace</b> = klíč se po zavření prohlížeče sám zapomene. Každý kolega používá vlastní osobní API klíč; klíče se nesdílejí a nikdy se nevkládají do HTML na GitHubu. API klíč: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com</a> → Get API key.</p>
       </div>
-      <p class="hint"><b>Relace</b> = klíč se po zavření prohlížeče sám zapomene. Každý kolega používá vlastní osobní API klíč; klíče se nesdílejí a nikdy se nevkládají do HTML na GitHubu. API klíč: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com</a> → Get API key.</p>
 
       <div class="model-row">
-        <label>Model</label>
-        <div class="model-quick">
-          <button class="qm" id="qmStrong" title="Silnější model — lepší práce s obsahem, jazykem a odborným zápisem. Doporučeno.">⚡ Flash<span class="sub">gemini-3.6-flash</span></button>
-          <button class="qm" id="qmLite" title="Rychlejší a šetrnější k limitu. Pro jednoduché úkoly.">🪶 Flash-Lite<span class="sub">gemini-3.5-flash-lite</span></button>
+        <label>Profil AI</label>
+        <div class="model-quick" role="group" aria-label="Profil AI">
+          <button class="qm" id="profileEconomy" data-model-profile="economy" aria-pressed="false" title="Rychlé a úsporné.">◇ Úsporný<span class="sub">nižší spotřeba</span></button>
+          <button class="qm" id="profileBalanced" data-model-profile="balanced" aria-pressed="true" title="Výchozí profil.">⚡ Doporučený<span class="sub">výchozí volba</span></button>
+          <button class="qm" id="profileQuality" data-model-profile="quality" aria-pressed="false" title="Pro náročnější úlohy.">★ Důkladný<span class="sub">vyšší kvalita</span></button>
         </div>
-        <p class="hint">Při dočasném problému se zvoleným modelem se zkusí druhá dostupná volba. <strong>Podmínky práce s daty se liší podle regionu a fakturace.</strong> U neplacených služeb mimo EHP, Švýcarsko a Spojené království může Google odeslaný obsah a odpovědi použít ke zlepšování produktů a mohou je kontrolovat lidští hodnotitelé. V EHP, Švýcarsku a Spojeném království se podle aktuálních podmínek na data vztahují pravidla placených služeb i u neplacené kvóty; aplikace zpřístupněná uživatelům v těchto regionech má používat projekt s aktivní fakturací. Vždy posílej materiály bez jmen a osobních či citlivých údajů žáků.</p>
+        <p class="hint">Aplikace předává pouze profil AI; konkrétní model vybírá aktivní AI služba.</p>
+        <details class="model-terms"><summary>Fakturace a práce s daty</summary><p class="hint">Serverless používá osobní Gemini API klíč; školní režim spravuje server. Vždy posílej materiály bez osobních a citlivých údajů žáků.</p></details>
       </div>
     </div>
 

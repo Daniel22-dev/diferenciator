@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.15 — centrální profily AI (2026-08-14)
+
+- Diferenciátor přebírá referenční modelový kontrakt KS 5.10.4: **Úsporný / Doporučený / Důkladný** = `economy / balanced / quality`.
+- Aplikační UI a logika už nepracují s konkrétními názvy Gemini modelů; providerová ID jsou pouze ve veřejné serverless runtime konfiguraci.
+- Odstraněn `modelOverride`; zvolený profil se předává přímo do GHRAB AI Core a konkrétní model vybírá aktivní transport.
+- Všech šest registrovaných AI operací dovoluje všechny tři profily, takže uživatelská volba není potichu přepisována.
+- Přidána migrace starých uložených modelů na profily a tři provider-neutrální profilová tlačítka.
+- School-server runtime neobsahuje Gemini/OpenAI modely, používá stejné tři profily a school build odstraňuje přímý Gemini endpoint z CSP.
+- Přidána `qa:profiles` brána, T6 integrační test a Chromium click-through test všech tří profilů pro direct Core i school gateway.
+
 ## 1.3.14 — oprava AI integrační vrstvy (2026-08-13)
 
 - Opraven kritický blokátor: produkční AI cesta už nevolá neexistující metody `GHRAB_PLATFORM`.

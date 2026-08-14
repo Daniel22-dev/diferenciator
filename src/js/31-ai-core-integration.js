@@ -1,5 +1,5 @@
-/* ===================== GHRAB AI CORE 1.0.0 · DIFERENCIÁTOR 1.3.14 ===================== */
-const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.14'});
+/* ===================== GHRAB AI CORE 1.0.0 · DIFERENCIÁTOR 1.3.15 ===================== */
+const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.15'});
 const DPL_WORKSHEET_SCHEMA=Object.freeze({
   type:'object',
   properties:{
@@ -17,12 +17,12 @@ const DPL_AI_SCHEMAS=Object.freeze({
   'differentiator.object.v1':DPL_WORKSHEET_SCHEMA
 });
 const DPL_AI_OPERATIONS=Object.freeze({schema:'ghrab-ai-operations-v1',appId:DPL_AI_APP.id,operations:Object.freeze({
-  'cefr-detection':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:4096},
+  'cefr-detection':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:4096},
   'material-extraction':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'balanced',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text','image','document'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
   'worksheet-generation':{outputSchemaId:'differentiator.object.v1',defaultModelProfile:'balanced',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text','image','document'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
-  'worksheet-structure-repair':{outputSchemaId:'differentiator.object.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
-  'answer-key-generation':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:16384},
-  'worksheet-quality-audit':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:8192}
+  'worksheet-structure-repair':{outputSchemaId:'differentiator.object.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:32768},
+  'answer-key-generation':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:16384},
+  'worksheet-quality-audit':{outputSchemaId:'differentiator.text.v1',defaultModelProfile:'economy',allowedModelProfiles:['economy','balanced','quality'],inputTypes:['text'],streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:8192}
 })});
 
 const DPL_EMAIL_RE=/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g;
@@ -31,6 +31,7 @@ let dplConfiguredSignature='';
 
 function dplDeployment(){return window.__GHRAB_DEPLOYMENT_CONFIG__||{}}
 function dplSchoolMode(){
+  if(window.__GHRAB_RUNTIME_CONFIG__?.ai?.defaultMode==='school-gateway')return true;
   const platformCheck=window.GHRAB_PLATFORM&&window.GHRAB_PLATFORM.isSchoolProfile;
   if(typeof platformCheck==='function'){
     try{return platformCheck.call(window.GHRAB_PLATFORM)===true}catch(_){}
@@ -45,41 +46,27 @@ function dplApiUrl(endpointKey,fallback){
   if(!base||!endpoint)return fallback;
   try{return new URL(endpoint,base.endsWith('/')?base:base+'/').href}catch(_){return fallback}
 }
-function dplFallbackModels(){
-  const lite=FALLBACK_MODELS[0];
-  return geminiModel===lite?[MODEL_DEFAULT]:[lite];
-}
 function dplRuntimeConfig(){
+  const raw=window.__GHRAB_RUNTIME_CONFIG__;
+  if(!raw||raw.schema!=="ghrab-runtime-config-v1"||!raw.ai)throw makeAppError("Veřejná runtime konfigurace AI není dostupná. Obnov stránku přes AI Studio.","CONFIGURATION_ERROR");
+  const cfg=JSON.parse(JSON.stringify(raw));
   const school=dplSchoolMode();
-  const mode=school?'school-gateway':'direct-gemini';
-  const deployment=dplDeployment();
-  return {
-    ai:{
-      defaultMode:mode,
-      selectedMode:mode,
-      allowedModes:[mode],
-      allowUserModeSelection:false,
-      automaticFallback:false,
-      gatewayUrl:dplApiUrl('aiGenerate','/api/v1/ai/generate'),
-      healthUrl:dplApiUrl('aiHealth','/api/v1/ai/health'),
-      requestTimeoutMs:GEMINI_TIMEOUT_MS,
-      gatewayMaxRetries:0,
-      maxRequestBytes:MAX_INLINE_REQUEST_BYTES,
-      maxPartBytes:MAX_SINGLE_MEDIA_ORIGINAL_BYTES,
-      directGemini:{
-        profileModels:{economy:FALLBACK_MODELS[0],balanced:MODEL_DEFAULT,quality:MODEL_DEFAULT},
-        fallbackModels:dplFallbackModels(),
-        useResponseSchema:false,
-        maxOutputTokens:60000
-      }
-    },
-    telemetry:{enabled:deployment.telemetryMode!=='off'}
-  };
+  if(school){
+    cfg.ai.defaultMode="school-gateway";cfg.ai.selectedMode="school-gateway";cfg.ai.allowedModes=["school-gateway"];cfg.ai.allowUserModeSelection=false;cfg.ai.automaticFallback=false;delete cfg.ai.directGemini;
+  }else{
+    const map=cfg.ai.directGemini&&cfg.ai.directGemini.profileModels;
+    if(cfg.ai.defaultMode!=="direct-gemini"||!map||!MODEL_PROFILES.every(profile=>typeof map[profile]==="string"&&map[profile]))throw makeAppError("Serverless runtime nemá úplné mapování profilů AI.","CONFIGURATION_ERROR");
+    cfg.ai.defaultMode="direct-gemini";cfg.ai.selectedMode="direct-gemini";cfg.ai.allowedModes=["direct-gemini"];cfg.ai.allowUserModeSelection=false;cfg.ai.automaticFallback=false;
+  }
+  cfg.ai.gatewayUrl=dplApiUrl("aiGenerate",cfg.ai.gatewayUrl||"/api/v1/ai/generate");
+  cfg.ai.healthUrl=dplApiUrl("aiHealth",cfg.ai.healthUrl||"/api/v1/ai/health");
+  cfg.telemetry={...(cfg.telemetry||{}),enabled:dplDeployment().telemetryMode!=="off"};
+  return cfg;
 }
 function dplModelProfile(operation){
   const registration=DPL_AI_OPERATIONS.operations[operation];
-  if(!registration)return'balanced';
-  const desired=geminiModel===FALLBACK_MODELS[0]?'economy':'balanced';
+  if(!registration)return MODEL_PROFILE_DEFAULT;
+  const desired=normalizeModelProfile(selectedModelProfile);
   return registration.allowedModelProfiles.includes(desired)?desired:registration.defaultModelProfile;
 }
 function dplCoreParts(parts){
@@ -141,7 +128,7 @@ async function dplPreflight(parts){
 }
 function dplAiSignature(){
   const runtime=dplRuntimeConfig();
-  return [runtime.ai.defaultMode,geminiModel,runtime.ai.gatewayUrl,runtime.ai.healthUrl].join('|');
+  return [runtime.ai.defaultMode,runtime.ai.gatewayUrl,runtime.ai.healthUrl].join('|');
 }
 function dplEnsureAiCore(){
   const ai=window.GHRAB_AI;
@@ -160,7 +147,7 @@ function dplEnsureAiCore(){
     runtimeConfig:dplRuntimeConfig(),
     operations:DPL_AI_OPERATIONS,
     outputSchemas:DPL_AI_SCHEMAS,
-    credentialProvider:async({mode})=>mode==='direct-gemini'?{apiKey:cleanKey(geminiApiKey),modelOverride:geminiModel}:null
+    credentialProvider:async({mode})=>mode==='direct-gemini'?{apiKey:cleanKey(geminiApiKey)}:null
   };
   if(typeof platform.authProvider==='function')config.authProvider=context=>platform.authProvider(context);
   if(typeof platform.recordTelemetry==='function')config.telemetrySink=event=>platform.recordTelemetry({type:'ai-usage',appId:DPL_AI_APP.id,appVersion:DPL_AI_APP.version,...event});
@@ -208,17 +195,14 @@ function dplRemoveLocalProviderKeys(){
   geminiApiKey='';geminiKeyScope='server';
 }
 function dplApplyServerKeyPolicy(){
-  if(!dplSchoolMode())return;
+  if(!dplSchoolMode()){if(typeof applyAiRuntimeUi==='function')applyAiRuntimeUi();return}
   const platform=window.GHRAB_PLATFORM||{};
   if(typeof platform.enforceLocalKeyPolicy==='function'){
     try{platform.enforceLocalKeyPolicy({localStorageKeys:[KEY_SK],sessionStorageKeys:[KEY_SESSION_SK],onRemoved:dplRemoveLocalProviderKeys})}catch(_){dplRemoveLocalProviderKeys()}
   }else dplRemoveLocalProviderKeys();
-  const panel=document.getElementById('apiPanel'),toggle=document.getElementById('apiToggle'),status=document.getElementById('keyStatus'),input=document.getElementById('keyInput');
-  if(panel)panel.classList.remove('open');
-  if(toggle){toggle.textContent='AI zajišťuje školní server';toggle.disabled=true}
-  if(input){input.value='';input.disabled=true;input.placeholder='Klíč je bezpečně uložen na školním serveru'}
-  for(const id of ['btnSession','btnClear']){const el=document.getElementById(id);if(el)el.hidden=true}
-  if(status){status.textContent='✓ Školní AI gateway';status.className='api-status ok'}
+  if(typeof applyAiRuntimeUi==='function')applyAiRuntimeUi();
+  const input=document.getElementById('keyInput');
+  if(input){input.value='';input.disabled=true;input.placeholder='Osobní klíč se ve školním režimu nepoužívá'}
   setStatus('statusKey','školní server','ok');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',dplApplyServerKeyPolicy,{once:true});else dplApplyServerKeyPolicy();

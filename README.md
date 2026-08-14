@@ -1,12 +1,12 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.14  
+**Aktuální verze:** 1.3.15  
 **Platforma:** GHRAB Platform 1.1.0 · etapa P5
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.14
+- **Verze:** 1.3.15
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž
@@ -24,7 +24,7 @@ npm ci
 npm test
 ```
 
-`npm test` nejprve znovu sestaví `dist/`, spustí regresní brány, zkontroluje verzi PWA, bezpečnostní bránu, duplicity ID, manifest a interní testy aplikace. Test použije systémový Chromium/Chrome nebo prohlížeč nainstalovaný Playwrightem. Pokud na čistém stroji prohlížeč chybí, spusť jednou `npx playwright install chromium`.
+`npm test` nejprve znovu sestaví `dist/`, ověří centrální profily Úsporný / Doporučený / Důkladný přes `qa:profiles`, fyzickými Chromium kliknutími ověří jejich propsání do Core requestu, spustí regresní brány a zkontroluje PWA, bezpečnost, duplicity ID, manifest i interní testy. Test použije systémový Chromium/Chrome nebo prohlížeč nainstalovaný Playwrightem. Pokud na čistém stroji prohlížeč chybí, spusť jednou `npx playwright install chromium`.
 
 ## Struktura
 

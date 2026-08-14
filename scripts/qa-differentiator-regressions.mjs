@@ -18,7 +18,7 @@ function walk(dir, out=[]){
   return out;
 }
 
-console.log('Regresní brána Diferenciátoru 1.3.14');
+console.log('Regresní brána Diferenciátoru 1.3.15');
 
 // T1: every direct top-level GHRAB_PLATFORM method call must exist in the shipped vendor API.
 {
@@ -58,7 +58,11 @@ console.log('Regresní brána Diferenciátoru 1.3.14');
   const ids=[...body.matchAll(/\bid=["']([^"']+)["']/g)].map(m=>m[1]);
   const code=['src/index.template.html',...readdirSync(join(ROOT,'src/js')).filter(x=>x.endsWith('.js')).map(x=>'src/js/'+x)].map(read).join('\n');
   const allow=new Set(['manualLaunch']);
-  const unused=ids.filter(id=>!allow.has(id)&&!code.includes(id));
+  const dataDrivenProfileIds=new Set(
+    [...body.matchAll(/<[^>]+\bid=["']([^"']+)["'][^>]+\bdata-model-profile=["'][^"']+["'][^>]*>/g)].map(m=>m[1])
+  );
+  const profileDelegationWired=code.includes('[data-model-profile]');
+  const unused=ids.filter(id=>!allow.has(id)&&!code.includes(id)&&!(profileDelegationWired&&dataDrivenProfileIds.has(id)));
   if(unused.length)bad('T5: nenapojená HTML ID: '+unused.join(', '));
   else ok(`T5: ${ids.length} HTML ID napojeno nebo výslovně statických`);
 }
