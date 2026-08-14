@@ -18,7 +18,7 @@ function walk(dir, out=[]){
   return out;
 }
 
-console.log('Regresní brána Diferenciátoru 1.3.15');
+console.log('Regresní brána Diferenciátoru 1.3.16');
 
 // T1: every direct top-level GHRAB_PLATFORM method call must exist in the shipped vendor API.
 {
@@ -57,7 +57,7 @@ console.log('Regresní brána Diferenciátoru 1.3.15');
   const body=read('src/body.html');
   const ids=[...body.matchAll(/\bid=["']([^"']+)["']/g)].map(m=>m[1]);
   const code=['src/index.template.html',...readdirSync(join(ROOT,'src/js')).filter(x=>x.endsWith('.js')).map(x=>'src/js/'+x)].map(read).join('\n');
-  const allow=new Set(['manualLaunch']);
+  const allow=new Set(['manualLaunch','advTargetGroupHelp','supportTypeSuggestions','advTeacherInstructionHelp']);
   const dataDrivenProfileIds=new Set(
     [...body.matchAll(/<[^>]+\bid=["']([^"']+)["'][^>]+\bdata-model-profile=["'][^"']+["'][^>]*>/g)].map(m=>m[1])
   );
@@ -76,6 +76,52 @@ console.log('Regresní brána Diferenciátoru 1.3.15');
   if(uniq.length){for(let n=uniq[0];n>=uniq[uniq.length-1];n--)if(!uniq.includes(n))missing.push(n);}
   if(!uniq.length||missing.length)bad('T8: díra v RELEASE.changes 1.3.x'+(missing.length?': '+missing.map(n=>'1.3.'+n).join(', '):''));
   else ok(`T8: RELEASE.changes souvisle 1.3.${uniq[0]}–1.3.${uniq[uniq.length-1]}`);
+}
+
+// T9: user-facing differentiation rules from the 1.3.16 usability pass stay explicit and enforced.
+{
+  const body=read('src/body.html'),ui=read('src/js/20-zaklad-ui-projekty.js'),flow=read('src/js/60-pwa-start.js');
+  const problems=[];
+  if(!/prima[–-]oktáva/.test(body)||!ui.includes("tercie:{label:'tercie'"))problems.push('chybí převod prima–oktáva');
+  if(!ui.includes('ZÁVAZNÝ VLASTNÍ POKYN UČITELE'))problems.push('vlastní pokyn není závazně předán');
+  if(!ui.includes("core.disabled=diffOnly")||!ui.includes("if(diffOnly&&core.checked)core.checked=false"))problems.push('režim jiné obtížnosti nezneplatní Normální');
+  if(body.includes('Automaticky podle vybrané úrovně'))problems.push('vrácen nejasný text automatické volby');
+  if(!body.includes('Doporučeně podle cílové úrovně')||!body.includes('Řídit se režimem výše (doporučeno)'))problems.push('chybí srozumitelný název automatiky');
+  if(!body.includes('supportTypeSuggestions')||!ui.includes('Preferovaný způsob podpory nebo výzvy'))problems.push('Typ podpory není vysvětlen/předán');
+  if(!flow.includes('selectedSetTierKeys()'))problems.push('sada úrovní ignoruje režim jiné obtížnosti');
+  if(problems.length)bad('T9: pedagogická UX pravidla: '+problems.join('; ')); else ok('T9: pedagogická UX pravidla a cílová úroveň jsou vynucené');
+}
+
+// T10: quality audit is opt-in per suggestion and obsolete secondary actions stay removed.
+{
+  const body=read('src/body.html'),quality=read('src/js/40-vystup-pdf-kvalita.js'),ops=JSON.parse(read('src/ai-operations.json'));
+  const problems=[];
+  if(!body.includes('id="qualityApply"')||!quality.includes('class="qa-choice"'))problems.push('chybí selektivní checkboxy kontroly');
+  if(!quality.includes('applySelectedQualitySuggestions')||!ops.operations.some(x=>x.operation==='worksheet-quality-revision'))problems.push('chybí řízené zapracování vybraných bodů');
+  const secondary=(quality.match(/secondary[\s\S]{0,1800}/)||[''])[0];
+  if(/Export \.md|Regenerovat/i.test(secondary)||/function\s+regenerateSheet\b/.test(quality))problems.push('vrácen Export .md nebo Regenerovat');
+  if(!quality.includes("'1. '+")||!quality.includes("'2. '+")||!quality.includes("'3. Stáhnout PDF'"))problems.push('výsledkovému postupu chybí 1./2./3.');
+  if(problems.length)bad('T10: kontrola/výsledkové akce: '+problems.join('; ')); else ok('T10: kontrola je selektivní a výsledkové akce jsou zjednodušené');
+}
+
+// T11: DOCX reader must preserve embedded image exercises, not only the XML text layer.
+{
+  const api=read('src/js/30-api-gemini.js');
+  const problems=[];
+  if(!api.includes('function docxReferencedMediaPaths')||!api.includes('async function readDocxRich'))problems.push('chybí rich DOCX reader');
+  if(!api.includes("kind:'mixed'")||!api.includes("uploaded&&uploaded.kind==='mixed'"))problems.push('text a obrázky se neposílají společně');
+  if(!api.includes("if(rich.text)assertTextLength"))problems.push('image-only DOCX je stále blokován textovou validací');
+  if(problems.length)bad('T11: DOCX import: '+problems.join('; ')); else ok('T11: DOCX import zachovává text i vložené obrázky');
+}
+
+// T12: custom checkboxes must be theme-aware rather than native black squares in light mode.
+{
+  const css=read('src/styles.css');
+  const okCss=/\.qa-choice,\.teacher-confirm input\{[^}]*appearance:none[^}]*background:#fff/s.test(css)
+    &&/\.teacher-confirm input:checked\{[^}]*background:var\(--core\)/s.test(css)
+    &&/body\.dark \.qa-choice,body\.dark \.teacher-confirm input\{[^}]*background:#172030/s.test(css);
+  if(!okCss)bad('T12: vlastní checkboxy nejsou explicitně stylované pro světlý i tmavý režim');
+  else ok('T12: checkboxy kontroly/PDF mají vlastní light/dark vzhled');
 }
 
 // Guard the production integration against reintroducing the bypass/duplicate schema.

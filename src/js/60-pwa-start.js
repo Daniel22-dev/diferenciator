@@ -92,10 +92,10 @@ async function generateVersions(keys,triggerBtn){
   }
 }
 $('#genBtn').addEventListener('click',()=>{
-  const sel=document.querySelector('#tiers input:checked');if(!sel){errBox($('#configErr'),'Vyber úroveň nové verze.');return}
+  const sel=document.querySelector('#tiers input:checked');if(!sel){const diffOnly=$('#advVariantMode')&&$('#advVariantMode').value==='same_content_diff_difficulty';errBox($('#configErr'),diffOnly?'Vyber Jednodušší nebo Obtížnější. Při volbě „Stejný obsah, jiná obtížnost“ není Normální platný cíl.':'Vyber úroveň nové verze.');return}
   generateVersions([sel.dataset.tier],$('#genBtn'));
 });
-$('#genAllBtn').addEventListener('click',()=>generateVersions(['support','core','extend'],$('#genAllBtn')));
+$('#genAllBtn').addEventListener('click',()=>generateVersions(selectedSetTierKeys(),$('#genAllBtn')));
 
 function initAccessibleModals(){
   const overlays=[...document.querySelectorAll('.overlay')],openStack=[],focusOrigins=new WeakMap(),openStates=new WeakMap();

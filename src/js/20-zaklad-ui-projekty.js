@@ -140,7 +140,76 @@ function errBox(t,m){if(t)t.innerHTML='<div class="err" role="alert">'+esc(Strin
 function clearErr(t){t.innerHTML=''}
 
 function selectedTierKey(){const sel=document.querySelector('#tiers input:checked');return sel&&sel.dataset?sel.dataset.tier:'core'}
-function setSelectedTierKey(key){const wanted=key||'core';document.querySelectorAll('#tiers input').forEach(i=>{i.checked=(i.dataset.tier===wanted);i.dispatchEvent(new Event('change'))});}
+function actualSelectedTierKey(){const sel=document.querySelector('#tiers input:checked');return sel&&sel.dataset?sel.dataset.tier:''}
+function syncTierCards(){
+  document.querySelectorAll('#tiers .tierpick').forEach(card=>{
+    const input=card.querySelector('input[type="radio"]'),state=card.querySelector('.tier-state');if(!input)return;
+    card.classList.toggle('on',!!input.checked);card.classList.toggle('disabled',!!input.disabled);card.setAttribute('aria-disabled',input.disabled?'true':'false');
+    if(state)state.textContent=input.disabled?'Nedostupné':(input.checked?'✓ Vybráno':'Vybrat');
+  });
+}
+function setSelectedTierKey(key){const wanted=['support','core','extend'].includes(key)?key:null;document.querySelectorAll('#tiers input').forEach(i=>{i.checked=!!wanted&&i.dataset.tier===wanted});syncTierCards();updateAdvancedGuidance();}
+const GYMNASIUM_TARGET_GROUPS=Object.freeze({
+  prima:{label:'prima',detail:'1. ročník osmiletého gymnázia · přibližně 6. ročník ZŠ · obvykle 11–12 let'},
+  sekunda:{label:'sekunda',detail:'2. ročník osmiletého gymnázia · přibližně 7. ročník ZŠ · obvykle 12–13 let'},
+  tercie:{label:'tercie',detail:'3. ročník osmiletého gymnázia · přibližně 8. ročník ZŠ · obvykle 13–14 let'},
+  kvarta:{label:'kvarta',detail:'4. ročník osmiletého gymnázia · přibližně 9. ročník ZŠ · obvykle 14–15 let'},
+  kvinta:{label:'kvinta',detail:'5. ročník osmiletého gymnázia · přibližně 1. ročník čtyřletého gymnázia · obvykle 15–16 let'},
+  sexta:{label:'sexta',detail:'6. ročník osmiletého gymnázia · přibližně 2. ročník čtyřletého gymnázia · obvykle 16–17 let'},
+  septima:{label:'septima',detail:'7. ročník osmiletého gymnázia · přibližně 3. ročník čtyřletého gymnázia · obvykle 17–18 let'},
+  oktava:{label:'oktáva',detail:'8. ročník osmiletého gymnázia · přibližně 4. ročník čtyřletého gymnázia · obvykle 18–19 let'}
+});
+function detectGymnasiumTargetGroups(value){
+  const normalized=normalizeSubjectCode(value).replace(/[^a-z0-9]+/g,' ').trim(),found=[];
+  for(const [key,info] of Object.entries(GYMNASIUM_TARGET_GROUPS))if(new RegExp('(?:^|\\s)'+key+'(?:$|\\s)').test(normalized))found.push(info);
+  return found;
+}
+function detectGymnasiumTargetGroup(value){return detectGymnasiumTargetGroups(value)[0]||null}
+function targetGroupPromptLine(value){
+  const raw=String(value||'').trim();if(!raw)return '';
+  const detected=detectGymnasiumTargetGroups(raw);
+  return detected.length?'Cílová skupina: '+raw+'. Rozpoznaná gymnaziální označení: '+detected.map(x=>x.label+' = '+x.detail).join('; ')+'. Přizpůsob slovník, délku instrukcí a kognitivní náročnost uvedenému věku a ročníku; pokud je skupin více, hledej společnou přiměřenou úroveň.':'Cílová skupina: '+raw+'.';
+}
+function updateTargetGroupHint(){
+  const input=$('#advTargetGroup'),out=$('#advTargetGroupDetected');if(!input||!out)return;
+  const detected=detectGymnasiumTargetGroups(input.value);
+  out.textContent=detected.length?'Rozpoznáno: '+detected.map(x=>x.label+' = '+x.detail).join('; ')+'.':'';out.classList.toggle('show',!!detected.length);
+}
+function resolvedStructureMode(key){
+  const a=getAdvancedOptions();if(a.structureMode==='strict'||a.structureMode==='flexible')return a.structureMode;
+  if(a.variantMode==='same_goal_flexible')return 'flexible';
+  return 'strict';
+}
+function updateAdvancedGuidance(){
+  const mode=$('#advVariantMode')?$('#advVariantMode').value:'auto',key=actualSelectedTierKey();
+  const variantHelp=$('#advVariantHelp');if(variantHelp){
+    const tier=key&&TIERS[key]?TIERS[key].name:'';
+    const messages={
+      same_content_diff_difficulty:'Původní učivo, příklady a data se drží co nejvíce. Mění se hlavně míra opory a náročnost. Normální není cílová volba, protože by se obtížnost nezměnila.',
+      same_format_new_content:'Vznikne paralelní varianta se stejnými typy úloh, pořadím a formátem odpovědí, ale s jinými konkrétními větami, čísly, daty nebo kontextem.',
+      same_content_same_format:'Obsah i formát zůstanou; upraví se jen opora, formulace a hloubka odpovědi podle zvolené úrovně.',
+      same_goal_flexible:'Povinný zůstává hlavní výukový cíl a ověřované dovednosti. Konkrétní úlohy i struktura se mohou změnit.'
+    };
+    variantHelp.textContent=mode==='auto'?(key==='core'?'Pro Normální vytvoří paralelní variantu se stejnou obtížností a strukturou, ale s novým konkrétním obsahem.':'Pro '+(tier||'Jednodušší/Obtížnější')+' drží původní obsah a strukturu a mění hlavně míru opory, formulace a hloubku odpovědi.'):(messages[mode]||'');
+  }
+  const structureHelp=$('#advStructureHelp');if(structureHelp){
+    const resolved=resolvedStructureMode(key||'core');
+    structureHelp.textContent=($('#advStructureMode')&&$('#advStructureMode').value==='auto')?(resolved==='strict'?'Automatika zde znamená: strukturu, pořadí a typy úloh zachovat co nejpřesněji podle režimu výše.':'Automatika zde znamená: strukturu může upravit, protože režim výše dovoluje volnější variantu.'):(resolved==='strict'?'Struktura je uzamčená co nejblíže originálu.':'Strukturu lze upravit, pokud to pomůže pedagogickému cíli.');
+  }
+  const supportHelp=$('#advSupportHelp');if(supportHelp){
+    supportHelp.textContent=key==='support'?'Volitelné vodítko pro Jednodušší verzi: např. slovní banka, nápověda po krocích, výběr z možností nebo začátek odpovědi.':key==='extend'?'Volitelné vodítko pro Obtížnější verzi: např. méně opory, argumentace navíc, aplikace, srovnání nebo vlastní úsudek.':'U Normální verze je pole většinou zbytečné; použij ho jen tehdy, když chceš zachovat konkrétní formu podpory. Nemění téma ani výukový cíl.';
+  }
+}
+function syncVariantTierRules(){
+  const mode=$('#advVariantMode')?$('#advVariantMode').value:'auto',core=document.querySelector('#tiers input[data-tier="core"]'),allBtn=$('#genAllBtn'),hint=$('#tierChoiceHint');
+  const diffOnly=mode==='same_content_diff_difficulty';
+  if(core){core.disabled=diffOnly;if(diffOnly&&core.checked)core.checked=false;}
+  if(!diffOnly&&!actualSelectedTierKey()&&core)core.checked=true;
+  if(allBtn){allBtn.textContent=diffOnly?'Vytvořit obě úrovně (Jednodušší + Obtížnější) ':'Vytvořit celou sadu 3 verzí ';const cost=document.createElement('span');cost.className='zap-cost';cost.textContent=diffOnly?'⚡ 2+':'⚡ 3+';allBtn.appendChild(cost);}
+  if(hint)hint.textContent=diffOnly?'Režim „Stejný obsah, jiná obtížnost“ vyžaduje skutečnou změnu obtížnosti. Vyber Jednodušší nebo Obtížnější; Normální proto není dostupná.':(actualSelectedTierKey()?'Vybraná karta je zvýrazněná a označená ✓.':'Vyber cílovou úroveň.');
+  syncTierCards();updateAdvancedGuidance();
+}
+function selectedSetTierKeys(){return ($('#advVariantMode')&&$('#advVariantMode').value==='same_content_diff_difficulty')?['support','extend']:['support','core','extend']}
 function getAdvancedOptions(){return {
   targetGroup:($('#advTargetGroup')?$('#advTargetGroup').value.trim():''),
   workTime:($('#advWorkTime')?$('#advWorkTime').value.trim():''),
@@ -150,7 +219,7 @@ function getAdvancedOptions(){return {
   supportType:($('#advSupportType')?$('#advSupportType').value.trim():''),
   teacherInstruction:($('#advTeacherInstruction')?$('#advTeacherInstruction').value.trim():'')
 }}
-function resetAdvancedSettings(){['advTargetGroup','advWorkTime','advLearningGoal','advSupportType','advTeacherInstruction'].forEach(id=>{const el=$(id);if(el)el.value=''});const variant=$('#advVariantMode');if(variant)variant.value='auto';const mode=$('#advStructureMode');if(mode)mode.value='auto';const force=$('#cefrForce');if(force)force.checked=false;const det=$('#advancedSettings');if(det)det.open=false}
+function resetAdvancedSettings(){['advTargetGroup','advWorkTime','advLearningGoal','advSupportType','advTeacherInstruction'].forEach(id=>{const el=$(id);if(el)el.value=''});const variant=$('#advVariantMode');if(variant)variant.value='auto';const mode=$('#advStructureMode');if(mode)mode.value='auto';const force=$('#cefrForce');if(force)force.checked=false;const det=$('#advancedSettings');if(det)det.open=false;updateTargetGroupHint();syncVariantTierRules()}
 function variantModePromptLine(key,batch=1){
   const a=getAdvancedOptions();
   const mode=a.variantMode||'auto';
@@ -165,17 +234,24 @@ function variantModePromptLine(key,batch=1){
   if(key==='core')return 'Režim nové verze: automaticky. U Normální verze vytvoř paralelní variantu se stejnou obtížností: zachovej typ úloh, formát odpovědí, počet položek, pořadí a strukturu, ale změň konkrétní obsah, aby vznikla nová varianta, ne kopie původního materiálu.';
   return 'Režim nové verze: automaticky. U Jednodušší/Obtížnější verze zachovej původní obsah a strukturu co nejvíce a měň hlavně míru opory, složitost formulací, počet mezikroků a hloubku odpovědi podle zvolené úrovně.';
 }
-function advancedPromptLines(){
-  const a=getAdvancedOptions(), out=[];
-  if(a.targetGroup)out.push('Cílová skupina: '+a.targetGroup+'.');
+function advancedPromptLines(key='core'){
+  const a=getAdvancedOptions(), out=[],targetLine=targetGroupPromptLine(a.targetGroup);
+  if(targetLine)out.push(targetLine);
   if(a.workTime)out.push('Přizpůsob rozsah a náročnost času na vypracování: '+a.workTime+'.');
   if(a.learningGoal)out.push('Nadřazený výukový cíl / očekávaný výstup, který musí zachovat všechny varianty: '+a.learningGoal+'.');
-  if(a.structureMode==='strict')out.push('Co nejpřesněji zachovej původní strukturu, pořadí, počet položek a formát odpovědí.');
-  if(a.structureMode==='flexible')out.push('Strukturu můžeš rozumně upravit, pokud to pedagogicky pomůže diferenciaci, ale zachovej původní cíl materiálu.');
-  if(a.supportType)out.push('Preferovaný typ podpory nebo výzvy: '+a.supportType+'.');
-  if(a.teacherInstruction)out.push('Vlastní pokyn učitele: '+a.teacherInstruction);
+  const structure=resolvedStructureMode(key);
+  if(structure==='strict')out.push('Zachování struktury: co nejpřesněji zachovej původní strukturu, pořadí, počet položek a formát odpovědí.');
+  if(structure==='flexible')out.push('Zachování struktury: strukturu můžeš rozumně upravit, pokud to pedagogicky pomůže diferenciaci, ale zachovej původní cíl materiálu.');
+  if(a.supportType)out.push('Preferovaný způsob podpory nebo výzvy (neměň kvůli němu téma ani výukový cíl): '+a.supportType+'.');
+  if(a.teacherInstruction)out.push('ZÁVAZNÝ VLASTNÍ POKYN UČITELE: '+a.teacherInstruction+' Tento pokyn má přednost před automatickými preferencemi, pokud není v rozporu se zvolenou úrovní, výslovně zvoleným režimem změny, bezpečností nebo věcnou správností.');
   return out;
 }
+const advTargetGroupEl=$('#advTargetGroup');if(advTargetGroupEl)advTargetGroupEl.addEventListener('input',updateTargetGroupHint);
+const advVariantModeEl=$('#advVariantMode');if(advVariantModeEl)advVariantModeEl.addEventListener('change',syncVariantTierRules);
+const advStructureModeEl=$('#advStructureMode');if(advStructureModeEl)advStructureModeEl.addEventListener('change',updateAdvancedGuidance);
+document.querySelectorAll('#tiers input[type="radio"]').forEach(input=>input.addEventListener('change',()=>{syncTierCards();updateAdvancedGuidance()}));
+updateTargetGroupHint();syncVariantTierRules();
+
 function downloadTextFile(filename,text,type='text/plain;charset=utf-8'){
   const blob=new Blob([String(text||'')],{type});
   const a=document.createElement('a');
@@ -214,7 +290,7 @@ function applyAppFormState(s){
   if($('#advStructureMode'))$('#advStructureMode').value=a.structureMode||'auto';
   if($('#advSupportType'))$('#advSupportType').value=a.supportType||'';
   if($('#advTeacherInstruction'))$('#advTeacherInstruction').value=a.teacherInstruction||'';
-  syncCefrHintFromSubject();
+  updateTargetGroupHint();syncVariantTierRules();syncCefrHintFromSubject();
 }
 const PROJECT_APP='Diferenciátor pracovních listů a testů';
 const MAX_PROJECT_FILE_BYTES=2*1024*1024;
@@ -291,28 +367,6 @@ function importProjectFile(file){
   reader.onload=async()=>{try{const raw=String(reader.result||'');const unpacked=window.GHRABArtifact?.unwrapMaybe?await window.GHRABArtifact.unwrapMaybe(raw,{allowLegacy:true,expectedAppId:'differentiator',verifyChecksum:true}):{payload:JSON.parse(raw)};applyProject(unpacked.payload);showMessage('Projekt načten','Rozpracovaná práce byla obnovena. API klíč se z projektu nenačítá.')}catch(e){showMessage('Projekt se nepodařilo načíst',friendlyApiMessage(e))}};
   reader.onerror=()=>showMessage('Projekt se nepodařilo načíst','Soubor se nepodařilo přečíst.');
   reader.readAsText(file);
-}
-function makeMarkdownDocument(sheet){
-  const tier=TIERS[sheet._tierKey]||{name:'Verze'};
-  const parts=['> UČITELSKÝ SOUBOR — obsahuje řešení a poznámky. Nedávat studentům.','# '+tier.name+' verze'];
-  const meta=[];
-  if($('#mSubject')&&$('#mSubject').value.trim())meta.push('**Předmět:** '+$('#mSubject').value.trim());
-  if($('#mTopic')&&$('#mTopic').value.trim())meta.push('**Téma:** '+$('#mTopic').value.trim());
-  if($('#mClass')&&$('#mClass').value.trim())meta.push('**Třída:** '+$('#mClass').value.trim());
-  if($('#mDate')&&$('#mDate').value.trim())meta.push('**Datum:** '+$('#mDate').value.trim());
-  if(meta.length)parts.push(meta.join('  \n'));
-  parts.push(sheet._text||'');
-  if(sheet._key)parts.push('## Řešení\n\n'+sheet._key);
-  if(sheet._parts&&sheet._parts.teacherNote)parts.push('## Poznámka pro učitele\n\n'+sheet._parts.teacherNote);
-  if(sheet._quality)parts.push('## Kontrola kvality\n\n'+sheet._quality);
-  return parts.filter(Boolean).join('\n\n');
-}
-function exportSheetMarkdown(sheet,btn){
-  const tier=TIERS[sheet._tierKey]||{name:'verze'};
-  const base=filenameSafe(($('#mTopic')&&$('#mTopic').value.trim())||($('#mSubject')&&$('#mSubject').value.trim())||tier.name||'pracovni-list');
-  const name=base+'-ucitelsky.md';
-  downloadTextFile(name,makeMarkdownDocument(sheet),'text/markdown;charset=utf-8');
-  if(btn){const old=btn.textContent;btn.textContent='Exportováno';setTimeout(()=>btn.textContent=old,1400)}
 }
 function updateDataSummary(){
   const rows=[];

@@ -211,7 +211,7 @@ const PromptBuilder={
       variantModePromptLine(key,batch),
       'U otevřených úloh ponech přiměřené místo na odpověď žáka.',
       opt.useCefr?'CEFR použij pouze jako jazykovou obtížnost; u nejazykových předmětů CEFR nepoužívej.':'CEFR nepoužívej; pracuj jen s obecnou úrovní obtížnosti.',
-      ...advancedPromptLines()
+      ...advancedPromptLines(key)
     ];
     const jsonSchema=[
       'VNITŘNÍ STRUKTURA VÝSTUPU: Odpověz pouze platným JSON objektem bez Markdownu, bez komentáře před/po a bez code fence. Použij přesně tyto klíče. Hodnoty piš jako textové řetězce; pokud poznámka pro učitele není nutná, nech teacher_note prázdné.',
@@ -237,7 +237,6 @@ const PromptBuilder={
 function makePromptForTier(key,base,batch=1){return PromptBuilder.makeTierPrompt(key,base,batch)}
 
 const ZAP='<span class="zap-cost">⚡ 1</span>';
-const ZAP_GENERATE='<span class="zap-cost">⚡ 1+</span>';
 function renderTeacherNote(sheet){
   const box=sheet&&sheet.querySelector('.teacherbox');if(!box)return;
   const note=sheet._parts&&String(sheet._parts.teacherNote||'').trim();
@@ -262,15 +261,13 @@ function attachSheetTools(sheet){
   const more=document.createElement('span');more.className='tool-group secondary';more.dataset.label='Další úpravy';
   const qualityReady=!!sheet._quality,keyReady=!!sheet._key;
   main.append(
-    mk('1 '+(qualityReady?'Zobrazit kontrolu':'Kontrola '+ZAP),b=>checkQuality(sheet,b),'soft',qualityReady?'Zobrazí již hotový audit bez dalšího API dotazu.':'Model zkontroluje věcnou a jazykovou správnost a úplnost řešení. Stojí 1 dotaz.','quality'),
-    mk('2 '+(keyReady?'Zobrazit řešení':'Vytvořit řešení '+ZAP),b=>toggleKey(sheet,b),'soft',keyReady?'Zobrazí nebo skryje již vytvořený klíč bez dalšího API dotazu.':'Vytvoří klíč správných odpovědí. Stojí 1 dotaz.'),
-    mk('3 Stáhnout PDF',()=>requestPdfForSheet(sheet,tier.name+' verze',sheet._text||''),'primary','Před PDF připomene kontrolu kvality. Potom otevře náhled a systémový dialog pro uložení nebo tisk.')
+    mk('1. '+(qualityReady?'Zobrazit kontrolu':'Kontrola '+ZAP),b=>checkQuality(sheet,b),'soft',qualityReady?'Zobrazí již hotový audit bez dalšího API dotazu.':'Model zkontroluje věcnou a jazykovou správnost a úplnost řešení. Stojí 1 dotaz.','quality'),
+    mk('2. '+(keyReady?'Zobrazit řešení':'Vytvořit řešení '+ZAP),b=>toggleKey(sheet,b),'soft',keyReady?'Zobrazí nebo skryje již vytvořený klíč bez dalšího API dotazu.':'Vytvoří klíč správných odpovědí. Stojí 1 dotaz.'),
+    mk('3. Stáhnout PDF',()=>requestPdfForSheet(sheet,tier.name+' verze',sheet._text||''),'primary','Před PDF připomene kontrolu kvality. Potom otevře náhled a systémový dialog pro uložení nebo tisk.')
   );
   more.append(
     mk('Upravit',b=>toggleEdit(sheet,b),'soft','Umožní ručně přepsat text listu. Po skutečné změně se zahodí řešení, kontrola kvality i poznámka pro učitele.'),
-    mk('Kopírovat',b=>copyText(sheet._text,b,'Zkopírováno','Kopírovat'),'soft','Zkopíruje celý text listu do schránky.'),
-    mk('Export .md',b=>exportSheetMarkdown(sheet,b),'soft','Stáhne kompletní materiál v Markdownu včetně řešení, poznámky pro učitele a kontroly kvality. Nesdílej ho se žáky.'),
-    mk('Regenerovat '+ZAP_GENERATE,b=>regenerateSheet(sheet,b),'soft','Vytvoří tentýž stupeň obtížnosti znovu. Obvykle stojí 1 dotaz; při automatické opravě struktury může použít ještě jeden.')
+    mk('Kopírovat',b=>copyText(sheet._text,b,'Zkopírováno','Kopírovat'),'soft','Zkopíruje celý text listu do schránky.')
   );
   tools.append(main,more);
 }
@@ -333,27 +330,18 @@ function recordDifferentiatorTelemetry(attempted,successful,failed,cancelled=0){
     });
   }catch(error){console.warn('Telemetrie Diferenciátoru se nezapsala.',error);}
 }
-async function regenerateSheet(sheet,btn){
-  const base=$('#baseText').value.trim();
-  if(!base){showMessage('Chybí základní zadání','Nejdřív načti nebo vlož zadání, ze kterého se má verze znovu vytvořit.');return}
-  if(!requireApiKeyForAction('regeneraci verze'))return;
-  const oldLabel=btn.innerHTML,snapshot=snapshotSheet(sheet);btn.disabled=true;btn.innerHTML='<span class="mini"></span>';
-  try{await generateIntoSheet(sheet,sheet._tierKey,base,0,1);recordDifferentiatorTelemetry(1,1,0);setProgress('Hotovo. Zkontroluj vytvořenou verzi.',false)}
-  catch(err){recordDifferentiatorTelemetry(1,0,1);restoreSheetSnapshot(sheet,snapshot);setSheetStatus(sheet,'původní verze zachována','warn');setProgress('Regenerace se nepodařila. Původní verze zůstala zachovaná.',false);showMessage('Regenerace se nepodařila',friendlyApiMessage(err)+' Původní hotová verze zůstala beze změny.')}
-  finally{btn.disabled=false;btn.innerHTML=oldLabel;attachSheetTools(sheet)}
-}
-function renderQualityAudit(text){
+function parseQualityAudit(text){
   const lines=String(text||'').split(/\r?\n/).map(l=>l.replace(/^\s*[-*•]\s*/,'').trim()).filter(Boolean);
-  const cls=l=>{const s=l.toLowerCase();
-    if(/^ok\b|^v pořádku|^✓/.test(s))return 'qa-ok';
-    if(/^oprav|^chyb|^opravit/.test(s))return 'qa-fix';
-    if(/^doporuč|^zváž|^zvaž/.test(s))return 'qa-rec';
-    return 'qa-plain'};
+  const cls=l=>{const x=l.toLowerCase();if(/^ok\b|^v pořádku|^✓/.test(x))return 'qa-ok';if(/^oprav|^chyb|^opravit/.test(x))return 'qa-fix';if(/^doporuč|^zváž|^zvaž/.test(x))return 'qa-rec';return 'qa-plain'};
   const tag=k=>k==='qa-ok'?'OK':k==='qa-fix'?'Opravit':k==='qa-rec'?'Doporučení':'';
-  return lines.map(l=>{const k=cls(l);const t=tag(k);
-    const labelled=/^(?:ok|oprav\w*|doporuč\w*|zváž|zvaž)\s*[:：]\s*/i.test(l);
-    const body=labelled?l.replace(/^[^:：]{1,14}[:：]\s*/,''):l;
-    return '<div class="qa-item '+k+'">'+(t?'<span class="qa-tag">'+t+'</span>':'')+esc(body||l)+'</div>'}).join('');
+  return lines.map((line,index)=>{const kind=cls(line),label=tag(kind),labelled=/^(?:ok|oprav\w*|doporuč\w*|zváž|zvaž)\s*[:：]\s*/i.test(line),body=labelled?line.replace(/^[^:：]{1,14}[:：]\s*/,''):line;return {index,kind,label,body:body||line,raw:line,selectable:kind==='qa-fix'||kind==='qa-rec'};});
+}
+function renderQualityAudit(text,interactive=false){
+  return parseQualityAudit(text).map(item=>{
+    const choice=interactive&&item.selectable?'<input class="qa-choice" type="checkbox" data-qa-index="'+item.index+'" aria-label="Vybrat návrh k zapracování">':'';
+    const content=(item.label?'<span class="qa-tag">'+item.label+'</span>':'')+esc(item.body);
+    return '<label class="qa-item '+item.kind+(item.selectable?' selectable':'')+'">'+choice+'<span class="qa-copy">'+content+'</span></label>';
+  }).join('');
 }
 const QualityCheck={
   makePrompt(sheet){
@@ -389,12 +377,34 @@ const QualityCheck={
     ].filter(x=>x!==null&&x!==undefined&&String(x).length).join('\n\n');
   }
 };
+const QualityRevision={
+  makePrompt(sheet,suggestions){
+    const t=TIERS[sheet._tierKey]||TIERS.core,parts=sheet._parts||{};
+    return [
+      'Jsi zkušený učitel. Uprav již vytvořený pracovní list POUZE podle níže vybraných bodů kontroly kvality.',
+      'Cílová úroveň zůstává: '+t.name+'. Neměň výukový cíl, téma, jazyk ani jiné části jen proto, že bys je sám formuloval jinak. Nevybrané návrhy auditu nejsou pokyn k úpravě.',
+      'VYBRANÉ BODY K ZAPRACOVÁNÍ:\n- '+suggestions.map(x=>x.body).join('\n- '),
+      'Vrať pouze platný JSON objekt bez Markdownu se stejnými klíči: worksheet_title, student_instructions, tasks, answer_key, teacher_note. Všechny hodnoty jsou textové řetězce. Pokud úprava změní správnou odpověď, aktualizuj answer_key.',
+      'AKTUÁLNÍ NÁZEV:\n'+(parts.title||''),
+      'AKTUÁLNÍ INSTRUKCE:\n'+(parts.instructions||''),
+      'AKTUÁLNÍ ÚLOHY / PRACOVNÍ LIST:\n'+(parts.tasks||sheet._text||''),
+      'AKTUÁLNÍ ŘEŠENÍ:\n'+(sheet._key||parts.answerKey||''),
+      'AKTUÁLNÍ POZNÁMKA PRO UČITELE:\n'+(parts.teacherNote||'')
+    ].join('\n\n');
+  }
+};
 let qualityActiveSheet=null;
+function updateQualitySelectionState(){
+  const selected=[...document.querySelectorAll('#qualityBody .qa-choice:checked')];const btn=$('#qualityApply');if(btn)btn.disabled=!selected.length;
+  const hint=$('#qualitySelectionHint');if(hint)hint.textContent=selected.length?'Vybráno k zapracování: '+selected.length+'. Aplikace upraví jen tyto body.':'Zaškrtni pouze návrhy, které chceš zapracovat. Položky „OK“ se nemění.';
+}
 function openQuality(sheet){
   qualityActiveSheet=sheet;
   const tier=TIERS[sheet._tierKey]||{name:'Verze'};
   $('#qualityTierLbl').textContent=tier.name+' verze · audit před použitím ve škole.';
-  $('#qualityBody').innerHTML=renderQualityAudit(sheet._quality);
+  $('#qualityBody').innerHTML=renderQualityAudit(sheet._quality,true);
+  document.querySelectorAll('#qualityBody .qa-choice').forEach(cb=>cb.addEventListener('change',updateQualitySelectionState));
+  updateQualitySelectionState();
   $('#qualityOverlay').classList.add('show');
 }
 async function checkQuality(sheet,btn){
@@ -408,14 +418,27 @@ async function checkQuality(sheet,btn){
   }catch(err){sheet._quality='';showMessage('Kontrola se nepodařila',friendlyApiMessage(err))}
   finally{btn.disabled=false;btn.innerHTML=old}
 }
+async function applySelectedQualitySuggestions(){
+  if(!qualityActiveSheet)return;
+  const parsedAudit=parseQualityAudit(qualityActiveSheet._quality),indexes=[...document.querySelectorAll('#qualityBody .qa-choice:checked')].map(cb=>Number(cb.dataset.qaIndex)).filter(Number.isInteger),selected=indexes.map(i=>parsedAudit.find(x=>x.index===i)).filter(Boolean);
+  if(!selected.length)return;
+  if(!requireApiKeyForAction('zapracování vybraných bodů kontroly'))return;
+  const btn=$('#qualityApply'),oldNodes=[...btn.childNodes].map(n=>n.cloneNode(true)),sheet=qualityActiveSheet,snapshot=snapshotSheet(sheet);btn.disabled=true;const spin=document.createElement('span');spin.className='mini';btn.replaceChildren(spin,document.createTextNode(' Zapracovávám…'));
+  try{
+    const raw=await callGemini([{text:QualityRevision.makePrompt(sheet,selected)}],{json:true,operation:'worksheet-quality-revision'});
+    let parsed=parseWorksheetResponse(raw),validation=validateWorksheetResponse(parsed);
+    if(!validation.ok){
+      try{const fixed=await repairWorksheetJson(raw,validation,$('#baseText').value.trim(),sheet._tierKey),fp=parseWorksheetResponse(fixed),fv=validateWorksheetResponse(fp);if(fp&&String(fp.worksheet||'').trim()&&(fv.ok||fv.issues.length<validation.issues.length)){parsed=fp;validation=fv}}catch(_){}
+    }
+    if(!String(parsed&&parsed.worksheet||'').trim())throw makeAppError('Model nevrátil použitelnou upravenou verzi. Původní výstup zůstal zachovaný.','INCOMPLETE_RESPONSE');
+    sheet._text=parsed.worksheet;sheet._key=parsed.answerKey||'';sheet._quality='';sheet._parts=parsed.parts||{title:'',instructions:'',tasks:parsed.worksheet,answerKey:parsed.answerKey||'',teacherNote:''};sheet._structured=!!parsed.structured;sheet._validation=validation;sheet._pdfWarningSkipped=false;
+    sheet.querySelector('.body').innerHTML=render(sheet._text);renderTeacherNote(sheet);showStructureWarning(sheet,validation);const kb=sheet.querySelector('.keybox');if(kb){kb.innerHTML='';kb.classList.remove('show');delete kb.dataset.filled}const qb=sheet.querySelector('.qualitybox');if(qb){qb.innerHTML='';qb.classList.remove('show')}attachSheetTools(sheet);setSheetStatus(sheet,'upraveno podle kontroly · znovu ověř','needcheck');
+    $('#qualityOverlay').classList.remove('show');qualityActiveSheet=null;showMessage('Vybrané návrhy zapracovány','Upravenou verzi znovu projdi a podle potřeby spusť novou Kontrolu. Nevybrané body auditu nebyly použity.');
+  }catch(err){restoreSheetSnapshot(sheet,snapshot);showMessage('Úprava se nepodařila',friendlyApiMessage(err)+' Původní verze zůstala zachovaná.');}
+  finally{btn.disabled=false;btn.replaceChildren(...oldNodes)}
+}
 $('#qualityClose').addEventListener('click',()=>$('#qualityOverlay').classList.remove('show'));
 $('#qualityOverlay').addEventListener('click',e=>{if(e.target.id==='qualityOverlay')$('#qualityOverlay').classList.remove('show')});
-$('#qualityInsert').addEventListener('click',()=>{
-  if(!qualityActiveSheet||!qualityActiveSheet._quality)return;
-  const box=qualityActiveSheet.querySelector('.qualitybox');
-  box.innerHTML='<div class="kh"><span class="teacher-kicker">Učitelská část</span> Kontrola kvality</div>'+render(qualityActiveSheet._quality);
-  box.classList.add('show');
-  $('#qualityOverlay').classList.remove('show');
-});
+$('#qualityApply').addEventListener('click',applySelectedQualitySuggestions);
 
 

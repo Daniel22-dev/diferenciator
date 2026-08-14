@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.16 — UX, DOCX import a řízené zapracování kontroly (2026-08-14)
+
+- Cílová skupina rozpoznává česká označení osmiletého gymnázia `prima`–`oktáva` a při známém označení předává modelu ročník i orientační věk.
+- „Vlastní pokyn učitele“ je explicitně předáván jako závazný požadavek s jasnou prioritou vůči automatickým preferencím.
+- Výběr cílové úrovně má výrazný stav `✓ Vybráno`; výchozí je Normální, ale režim „Stejný obsah, jiná obtížnost“ Normální automaticky zneplatní a nabízí jen Jednodušší / Obtížnější.
+- Nejasné automatické volby byly přejmenovány a dostaly živé vysvětlení; „Typ podpory / výzvy“ má příklady i popis skutečného vlivu na prompt.
+- Kontrola kvality nabízí zaškrtávací volby pouze u `Opravit` / `Doporučení` a samostatné tlačítko zapracuje jen vybrané body; nevybrané návrhy se ignorují.
+- Potvrzovací checkbox před PDF používá vlastní světlý/tmavý vzhled místo černého nativního čtverce.
+- Doporučený postup je číslován `1.`, `2.`, `3.`.
+- DOCX import nově čte nejen textovou vrstvu, ale i vložené obrázky v pořadí dokumentu a posílá je společně do `material-extraction`; tím nezmizí pracovní listy vložené do Wordu jako screenshoty.
+- V „Dalších úpravách“ zůstaly pouze `Upravit` a `Kopírovat`; `Export .md` a `Regenerovat` byly odstraněny.
+- Přidána operace `worksheet-quality-revision` a nové regresní testy pro všechna uvedená pravidla.
+- Výkonnostní rozpočty byly po rozšíření funkcí vědomě posunuty na stále omezené hodnoty (entry HTML 360 kB, precache 830 kB); nejde o vypnutí výkonové brány.
+
 ## 1.3.15 — centrální profily AI (2026-08-14)
 
 - Diferenciátor přebírá referenční modelový kontrakt KS 5.10.4: **Úsporný / Doporučený / Důkladný** = `economy / balanced / quality`.

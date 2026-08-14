@@ -149,13 +149,13 @@
     <details class="advanced-settings emphasized" id="advancedSettings">
       <summary><span class="summary-main">Pedagogické zpřesnění</span><span class="summary-sub">volitelné, ale doporučené pro přesnější diferenciaci</span></summary>
       <div class="advanced-grid">
-        <div class="field"><label for="advTargetGroup">Cílová skupina</label><input id="advTargetGroup" type="text" placeholder="např. 2. ročník, slabší skupina, nadaní žáci" /></div>
+        <div class="field"><label for="advTargetGroup">Cílová skupina</label><input id="advTargetGroup" type="text" placeholder="např. tercie, kvarta, 2. ročník, slabší skupina" aria-describedby="advTargetGroupHelp advTargetGroupDetected" /><div class="field-help" id="advTargetGroupHelp">Můžeš použít i označení prima–oktáva. Aplikace je převede na odpovídající ročník osmiletého gymnázia a přibližný věk.</div><div class="field-feedback" id="advTargetGroupDetected" aria-live="polite"></div></div>
         <div class="field"><label for="advWorkTime">Čas na vypracování</label><input id="advWorkTime" type="text" placeholder="např. 10 minut, 25 minut" /></div>
         <div class="field wide"><label for="advLearningGoal">Výukový cíl / očekávaný výstup</label><input id="advLearningGoal" type="text" placeholder="např. žák rozliší příčiny a důsledky a své rozhodnutí zdůvodní" /></div>
-        <div class="field wide"><label for="advVariantMode">Co se má v nové verzi změnit?</label><select id="advVariantMode"><option value="auto">Automaticky podle vybrané úrovně</option><option value="same_content_diff_difficulty">Stejný obsah, jiná obtížnost</option><option value="same_format_new_content">Stejný formát, jiný obsah</option><option value="same_content_same_format">Stejný obsah i formát, jen jemně upravit oporu/jazyk</option><option value="same_goal_flexible">Stejný výukový cíl, volnější nová varianta</option></select></div>
-        <div class="field"><label for="advStructureMode">Zachování struktury</label><select id="advStructureMode"><option value="auto">Automaticky podle úrovně</option><option value="strict">Co nejpřesněji zachovat původní strukturu</option><option value="flexible">Může upravit strukturu, pokud to pomůže diferenciaci</option></select></div>
-        <div class="field"><label for="advSupportType">Typ podpory / výzvy</label><input id="advSupportType" type="text" placeholder="např. slovní banka, nápověda, argumentace navíc" /></div>
-        <div class="field wide"><label for="advTeacherInstruction">Vlastní pokyn učitele</label><textarea id="advTeacherInstruction" placeholder="Volitelné: napiš vlastní požadavek, který má model při tvorbě dodržet."></textarea></div>
+        <div class="field wide"><label for="advVariantMode">Co se má v nové verzi změnit?</label><select id="advVariantMode" aria-describedby="advVariantHelp"><option value="auto">Doporučeně podle cílové úrovně</option><option value="same_content_diff_difficulty">Stejný obsah, jiná obtížnost</option><option value="same_format_new_content">Stejný formát, jiný obsah</option><option value="same_content_same_format">Stejný obsah i formát, jen jemně upravit oporu/jazyk</option><option value="same_goal_flexible">Stejný výukový cíl, volnější nová varianta</option></select><div class="field-help" id="advVariantHelp"></div></div>
+        <div class="field"><label for="advStructureMode">Zachování struktury</label><select id="advStructureMode" aria-describedby="advStructureHelp"><option value="auto">Řídit se režimem výše (doporučeno)</option><option value="strict">Co nejpřesněji zachovat původní strukturu</option><option value="flexible">Může upravit strukturu, pokud to pomůže diferenciaci</option></select><div class="field-help" id="advStructureHelp"></div></div>
+        <div class="field"><label for="advSupportType">Typ podpory / výzvy</label><input id="advSupportType" type="text" list="supportTypeSuggestions" placeholder="např. slovní banka, nápověda, argumentace navíc" aria-describedby="advSupportHelp" /><datalist id="supportTypeSuggestions"><option value="slovní banka"></option><option value="nápověda po krocích"></option><option value="výběr z možností"></option><option value="začátek odpovědi"></option><option value="méně opory"></option><option value="argumentace navíc"></option><option value="aplikace a srovnání"></option></datalist><div class="field-help" id="advSupportHelp">Volitelné vodítko, jak má aplikace obtížnost změnit. Nemění téma ani výukový cíl; jen preferovaný způsob podpory nebo výzvy.</div></div>
+        <div class="field wide"><label for="advTeacherInstruction">Vlastní pokyn učitele</label><textarea id="advTeacherInstruction" placeholder="Volitelné: napiš vlastní požadavek, který má model při tvorbě dodržet." aria-describedby="advTeacherInstructionHelp"></textarea><div class="field-help" id="advTeacherInstructionHelp">Pokyn se posílá modelu jako závazné doplnění. Má přednost před automatickými preferencemi, ale nesmí popřít zvolenou úroveň, režim změny, bezpečnost nebo věcnou správnost.</div></div>
       </div>
       <p class="advanced-hint">Tato část je volitelná. Výchozí automatika ponechává aplikaci univerzální: u Normální verze typicky vytvoří paralelní variantu se stejnou obtížností, u Jednodušší/Obtížnější verze více drží původní obsah a mění míru opory nebo výzvy.</p>
     </details>
@@ -163,12 +163,13 @@
     <div class="level-detect" id="levelDetect"></div>
     <div class="tiers" id="tiers">
       <label class="tierpick" data-t="support"><input type="radio" name="tier" data-tier="support" /><span class="tier-ico">🧩</span>
-        <span><span class="nm">Jednodušší</span> <span class="ds" id="dsSupport">— víc opory: slovní banka, nápověda, výběr z možností</span></span></label>
+        <span><span class="nm">Jednodušší</span> <span class="ds" id="dsSupport">— víc opory: slovní banka, nápověda, výběr z možností</span></span><span class="tier-state" aria-hidden="true">Vybrat</span></label>
       <label class="tierpick on" data-t="core"><input type="radio" name="tier" checked data-tier="core" /><span class="tier-ico">📘</span>
-        <span><span class="nm">Normální</span> <span class="ds" id="dsCore">— stejná obtížnost; obsah/forma podle pedagogického zpřesnění</span></span></label>
+        <span><span class="nm">Normální</span> <span class="ds" id="dsCore">— stejná obtížnost; obsah/forma podle pedagogického zpřesnění</span></span><span class="tier-state" aria-hidden="true">✓ Vybráno</span></label>
       <label class="tierpick" data-t="extend"><input type="radio" name="tier" data-tier="extend" /><span class="tier-ico">🚀</span>
-        <span><span class="nm">Obtížnější</span> <span class="ds" id="dsExtend">— méně opory, otevřené úlohy, úloha navíc na úsudek</span></span></label>
+        <span><span class="nm">Obtížnější</span> <span class="ds" id="dsExtend">— méně opory, otevřené úlohy, úloha navíc na úsudek</span></span><span class="tier-state" aria-hidden="true">Vybrat</span></label>
     </div>
+    <p class="tier-choice-hint" id="tierChoiceHint" aria-live="polite">Výchozí volba je Normální. Vybraná karta je zvýrazněná a označená ✓.</p>
     <div class="generation-actions">
       <button class="btn" id="genBtn">Vytvořit vybranou verzi <span class="zap-cost">⚡ 1+</span></button>
       <button class="btn set-btn" id="genAllBtn">Vytvořit celou sadu 3 verzí <span class="zap-cost">⚡ 3+</span></button>
@@ -180,7 +181,7 @@
 
   <section class="panel results pedagogical-panel hide" id="resultsPanel">
     <p class="step"><b>4</b> Hotová verze <span class="step-role ped">Výstup pro použití</span></p>
-        <div class="result-banner" id="resultBanner"><div class="result-banner-copy"><strong id="resultSummary">Verze je připravená.</strong><span>AI výstup je návrh, ne garance správnosti. Doporučený postup: nejdřív kontrola, potom řešení a ruční učitelské ověření, a až nakonec PDF.</span></div><div class="result-checklist result-flow" aria-label="Doporučený postup před PDF"><span><b>1</b> Kontrola</span><span><b>2</b> Řešení + ověření</span><span><b>3</b> PDF</span></div></div>
+        <div class="result-banner" id="resultBanner"><div class="result-banner-copy"><strong id="resultSummary">Verze je připravená.</strong><span>AI výstup je návrh, ne garance správnosti. Doporučený postup: nejdřív kontrola, potom řešení a ruční učitelské ověření, a až nakonec PDF.</span></div><div class="result-checklist result-flow" aria-label="Doporučený postup před PDF"><span><b>1.</b> Kontrola</span><span><b>2.</b> Řešení + ověření</span><span><b>3.</b> PDF</span></div></div>
     <div class="meta">
       <div class="field"><label for="mSubject">Předmět</label><input id="mSubject" type="text" placeholder="Předmět" /></div>
       <div class="field"><label for="mTopic">Téma</label><input id="mTopic" type="text" placeholder="téma hodiny / testu" /></div>
@@ -290,7 +291,7 @@
     <h2>Kontrola před PDF</h2>
     <p class="modal-text" id="pdfCheckText">Tato verze ještě neprošla kontrolou kvality. Před stažením PDF je vhodné zkontrolovat věcnou správnost, jazyk, zadání i řešení.</p>
     <div class="pdf-check-note">Doporučený postup: nejdřív spusť <b>Kontrolu</b>, oprav případné chyby a teprve potom stáhni PDF. AI kontrola ale není garance správnosti; finální odpovědnost má učitel. Pokud už jsi text zkontroloval ručně, můžeš pokračovat bez AI kontroly.
-      <div class="pdf-check-steps"><span>1 Kontrola</span><span>2 Oprava</span><span>3 PDF</span></div>
+      <div class="pdf-check-steps"><span>1. Kontrola</span><span>2. Oprava</span><span>3. PDF</span></div>
     </div>
     <div class="modal-actions">
       <button class="btn ghost small" id="pdfCheckContinue">Pokračovat bez kontroly</button>
@@ -324,10 +325,11 @@
       <span class="version-badge">⚡ audit</span>
     </div>
     <div class="quality-disclaimer"><b>Pozor:</b> AI kontrola je pomocný audit, ne potvrzení správnosti. Sleduje i pedagogický cíl, čas, úplnost řešení, strukturu a citlivá data, ale před použitím ve třídě výstup ještě projdi jako učitel.</div>
+    <p class="quality-selection-hint" id="qualitySelectionHint">Zaškrtni pouze návrhy, které chceš zapracovat. Položky „OK“ se nemění.</p>
     <div class="quality-body" id="qualityBody"></div>
     <div class="modal-actions">
-      <button class="btn ghost small" id="qualityInsert">Vložit do listu</button>
-      <button class="btn small" id="qualityClose">Zavřít</button>
+      <button class="btn ghost small" id="qualityClose">Zavřít</button>
+      <button class="btn small" id="qualityApply" disabled>Zapracovat vybrané <span class="zap-cost">⚡ 1+</span></button>
     </div>
   </div>
 </div>

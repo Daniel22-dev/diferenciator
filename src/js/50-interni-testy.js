@@ -86,7 +86,7 @@ const TestSystem={
     }
   },
   runSmokeUi(){
-    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','messageOverlay','privacyOverlay','privacyAnonymize','privacyContinue','advVariantMode','advLearningGoal','printTeacherConfirmed','cefrRunBtn'];
+    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','qualityApply','messageOverlay','privacyOverlay','privacyAnonymize','privacyContinue','advVariantMode','advLearningGoal','advTargetGroupDetected','tierChoiceHint','printTeacherConfirmed','cefrRunBtn'];
     ids.forEach(id=>this.assert(!!$('#'+id),'UI prvek: '+id,'Nalezen','Chybí prvek #'+id));
     this.assert(document.querySelectorAll('#tiers input[type="radio"]').length===3,'Výběr úrovně','K dispozici jsou 3 úrovně','Počet úrovní není 3');
     const checked=document.querySelector('#tiers input[type="radio"]:checked');
@@ -107,6 +107,12 @@ const TestSystem={
     this.assert(dplEmailMatches(emailProbe).length===1&&dplAnonymizeEmails(emailProbe)[0].text.includes('[e-mail anonymizován]'),'Anonymizace e-mailu','Preflight rozpozná a automaticky nahradí e-mailovou adresu.','Preflight e-mail nerozpoznal nebo nenahradil');
     const prompt=makePromptForTier('core',this.demoBase);
     this.assert(prompt.includes('VNITŘNÍ STRUKTURA VÝSTUPU')&&prompt.includes('worksheet_title')&&prompt.includes('answer_key'),'Prompt pro JSON schéma','Prompt výslovně vyžaduje JSON strukturu','Prompt neobsahuje očekávané JSON schéma');
+    const mediaOrder=docxReferencedMediaPaths('<w:p><a:blip r:embed="rId4"/><a:blip r:embed="rId5"/><a:blip r:embed="rId5"/><a:blip r:embed="rId6"/></w:p>','<Relationships><Relationship Id="rId4" Type="x/image" Target="media/image1.png"/><Relationship Id="rId5" Type="x/image" Target="media/image2.png"/><Relationship Id="rId6" Type="x/image" Target="media/image3.jpeg"/></Relationships>');
+    this.assert(mediaOrder.join(',')==='word/media/image1.png,word/media/image2.png,word/media/image3.jpeg','DOCX vložené obrázky','DOCX parser zachová pořadí a odstraní duplicitní reference vložených obrázků','DOCX parser neumí spolehlivě najít vložené obrázky');
+    const oldTarget=$('#advTargetGroup')?$('#advTargetGroup').value:'';if($('#advTargetGroup'))$('#advTargetGroup').value='tercie';
+    this.assert(/3\. ročník osmiletého gymnázia/.test(targetGroupPromptLine('tercie'))&&/13–14 let/.test(targetGroupPromptLine('tercie')),'Cílová skupina tercie','Tercie se převádí na konkrétní ročník a věk','Aplikace neví, co znamená tercie');
+    this.assert(/tercie =/.test(targetGroupPromptLine('tercie, kvarta'))&&/kvarta =/.test(targetGroupPromptLine('tercie, kvarta'))&&/14–15 let/.test(targetGroupPromptLine('tercie, kvarta')),'Více gymnaziálních tříd','Tercie, kvarta i další uvedené stupně se rozpoznají společně','Při více gymnaziálních označeních se část cílové skupiny ztratila');
+    if($('#advTargetGroup'))$('#advTargetGroup').value=oldTarget;updateTargetGroupHint();
     const batchPrompt=makePromptForTier('core',this.demoBase,3),singlePrompt=makePromptForTier('core',this.demoBase,1);
     this.assert(!/změň konkrétní obsah/i.test(batchPrompt)&&/referenční variantu sady/i.test(batchPrompt),'Jednotné pravidlo celé sady','Normální verze v sadě zachovává stejný obsah a obtížnost','Normální verze sady stále žádá jiný obsah');
     this.assert(/změň konkrétní obsah/i.test(singlePrompt),'Samostatná normální varianta','Jedna Normální verze může vytvořit paralelní obsah','Samostatná Normální verze ztratila pravidlo jiného obsahu');
@@ -130,9 +136,17 @@ const TestSystem={
     if($('#cefrForce'))$('#cefrForce').checked=true;
     this.assert(subjectAllowsCefr(),'Ruční vynucení CEFR','Vynucení CEFR povolí nerozpoznaný jazykový předmět','Ruční vynucení CEFR nefunguje');
     if($('#cefrForce'))$('#cefrForce').checked=false;
-    if($('#advVariantMode')){$('#advVariantMode').value='same_content_diff_difficulty';}
+    setSelectedTierKey('core');
+    if($('#advVariantMode')){$('#advVariantMode').value='same_content_diff_difficulty';syncVariantTierRules();}
     this.assert(/stejný obsah, jiná obtížnost/i.test(variantModePromptLine('support')),'Režim nové verze','Volba stejný obsah / jiná obtížnost se propisuje do promptu','Režim nové verze se nepropsal do promptu');
-    if($('#advVariantMode')){$('#advVariantMode').value='auto';}
+    const coreRadio=document.querySelector('#tiers input[data-tier="core"]');
+    this.assert(coreRadio&&coreRadio.disabled&&!actualSelectedTierKey()&&selectedSetTierKeys().join(',')==='support,extend','Logika jiné obtížnosti','Normální se zneplatní a sada nabízí jen Jednodušší + Obtížnější','Normální zůstala aktivní v režimu, který vyžaduje jinou obtížnost');
+    if($('#advTeacherInstruction'))$('#advTeacherInstruction').value='Zachovej všech sedm původních položek.';
+    const teacherPrompt=makePromptForTier('support',this.demoBase);
+    this.assert(/ZÁVAZNÝ VLASTNÍ POKYN UČITELE/.test(teacherPrompt)&&/sedm původních položek/.test(teacherPrompt),'Vlastní pokyn učitele','Pokyn je v promptu jako závazné doplnění','Vlastní pokyn se do promptu nepropsal správně');
+    if($('#advTeacherInstruction'))$('#advTeacherInstruction').value='';
+    if($('#advVariantMode')){$('#advVariantMode').value='auto';syncVariantTierRules();}
+    setSelectedTierKey('core');
     if($('#subject'))$('#subject').value=old;
     syncCefrHintFromSubject();
   },
@@ -161,6 +175,8 @@ const TestSystem={
       'Dělení tisku na cvičení','Běžný řádek začínající číslem nevytvoří blok; úvod a dvě úlohy zůstanou tři logické části.','Tisk chybně považuje „12 hodin práce“ za novou úlohu');
     this.assert(/Ostrava-Hrab/.test(printHead()),'Školní identita v PDF','Hlavička tištěného listu uvádí plný název školy.','Hlavička PDF uvádí jen obecné „Gymnázium“');
     this.assert(/chybu v úloze 3/.test(renderQualityAudit('Opravit chybu v úloze 3')),'Audit bez dvojtečky','Kontrola kvality nezahodí začátek řádku bez dvojtečky.','Kontrola kvality ořízla skutečný obsah řádku');
+    const qaItems=parseQualityAudit('OK: Bez problému.\nOpravit: Změň zadání.\nDoporučení: Přidej nápovědu.');
+    this.assert(qaItems.filter(x=>x.selectable).length===2&&qaItems.find(x=>x.kind==='qa-ok'&&!x.selectable),'Výběr návrhů z kontroly','Zaškrtávací volby jsou jen u Opravit a Doporučení; OK se neaplikuje','Audit nemá správně selektivní zaškrtávání');
     const editSheet=makeSheet('core',false);editSheet._text='**Nadpis**\n\n1. Úloha';editSheet._key='1. Řešení';editSheet._quality='OK: vše sedí';editSheet._parts={title:'Nadpis',instructions:'',tasks:editSheet._text,answerKey:editSheet._key,teacherNote:'Poznámka'};editSheet.querySelector('.body').innerHTML=render(editSheet._text);renderTeacherNote(editSheet);const editBtn=document.createElement('button');toggleEdit(editSheet,editBtn);toggleEdit(editSheet,editBtn);
     this.assert(editSheet._text==='**Nadpis**\n\n1. Úloha'&&editSheet._key==='1. Řešení'&&editSheet._quality==='OK: vše sedí'&&!!editSheet.querySelector('.body b'),'Prázdná editace zachová data','Tučné markery, řešení i kontrola kvality zůstaly beze změny.','Pouhé otevření editace poškodilo text nebo učitelská data');
     const dataOverlay=$('#dataOverlay'),messageOverlay=$('#messageOverlay');if(dataOverlay&&messageOverlay){dataOverlay.classList.add('show');await new Promise(r=>setTimeout(r,0));messageOverlay.classList.add('show');await new Promise(r=>setTimeout(r,0));document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await new Promise(r=>setTimeout(r,0));this.assert(!messageOverlay.classList.contains('show')&&dataOverlay.classList.contains('show'),'Zásobník dialogů','Escape zavře naposledy otevřené potvrzení a ponechá spodní dialog.','Escape zavřel nesprávný dialog');dataOverlay.classList.remove('show');messageOverlay.classList.remove('show');await new Promise(r=>setTimeout(r,0));}
@@ -257,6 +273,8 @@ const TestSystem={
       this.assert(sheets.map(x=>x._tierKey).join(',')==='support,core,extend','Pořadí sady','Sada má pořadí Jednodušší → Normální → Obtížnější','Pořadí nebo typy variant nesouhlasí');
       this.assert(sheets.every(x=>x.querySelector('.teacherbox.show')),'Poznámka pro učitele','Poznámka modelu je viditelná pouze v učitelské části','Poznámka pro učitele se ztratila');
       this.assert(sheets.every(x=>/Zobrazit řešení/.test(x.querySelector('.tool-group.primary').textContent)),'Přesné značení spotřeby','Již hotové řešení se nabízí bez symbolu dalšího API dotazu','Hotové řešení stále zavádějícím způsobem účtuje dotaz');
+      this.assert(sheets.every(x=>/^1\. /.test(x.querySelector('.tool-group.primary').children[0].textContent)&&/^2\. /.test(x.querySelector('.tool-group.primary').children[1].textContent)&&/^3\. /.test(x.querySelector('.tool-group.primary').children[2].textContent)),'Číslování doporučeného postupu','Akce mají přirozené značení 1. / 2. / 3.','V doporučeném postupu chybí tečky za čísly');
+      this.assert(sheets.every(x=>!/(Export \.md|Regenerovat)/i.test(x.querySelector('.tool-group.secondary').textContent)),'Zjednodušené další úpravy','Sekce Další úpravy obsahuje jen Upravit a Kopírovat','Zbytečný Export .md nebo Regenerovat se vrátil do výsledku');
       const keep=makeSheet('support',false);keep._text='PŮVODNÍ JEDNODUŠŠÍ';keep.querySelector('.body').innerHTML=render(keep._text);results.replaceChildren(keep);
       await generateVersions(['extend'],$('#genBtn'));
       this.assert([...results.children].some(s=>s._tierKey==='support')&&[...results.children].some(s=>s._tierKey==='extend'),
@@ -265,9 +283,6 @@ const TestSystem={
       const workingMock=callGemini;callGemini=async()=>{throw makeAppError('Simulovaný výpadek API.','TIMEOUT')};
       await generateVersions(['core'],$('#genBtn'));
       this.assert(results.firstElementChild===preserved&&preserved._text==='PŮVODNÍ HOTOVÁ VERZE','Transakční generování','Při úplném výpadku API zůstane předchozí výstup zachovaný','Neúspěšné generování smazalo předchozí práci');
-      const fakeBtn=document.createElement('button');fakeBtn.innerHTML='Regenerovat';await regenerateSheet(preserved,fakeBtn);
-      this.assert(preserved._text==='PŮVODNÍ HOTOVÁ VERZE'&&preserved._key==='PŮVODNÍ KLÍČ','Bezpečná regenerace','Při chybě regenerace se obnoví text, klíč i učitelská data','Chybná regenerace poškodila hotovou verzi');
-      this.assert(!document.getElementById('progressStrip').classList.contains('show')&&!document.getElementById('statusFlow').classList.contains('busy'),'Ukončení regenerace','Po neúspěšné regeneraci nezůstane průběh ani stav viset v režimu Generuji.','Regenerace nechala aktivní indikaci průběhu');
       callGemini=workingMock;if($('#messageOverlay'))$('#messageOverlay').classList.remove('show');
     }finally{
       restoreMock();geminiApiKey=oldKey;geminiKeyScope=oldScope;updateKeyStatus();$('#baseText').value=oldBase;if(results)results.replaceChildren(...oldNodes);if(progressSnapshot&&progress){progress.innerHTML=progressSnapshot.html;progress.className=progressSnapshot.cls}if(statusSnapshot&&status){status.innerHTML=statusSnapshot.html;status.className=statusSnapshot.cls}if(bannerSnapshot&&banner){banner.className=bannerSnapshot.cls;$('#resultSummary').textContent=bannerSnapshot.summary}if(resultsPanel)resultsPanel.classList.toggle('hide',!!resultsPanelHidden);if(configErr)configErr.innerHTML=configErrHtml;if($('#messageOverlay'))$('#messageOverlay').classList.remove('show');
@@ -293,7 +308,9 @@ const TestSystem={
       this.assert(sheet._structured&&sheet._validation&&sheet._validation.ok,'Mock struktura','Vygenerovaný mock výstup má platnou strukturu','Mock výstup není strukturálně platný');
       await checkQuality(sheet,{disabled:false,innerHTML:'Kontrola'});
       this.assert(!!sheet._quality,'Mock kontrola kvality','Kontrola kvality se vyplnila přes mock bez reálného API','Kontrola kvality se nevyplnila');
-      if($('#qualityOverlay'))$('#qualityOverlay').classList.remove('show');
+      const choice=$('#qualityBody')&&$('#qualityBody').querySelector('.qa-choice');if(choice){choice.checked=true;choice.dispatchEvent(new Event('change'));await applySelectedQualitySuggestions();}
+      this.assert(!sheet._quality&&/Past Simple/.test(sheet._text),'Selektivní zapracování kontroly','Vybraný bod lze zapracovat a starý audit se po změně zneplatní','Vybraný bod kontroly nešel bezpečně zapracovat');
+      if($('#qualityOverlay'))$('#qualityOverlay').classList.remove('show');if($('#messageOverlay'))$('#messageOverlay').classList.remove('show');
       this.add('ok','Mock generování dokončeno','Ukázková verze vznikla jen uvnitř testu a nepropsala se do běžné aplikace.');
     }finally{
       restore();
@@ -335,7 +352,7 @@ const TestSystem={
     this.assert(!!$('#helpTopBtn'),'Horní nápověda','Nápověda je dostupná i v horní liště','Chybí horní tlačítko nápovědy');
     this.assert(!!document.querySelector('.formats-compact'),'Kompaktní formáty','Mobilní zobrazení má kompaktní řádek podporovaných formátů','Chybí kompaktní mobilní popis formátů');
     this.assert(/Kontrola[\s\S]*Řešení[\s\S]*PDF/.test($('#resultBanner')?$('#resultBanner').textContent:''),'Výsledkový postup','Banner vede uživatele v pořadí Kontrola → Řešení → PDF','Doporučený postup ve výsledku není sjednocený');
-    const apiSource=String(callGemini);this.assert(apiSource.includes('GHRAB_AI.generate')&&!apiSource.includes("thinkingLevel:'low'")&&DPL_AI_OPERATIONS.operations['worksheet-generation'],'Odolnost modelového API','Volání vede přes GHRAB AI Core, operace je registrovaná a kód nepoužívá pevnou úroveň low','Nastavení AI Core neodpovídá release pravidlům');
+    const apiSource=String(callGemini);this.assert(apiSource.includes('GHRAB_AI.generate')&&!apiSource.includes("thinkingLevel:'low'")&&DPL_AI_OPERATIONS.operations['worksheet-generation']&&DPL_AI_OPERATIONS.operations['worksheet-quality-revision'],'Odolnost modelového API','Volání vede přes GHRAB AI Core, operace je registrovaná a kód nepoužívá pevnou úroveň low','Nastavení AI Core neodpovídá release pravidlům');
   },
   runNativeDialogScan(){
     const forbidden=['al'+'ert','pro'+'mpt'];

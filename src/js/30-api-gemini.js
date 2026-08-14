@@ -295,15 +295,47 @@ function officeBlockText(xml,blockRe){
   const blocks=[...String(xml||'').matchAll(blockRe)].map(m=>officeXmlText(m[0])).map(t=>t.trim()).filter(Boolean);
   return blocks.length?blocks.join('\n'):officeXmlText(xml);
 }
-async function readDocx(file){
+function officeImageMime(name){const n=String(name||'').toLowerCase();if(n.endsWith('.png'))return 'image/png';if(/\.jpe?g$/.test(n))return 'image/jpeg';if(n.endsWith('.webp'))return 'image/webp';if(n.endsWith('.gif'))return 'image/gif';return ''}
+function docxReferencedMediaPaths(documentXml,relsXml){
+  const rels=new Map();
+  for(const m of String(relsXml||'').matchAll(/<Relationship\b[^>]*>/gi)){
+    const tag=m[0],id=(tag.match(/\bId=["']([^"']+)["']/i)||[])[1],target=(tag.match(/\bTarget=["']([^"']+)["']/i)||[])[1],type=(tag.match(/\bType=["']([^"']+)["']/i)||[])[1];
+    if(id&&target&&/\/image$/i.test(type||''))rels.set(id,target);
+  }
+  const out=[],seen=new Set();
+  for(const m of String(documentXml||'').matchAll(/<a:blip\b[^>]*\br:embed=["']([^"']+)["'][^>]*>/gi)){
+    const target=rels.get(m[1]);if(!target)continue;
+    const normalized=('word/'+target.replace(/^\.\//,'')).replace(/\/\.\//g,'/');
+    if(/^word\/media\//i.test(normalized)&&!seen.has(normalized)){seen.add(normalized);out.push(normalized)}
+  }
+  return out;
+}
+async function readDocxRich(file){
   const zip=await readZipEntries(file,'.docx');
   const wanted=zip.entries.filter(e=>/^word\/(document|header\d+|footer\d+|footnotes|endnotes)\.xml$/i.test(e.name));
   wanted.sort((a,b)=>{const rank=n=>/document\.xml$/i.test(n)?0:/header/i.test(n)?1:/footer/i.test(n)?2:/footnotes/i.test(n)?3:4;return rank(a.name)-rank(b.name)||a.name.localeCompare(b.name)});
   if(!wanted.length)throw new Error('V .docx se nenašel čitelný obsah dokumentu.');
-  const chunks=[];
-  for(const entry of wanted){const xml=new TextDecoder('utf-8').decode(await zip.extract(entry));const text=officeBlockText(xml,/<w:p\b[\s\S]*?<\/w:p>/g);if(text.trim())chunks.push(text.trim())}
-  return chunks.join('\n\n').trim();
+  const chunks=[];let documentXml='';
+  for(const entry of wanted){const xml=new TextDecoder('utf-8').decode(await zip.extract(entry));if(/^word\/document\.xml$/i.test(entry.name))documentXml=xml;const text=officeBlockText(xml,/<w:p\b[\s\S]*?<\/w:p>/g);if(text.trim())chunks.push(text.trim())}
+  const text=chunks.join('\n\n').trim();
+  const relEntry=zip.entries.find(e=>/^word\/_rels\/document\.xml\.rels$/i.test(e.name));
+  const relsXml=relEntry?new TextDecoder('utf-8').decode(await zip.extract(relEntry)):'';
+  let paths=docxReferencedMediaPaths(documentXml,relsXml);
+  if(!paths.length)paths=zip.entries.filter(e=>/^word\/media\//i.test(e.name)&&officeImageMime(e.name)).map(e=>e.name);
+  paths=[...new Set(paths)].filter(name=>officeImageMime(name));
+  if(paths.length>MAX_IMAGE_COUNT)throw makeAppError('DOCX obsahuje '+paths.length+' vložených obrázků. Tato verze bezpečně zpracuje maximálně '+MAX_IMAGE_COUNT+'. Ulož dokument jako PDF nebo rozděl materiál na menší části.','TOO_MANY_IMAGES');
+  const items=[];
+  for(const path of paths){
+    const entry=zip.entries.find(e=>e.name===path);if(!entry)continue;
+    const bytes=await zip.extract(entry),mime=officeImageMime(path);if(!mime)continue;
+    const name=path.split('/').pop()||'obrazek';
+    const imageFile=new File([bytes],name,{type:mime});
+    items.push(await resizeImage(imageFile,paths.length>1,Math.max(1,paths.length)));
+  }
+  if(!text&&!items.length)throw new Error('V .docx se nenašel čitelný text ani podporované vložené obrázky.');
+  return {text,items,imageCount:items.length};
 }
+async function readDocx(file){return (await readDocxRich(file)).text}
 async function readPptx(file){
   const zip=await readZipEntries(file,'.pptx');
   const slides=zip.entries.filter(e=>/^ppt\/slides\/slide\d+\.xml$/i.test(e.name)).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
@@ -425,7 +457,10 @@ async function handleSingleFile(file){
     $('#filename').textContent='📑 '+file.name;
     setUploadInfo('PDF se odešle přímo. Bezpečný limit je nastaven s rezervou pod inline limitem API.');
   } else if(isDocx){
-    const text=await readDocx(file);assertTextLength(text,'Text z .docx');uploaded={kind:'text',text};$('#filename').textContent='📝 '+file.name;setUploadInfo(officeExtractNote('DOCX',text));
+    const rich=await readDocxRich(file);if(rich.text)assertTextLength(rich.text,'Text z .docx');
+    if(rich.items.length&&mediaBytes(rich.items)>MAX_INLINE_REQUEST_BYTES)throw makeAppError('Vložené obrázky v DOCX jsou po převodu příliš velké. Ulož dokument jako PDF nebo obrázky zmenši.','REQUEST_TOO_LARGE');
+    uploaded=rich.items.length?{kind:'mixed',text:rich.text,items:rich.items}:{kind:'text',text:rich.text};$('#filename').textContent='📝 '+file.name;
+    setUploadInfo(rich.items.length?'DOCX byl načten včetně '+rich.items.length+' vložených obrázků. Textová vrstva má '+String(rich.text||'').trim().split(/\s+/).filter(Boolean).length+' slov. Při načtení zadání se modelu pošle text i obrázky, takže cvičení vložená jako screenshoty nezmizí.':officeExtractNote('DOCX',rich.text));
   } else if(isPptx){
     const text=await readPptx(file);assertTextLength(text,'Text z .pptx');uploaded={kind:'text',text};$('#filename').textContent='🖼️ '+file.name;setUploadInfo(officeExtractNote('PPTX',text));
   } else if(isXlsx){
@@ -471,6 +506,8 @@ $('#extractBtn').addEventListener('click',async()=>{
   try{
     if(uploaded&&uploaded.kind==='media'){
       parts=[{text:'Zpracuj následující mediální vstup nebo vstupy v pořadí nahrání.'},...mediaParts(uploaded.items),{text:prompt}];
+    } else if(uploaded&&uploaded.kind==='mixed'){
+      parts=[{text:'Tento Office dokument obsahuje textovou vrstvu i vložené obrázky. Všechny části patří do jednoho materiálu. Přepiš obsah z textu i ze všech obrázků; nic nevynechávej a nedoplňuj úlohy, které ve zdroji nejsou.\n\nTEXTOVÁ VRSTVA DOKUMENTU:\n'+uploaded.text},...mediaParts(uploaded.items),{text:prompt}];
     } else if(uploaded&&uploaded.kind==='text'){
       parts=[{text:prompt+"\n\nZADÁNÍ:\n"+uploaded.text}];
     } else {
@@ -493,7 +530,7 @@ $('#extractBtn').addEventListener('click',async()=>{
   finally{btn.disabled=false;btn.innerHTML=extractLabel}
 });
 
-document.querySelectorAll('.tierpick').forEach(p=>{const cb=p.querySelector('input');const s=()=>p.classList.toggle('on',cb.checked);cb.addEventListener('change',s);s()});
+syncTierCards();
 
 function schoolLogoSrc(){const el=$('#schoolLogo');return el&&el.src?el.src:''}
 function printHead(){

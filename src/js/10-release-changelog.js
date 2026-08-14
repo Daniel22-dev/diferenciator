@@ -1,10 +1,11 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.15',
+  version: '1.3.16',
   date: '2026-08-14',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    "1.3.16: UX a import materiálu — cílová skupina rozpoznává prima–oktáva, vlastní pokyn učitele je závazný, volba úrovně je výrazná a režim stejného obsahu s jinou obtížností zneplatní Normální. Automatické režimy a typ podpory mají srozumitelná vysvětlení, kontrola kvality dovoluje zaškrtnout a zapracovat jen vybrané návrhy, PDF potvrzení má vlastní světlý/tmavý checkbox, doporučený postup používá 1./2./3., DOCX import zachová i vložené obrázky a z Dalších úprav zmizely Export .md a Regenerovat.",
     "1.3.15: sjednoceny modelové profily s referenčním KS 5.10.4 — uživatel vybírá pouze Úsporný / Doporučený / Důkladný (economy / balanced / quality), konkrétní Gemini modely jsou jen ve veřejné direct runtime konfiguraci a školní runtime je provider-neutrální. Odstraněn modelOverride, všech šest AI operací respektuje všechny tři profily a nová qa:profiles brána hlídá UI, Core requesty i school-server build.",
     "1.3.14: opraven blokátor produkční AI cesty — Diferenciátor už nevolá neexistující metody GHRAB Platform, sestavuje runtime konfiguraci Core lokálně, bezpečně rozlišuje GitHub a školní gateway, přepínač Flash / Flash-Lite se propisuje i do modelProfile a fallback je obousměrný. Přidán potvrzovací preflight e-mailových adres s automatickou anonymizací, odstraněn mrtvý dialog a duplicitní ukládání klíče a nové regresní brány hlídají platformní API, jediný consumer, verze kontraktů, ID prvků a souvislost changelogu.",
     "1.3.13: reportér používá ověřený dvoukrokový tok z KS 5.10.3 — skutečné stažení diagnostického ZIPu před odemčením Gmailu, jasný pokyn k ruční příloze, bezpečně skryté pomocné video bez rekurzivního obrazu a rozšířenou browserovou regresní kontrolu.",
