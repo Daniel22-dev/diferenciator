@@ -286,7 +286,7 @@ async function repairWorksheetJson(raw,validation,base,key){
     'PŮVODNÍ ZADÁNÍ:\n'+String(base||'').slice(0,8000),
     'ODPOVĚĎ K OPRAVĚ:\n'+String(raw||'')
   ].filter(Boolean).join('\n\n');
-  return callGemini([{text:prompt}],{json:true,schema:WORKSHEET_RESPONSE_SCHEMA,operation:'worksheet-structure-repair'});
+  return callGemini([{text:prompt}],{json:true,operation:'worksheet-structure-repair'});
 }
 
 async function generateIntoSheet(sheet,key,base,idx,total){
@@ -297,7 +297,7 @@ async function generateIntoSheet(sheet,key,base,idx,total){
   sheet.querySelector('.qualitybox').innerHTML='';sheet.querySelector('.qualitybox').classList.remove('show');
   const structureBox=sheet.querySelector('.structurebox');if(structureBox){structureBox.innerHTML='';structureBox.classList.remove('show')}
   setProgress((total>1?'Verze '+(idx+1)+' z '+total+': ':'Generuji ')+t.name.toLowerCase()+' verzi…',true);
-  const out=await callGemini([{text:makePromptForTier(key,base,total)}],{json:true,schema:WORKSHEET_RESPONSE_SCHEMA,operation:'worksheet-generation'});
+  const out=await callGemini([{text:makePromptForTier(key,base,total)}],{json:true,operation:'worksheet-generation'});
   let parsed=parseWorksheetResponse(out);
   let validation=validateWorksheetResponse(parsed);
   if(!validation.ok){

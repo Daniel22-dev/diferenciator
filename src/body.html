@@ -77,7 +77,6 @@
         <button class="btn small" id="btnSession" title="Klíč se po zavření prohlížeče sám zapomene.">Použít jen pro relaci</button>
         <button class="btn ghost small" id="btnClear" title="Odstraní klíč z relace a smaže případnou starou kopii.">Smazat klíč</button>
       </div>
-      <details><summary>Pokročilé · kompatibilita P1</summary><div class="key-actions"><button class="btn ghost small" id="btnPermanent" title="Kompatibilní tlačítko; klíč se uloží pouze pro relaci.">Uložit bezpečně pro relaci</button></div><p class="hint">Trvalé ukládání klíče poskytovatele bylo odstraněno. Na školním serveru se klíč do prohlížeče vůbec neposílá.</p></details>
       <p class="hint"><b>Relace</b> = klíč se po zavření prohlížeče sám zapomene. Každý kolega používá vlastní osobní API klíč; klíče se nesdílejí a nikdy se nevkládají do HTML na GitHubu. API klíč: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com</a> → Get API key.</p>
 
       <div class="model-row">
@@ -86,7 +85,7 @@
           <button class="qm" id="qmStrong" title="Silnější model — lepší práce s obsahem, jazykem a odborným zápisem. Doporučeno.">⚡ Flash<span class="sub">gemini-3.6-flash</span></button>
           <button class="qm" id="qmLite" title="Rychlejší a šetrnější k limitu. Pro jednoduché úkoly.">🪶 Flash-Lite<span class="sub">gemini-3.5-flash-lite</span></button>
         </div>
-        <p class="hint">Při vyčerpání kvóty se postupně zkusí všechny záložní modely. <strong>Podmínky práce s daty se liší podle regionu a fakturace.</strong> U neplacených služeb mimo EHP, Švýcarsko a Spojené království může Google odeslaný obsah a odpovědi použít ke zlepšování produktů a mohou je kontrolovat lidští hodnotitelé. V EHP, Švýcarsku a Spojeném království se podle aktuálních podmínek na data vztahují pravidla placených služeb i u neplacené kvóty; aplikace zpřístupněná uživatelům v těchto regionech má používat projekt s aktivní fakturací. Vždy posílej materiály bez jmen a osobních či citlivých údajů žáků.</p>
+        <p class="hint">Při dočasném problému se zvoleným modelem se zkusí druhá dostupná volba. <strong>Podmínky práce s daty se liší podle regionu a fakturace.</strong> U neplacených služeb mimo EHP, Švýcarsko a Spojené království může Google odeslaný obsah a odpovědi použít ke zlepšování produktů a mohou je kontrolovat lidští hodnotitelé. V EHP, Švýcarsku a Spojeném království se podle aktuálních podmínek na data vztahují pravidla placených služeb i u neplacené kvóty; aplikace zpřístupněná uživatelům v těchto regionech má používat projekt s aktivní fakturací. Vždy posílej materiály bez jmen a osobních či citlivých údajů žáků.</p>
       </div>
     </div>
 
@@ -114,7 +113,7 @@
     <label class="paste-label" for="pasteText">Vložený text zadání <span class="tip" tabindex="0" role="button" aria-expanded="false" data-tip="Sem vlož text testu, pracovního listu, data z tabulky nebo export z jiné aplikace. Po načtení ho ještě zkontroluješ v dalším kroku.">?</span></label>
     <p class="input-helper">Vlož sem text, pokud nechceš nahrávat soubor. Po kliknutí na „Načíst zadání“ vznikne editovatelný přepis.</p>
     <textarea id="pasteText" placeholder="Vlož text zadání, data z tabulky, HTML export nebo text z interaktivního testu"></textarea>
-    <div class="privacy-note"><b>Upozornění:</b> běžně vkládej čistý originální test nebo pracovní list. Pokud by materiál náhodou obsahoval jména či citlivé údaje studentů, před nahráním je anonymizuj.</div>
+    <div class="privacy-note"><b>Upozornění:</b> před odesláním do AI aplikace upozorní na e-mailové adresy nalezené v textu a nabídne jejich anonymizaci. Jména a další citlivé údaje anonymizuj ručně; obsah obrázků a skenů tato textová kontrola automaticky neověřuje.</div>
     <div style="margin-top:14px"><button class="btn" id="extractBtn" title="Ručně vložený text se načte lokálně zdarma. Nahraný soubor přepisuje model a stojí 1 dotaz.">Načíst zadání <span class="zap-cost">⚡ 0–1</span></button></div>
     <div id="inputErr"></div>
 
@@ -233,14 +232,26 @@
   </div>
 </div>
 
-<div class="overlay" id="permanentKeyOverlay" hidden><div class="modal"><h2>Uložení pro relaci</h2><p class="modal-text">Klíč se ukládá pouze do zavření prohlížeče.</p><input class="dialog-input" id="permanentPhrase" type="text" autocomplete="off"><div class="dialog-error" id="permanentErr"></div><div class="modal-actions"><button class="btn ghost small" id="permanentCancel">Zrušit</button><button class="btn small" id="permanentConfirm">Použít pro relaci</button></div></div></div>
-
 <div class="overlay" id="messageOverlay">
   <div class="modal">
     <h2 id="messageTitle">Upozornění</h2>
     <p class="modal-text" id="messageText"></p>
     <div class="modal-actions">
       <button class="btn small" id="messageClose">Rozumím</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="privacyOverlay">
+  <div class="modal">
+    <h2>Kontrola anonymizace před odesláním</h2>
+    <p class="modal-text">V textu byla nalezena e-mailová adresa. Před odesláním do AI ji můžeš automaticky anonymizovat, požadavek zrušit, nebo po vlastní kontrole pokračovat beze změny.</p>
+    <div class="data-summary" id="privacyEmailList"></div>
+    <p class="hint" id="privacyInputNote"></p>
+    <div class="modal-actions">
+      <button class="btn ghost small" id="privacyClose">Zrušit odeslání</button>
+      <button class="btn small" id="privacyAnonymize">Anonymizovat a pokračovat</button>
+      <button class="btn ghost small" id="privacyContinue">Pokračovat beze změny</button>
     </div>
   </div>
 </div>

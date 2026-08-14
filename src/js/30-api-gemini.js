@@ -13,16 +13,6 @@ function showMessage(title,message){
   if(m)m.textContent=String(message||"");
   $("messageOverlay").classList.add("show");
 }
-function saveKeyPermanent(){
-  const k=inputKey();
-  if(!k){
-    clearKey();
-    showMessage("Klíč není uložen", "Nejdřív vlož API klíč. Pro běžné použití doporučuji tlačítko „Použít jen pro relaci“.");
-    return;
-  }
-  useKeySession();
-  showMessage("Bezpečné uložení pro relaci", "Trvalé ukládání provider klíče bylo v P1 odstraněno. Klíč je uložen pouze do zavření prohlížeče.");
-}
 function clearKey(){try{sessionStorage.removeItem(KEY_SESSION_SK)}catch(_){}try{localStorage.removeItem(KEY_SK)}catch(_){}setKey("","")}
 function updateKeyStatus(){
   const el=$("keyStatus");el.className="api-status";
@@ -36,7 +26,6 @@ function updateKeyStatus(){
   if(geminiApiKey&&geminiKeyScope==="memory")setStatus("statusKey","zadán, neuložen","warn");
 }
 $("btnSession").onclick=()=>{const stored=useKeySession();if(stored)flashBtn($("btnSession"),"Uloženo pro relaci ✓");else showMessage("Úložiště relace není dostupné","Klíč lze použít na právě otevřené stránce, ale prohlížeč ho nedokázal uložit do relace. Po obnovení stránky ho bude nutné vložit znovu.")};
-$("btnPermanent").onclick=()=>saveKeyPermanent();
 $("btnClear").onclick=()=>{clearKey();$("keyInput").value=""};
 $("messageClose").onclick=()=>$("messageOverlay").classList.remove("show");
 $("messageOverlay").addEventListener("click",e=>{if(e.target.id==="messageOverlay")$("messageOverlay").classList.remove("show")});
@@ -52,7 +41,7 @@ $("keyInput").addEventListener("input",()=>{
   updateKeyStatus();
 });
 function flashBtn(btn,msg){const o=btn.textContent;btn.textContent=msg;btn.disabled=true;setTimeout(()=>{btn.textContent=o;btn.disabled=false},1300)}
-function hasApiKey(){return !!window.GHRAB_PLATFORM?.isSchoolProfile?.()||!!cleanKey(geminiApiKey)}
+function hasApiKey(){return (typeof dplSchoolMode==='function'&&dplSchoolMode())||!!cleanKey(geminiApiKey)}
 function requireApiKeyForAction(actionLabel){
   if(hasApiKey())return true;
   const label=actionLabel||'tuto akci';
@@ -121,56 +110,8 @@ function friendlyApiMessage(e){
   if(e.status>=500)return "Služba Gemini má dočasný problém. Zkus to znovu.";
   return e.message||"Nepovedlo se spojit s modelem.";
 }
-/* callGemini je záměrně přiřaditelná proměnná (ne deklarace funkce), aby ji interní testovací režim mohl dočasně nahradit mockem a poté čistě vrátit zpět. */
-let callGemini = async function callGeminiImpl(parts,opts={}){
-  if(!geminiApiKey)throw makeAppError("Chybí klíč k API. Vlož ho v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“.","MISSING_KEY");
-  const models=[geminiModel,...FALLBACK_MODELS.filter(m=>m!==geminiModel)];
-  const shouldFallback=e=>!!(e&&(e.quota||e.status===429||e.status===503||e.status===500||e.status===404));
-  const tryModel=async(model,withThinking=true)=>{
-    const url="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
-    const generationConfig={maxOutputTokens:60000};
-    if(withThinking)generationConfig.thinkingConfig={thinkingLevel:(opts&&opts.thinking)||THINKING_DEFAULT};
-    if(opts&&opts.json)generationConfig.responseMimeType='application/json';
-    if(opts&&opts.schema)generationConfig.responseSchema=opts.schema;
-    const body={contents:[{role:"user",parts}],generationConfig};
-    assertInlineRequestSize(body);
-    const ctrl=new AbortController();
-    const timer=setTimeout(()=>ctrl.abort(),GEMINI_TIMEOUT_MS);
-    let res,data;
-    try{
-      res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":cleanKey(geminiApiKey)},body:JSON.stringify(body),signal:ctrl.signal});
-      data=await res.json().catch(()=>({}));
-    }catch(e){
-      if(e&&e.name==="AbortError")throw makeAppError("Model neodpověděl včas.","TIMEOUT");
-      throw makeAppError("Nepodařilo se připojit k Gemini API: "+(e&&e.message?e.message:"síťová chyba"),"NETWORK");
-    }finally{clearTimeout(timer)}
-    if(!res.ok){
-      const st=(data&&data.error&&data.error.status)?String(data.error.status):"";
-      const quota=res.status===429||/RESOURCE_EXHAUSTED/i.test(st);
-      const msg=(data&&data.error&&data.error.message)?data.error.message:("HTTP "+res.status);
-      const e=new Error(msg);e.quota=quota;e.status=res.status;e.model=model;
-      if(withThinking&&res.status===400&&/thinking/i.test(msg))return tryModel(model,false);
-      throw e;
-    }
-    const cand=data.candidates&&data.candidates[0];
-    const finish=cand&&cand.finishReason;
-    const block=data.promptFeedback&&data.promptFeedback.blockReason;
-    if(block){const e=makeAppError("Požadavek byl zablokován: "+block,"SAFETY_STOP");e.model=model;throw e;}
-    const text=((cand&&cand.content&&cand.content.parts)||[]).map(p=>p.text||"").join("").trim();
-    if(finish&&finish!=="STOP"){
-      const code=finish==="MAX_TOKENS"?"INCOMPLETE_RESPONSE":"SAFETY_STOP";
-      const e=makeAppError("Model nedokončil odpověď ("+finish+").",code);e.model=model;throw e;
-    }
-    if(!text)throw makeAppError("Model vrátil prázdnou odpověď.","EMPTY_RESPONSE");
-    return text;
-  };
-  let lastErr=null;
-  for(let i=0;i<models.length;i++){
-    try{return await tryModel(models[i])}
-    catch(e){lastErr=e;if(i<models.length-1&&shouldFallback(e))continue;throw e}
-  }
-  throw lastErr||makeAppError("Nepodařilo se získat odpověď modelu.","EMPTY_RESPONSE");
-};
+/* Produkční implementaci callGemini doplní následující integrační modul GHRAB AI Core. */
+let callGemini;
 
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}

@@ -2,17 +2,6 @@ const IS_TEST_MODE=new URLSearchParams(window.location.search).has('test')||Stri
 
 const CEFR_PREF_SK='dpl_cefr_language_pref';
 
-const WORKSHEET_RESPONSE_SCHEMA={
-  type:'OBJECT',
-  properties:{
-    worksheet_title:{type:'STRING'},
-    student_instructions:{type:'STRING'},
-    tasks:{type:'STRING'},
-    answer_key:{type:'STRING'},
-    teacher_note:{type:'STRING'}
-  },
-  required:['worksheet_title','student_instructions','tasks','answer_key','teacher_note']
-};
 const PROJECT_SCHEMA_VERSION=1;
 
 const TIERS = {

@@ -1,4 +1,4 @@
-# Diferenciátor 1.3.12 — P5
+# Diferenciátor 1.3.11 — P5
 
 P5 je předprodukční akceptační vydání. Primární provoz zůstává samostatný/GitHub Pages a nevyžaduje školní server. Serverový profil je připravený, ale záměrně nepřipojený.
 

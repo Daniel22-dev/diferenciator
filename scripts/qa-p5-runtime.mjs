@@ -174,10 +174,11 @@ try {
       client.clearEvents();
       await client.call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<=390,screenWidth:width,screenHeight:900});
       if (!pageLoaded) {
-        await client.call('Page.navigate',{url});
+        const navigation=await client.call('Page.navigate',{url});
+        if(navigation?.errorText)throw new Error(`Runtime navigation failed: ${rel} ${navigation.errorText}`);
         let ready=false;
         for(let i=0;i<240;i++){ready=Boolean(await client.eval("document.readyState==='complete'&&window.__GHRAB_QA_RUNTIME__===true"));if(ready)break;await sleep(50);}
-        if(!ready)throw new Error(`Runtime page timeout: ${rel}`);
+        if(!ready){const state=await client.eval("({readyState:document.readyState,qaRuntime:window.__GHRAB_QA_RUNTIME__===true,href:location.href,errors:window.__GHRAB_QA_ERRORS__||[],bootError:window.__GHRAB_QA_BOOT_ERROR__||''})");throw new Error(`Runtime page timeout: ${rel} ${JSON.stringify(state)}`);}
         pageLoaded=true;
       } else {
         await client.eval("dispatchEvent(new Event('resize'));document.dispatchEvent(new Event('ghrab:qa-viewport-change'))");

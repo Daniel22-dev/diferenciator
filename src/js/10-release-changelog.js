@@ -1,13 +1,20 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.13',
+  version: '1.3.14',
   date: '2026-08-13',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    "1.3.14: opraven blokátor produkční AI cesty — Diferenciátor už nevolá neexistující metody GHRAB Platform, sestavuje runtime konfiguraci Core lokálně, bezpečně rozlišuje GitHub a školní gateway, přepínač Flash / Flash-Lite se propisuje i do modelProfile a fallback je obousměrný. Přidán potvrzovací preflight e-mailových adres s automatickou anonymizací, odstraněn mrtvý dialog a duplicitní ukládání klíče a nové regresní brány hlídají platformní API, jediný consumer, verze kontraktů, ID prvků a souvislost changelogu.",
     "1.3.13: reportér používá ověřený dvoukrokový tok z KS 5.10.3 — skutečné stažení diagnostického ZIPu před odemčením Gmailu, jasný pokyn k ruční příloze, bezpečně skryté pomocné video bez rekurzivního obrazu a rozšířenou browserovou regresní kontrolu.",
-    "1.3.12: platformní etapa P1 — šest operací běží přes GHRAB AI Core 1.0.0; GitHub profil zachovává direct-gemini, školní profil používá server-session a school-gateway bez provider klíče v prohlížeči. Přidány jsou datové a CSP kontrakty, bezpečná diagnostika a měření skutečných provider requestů.",
-    "1.3.12: sjednocen reportér technických chyb s AI Studiem — jediná lokální instance, centrální reportér vypnutý přes errorReporter:false, živé přebírání body.dark, až pět screenshotů, bezpečný koncept, ZIP a nativní Gmail odkaz. Reportér je součástí PWA cache a manuál odkazuje na aktuální centrální návod; funkce diferenciace a uživatelská data zůstaly beze změny.",
+    "1.3.12: P5 R2 — runtime audit se skripty a odemčeným UI, reprodukovatelné QA závislosti a blokující exact axe v CI.",
+    "1.3.11: P5 předprodukční akceptace — release-acceptance kontrakt, nulové otevřené automatické a11y nálezy jako podmínka brány a serverový profil připravený, ale záměrně nepřipojený.",
+    "1.3.10: P4 final — finální certifikace, čisté reprodukovatelné buildy, přístupnost, výkon, bezpečnost a povinná qa:p4:ci brána.",
+    "1.3.9: P3 — GHRAB Platform 1.1.0, společné kontrakty přístupnosti, výkonnostní rozpočty a modularizace.",
+    "1.3.8: P2 — sjednocení s GHRAB Platform, kanonická školní identita, theme/storage/bridge/artifact kontrakty a platformní konformitní test.",
+    "1.3.7: P1 — produkční bezpečnost, serverový profil, datové manifesty a integrace GHRAB AI Core 1.0.0 se šesti registrovanými operacemi.",
+    "1.3.6: P0 — odolný start reportéru, deployment-aware bootstrap, server-ready základ a regresní ochrana diagnostické vrstvy.",
+    "1.3.5: sjednocen reportér technických chyb se společným základem AI Studio GHRAB, aktualizovány manifesty, service worker a regresní testy.",
     "1.3.4: opravena zaseknutá indikace průběhu po regeneraci, náhled PDF nyní odpovídá výslednému dokumentu, do tisku se už nedostanou provozní proužky, editace listu zachovává tučné formátování i hotové řešení, kontrola kvality přestala ořezávat text, sada tří verzí vzniká podle jednoho pravidla, aktualizováno nastavení modelů Gemini a doplněn návrat z manuálu.",
     "1.3.3: ochrana hotových verzí před přepsáním a potvrzení před smazáním práce, viditelný průběh generování, správné rozpoznání úředních názvů jazykových předmětů, přesnější dělení tisku, plná školní identita v PDF, živé CEFR štítky, aktuální modely Gemini a zpřesněné informace o práci s daty.",
     "1.3.2: interaktivní manuál byl ověřen proti aktuálním funkcím a při otevření z aplikace uvnitř AI Studia zůstává ve stejném pracovním rámci; nová PWA cache vynutí načtení opravy.",

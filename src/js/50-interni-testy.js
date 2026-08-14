@@ -57,24 +57,36 @@ const TestSystem={
     this.clear();
     this.add('ok','Spouštím testy','Běží smoke test, parser, CEFR, API guard, export/import projektu, mock generování, PDF tok a layout.');
     this.log('Vnitřní moduly aplikace: '+Object.entries(AppModules).map(([k,v])=>k+' = '+v).join(' · '));
-    try{this.runSmokeUi();}catch(e){this.log(e.message)}
-    try{this.runParserTests();}catch(e){this.log(e.message)}
-    try{this.runCefrTests();}catch(e){this.log(e.message)}
-    try{this.runApiGuardTests();}catch(e){this.log(e.message)}
-    try{this.runStatusAndProjectSafetyTests();}catch(e){this.log(e.message)}
-    try{this.runProjectRoundtripTest();}catch(e){this.log(e.message)}
-    try{await this.runMockGeneration();}catch(e){this.log(e.message)}
-    try{await this.runBatchAndTransactionTests();}catch(e){this.log(e.message)}
-    try{await this.runAuditRegressionTests();}catch(e){this.log(e.message)}
-    try{this.runPdfFlowTest();}catch(e){this.log(e.message)}
-    try{this.runLayoutTest();}catch(e){this.log(e.message)}
-    try{this.runNativeDialogScan();}catch(e){this.log(e.message)}
-    try{this.runReleaseGateTest();}catch(e){this.log(e.message)}
+    await this.runStep('Smoke UI',()=>this.runSmokeUi());
+    await this.runStep('Parser',()=>this.runParserTests());
+    await this.runStep('CEFR',()=>this.runCefrTests());
+    await this.runStep('API guard',()=>this.runApiGuardTests());
+    await this.runStep('T6 model switch',()=>this.runModelSwitchIntegrationTest());
+    await this.runStep('Stav a bezpečnost projektu',()=>this.runStatusAndProjectSafetyTests());
+    await this.runStep('Roundtrip projektu',()=>this.runProjectRoundtripTest());
+    await this.runStep('Mock generování',()=>this.runMockGeneration());
+    await this.runStep('Transakční testy',()=>this.runBatchAndTransactionTests());
+    await this.runStep('Auditní regrese',()=>this.runAuditRegressionTests());
+    await this.runStep('PDF tok',()=>this.runPdfFlowTest());
+    await this.runStep('Layout',()=>this.runLayoutTest());
+    await this.runStep('Nativní dialogy',()=>this.runNativeDialogScan());
+    await this.runStep('Release gate',()=>this.runReleaseGateTest());
     const failed=this.results.filter(x=>x.state==='fail').length;
     this.add(failed?'warn':'ok','Souhrn testů',failed?('Dokončeno s počtem chyb: '+failed+' · release nepouštět.'):('Všechny interní testy prošly · release gate OK.'));
   },
+  async runStep(label,fn){
+    const failedBefore=this.results.filter(x=>x.state==='fail').length;
+    try{return await fn()}
+    catch(error){
+      const message=String(error?.message||error||'Neznámá chyba');
+      this.log(label+': '+message);
+      const failedAfter=this.results.filter(x=>x.state==='fail').length;
+      if(failedAfter===failedBefore)this.add('fail',label,'Neočekávaná výjimka testu: '+message);
+      return undefined;
+    }
+  },
   runSmokeUi(){
-    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','messageOverlay','advVariantMode','advLearningGoal','printTeacherConfirmed','cefrRunBtn'];
+    const ids=['apiStepPanel','inputPanel','configPanel','resultsPanel','apiPanel','baseText','subject','cefr','cefrForce','tiers','genBtn','genAllBtn','results','restartOverlay','pdfCheckOverlay','printOverlay','qualityOverlay','messageOverlay','privacyOverlay','privacyAnonymize','privacyContinue','advVariantMode','advLearningGoal','printTeacherConfirmed','cefrRunBtn'];
     ids.forEach(id=>this.assert(!!$('#'+id),'UI prvek: '+id,'Nalezen','Chybí prvek #'+id));
     this.assert(document.querySelectorAll('#tiers input[type="radio"]').length===3,'Výběr úrovně','K dispozici jsou 3 úrovně','Počet úrovní není 3');
     const checked=document.querySelector('#tiers input[type="radio"]:checked');
@@ -91,6 +103,10 @@ const TestSystem={
     const fallback=parseWorksheetResponse('Pouze volný text bez značek.');
     const fallbackValidation=validateWorksheetResponse(fallback);
     this.assert(!fallbackValidation.ok,'Fallback kontrola','Nestrukturovaný výstup je označen k ověření','Fallback měl být označen jako varování');
+    const emailProbe=[{type:'text',text:'Kontakt: teacher@example.com'}];
+    this.assert(dplEmailMatches(emailProbe).length===1&&dplAnonymizeEmails(emailProbe)[0].text.includes('[e-mail anonymizován]'),'Anonymizace e-mailu','Preflight rozpozná a automaticky nahradí e-mailovou adresu.','Preflight e-mail nerozpoznal nebo nenahradil');
+    const oldModel=geminiModel;setModel(FALLBACK_MODELS[0]);const liteProfile=dplModelProfile('worksheet-generation');setModel(MODEL_DEFAULT);const strongProfile=dplModelProfile('worksheet-generation');setModel(oldModel);
+    this.assert(liteProfile==='economy'&&strongProfile==='balanced','Modelový profil AI Core','Flash-Lite mapuje na economy a Flash na balanced i pro školní gateway.','Přepínač modelu se nepropsal do modelProfile');
     const prompt=makePromptForTier('core',this.demoBase);
     this.assert(prompt.includes('VNITŘNÍ STRUKTURA VÝSTUPU')&&prompt.includes('worksheet_title')&&prompt.includes('answer_key'),'Prompt pro JSON schéma','Prompt výslovně vyžaduje JSON strukturu','Prompt neobsahuje očekávané JSON schéma');
     const batchPrompt=makePromptForTier('core',this.demoBase,3),singlePrompt=makePromptForTier('core',this.demoBase,1);
@@ -123,16 +139,21 @@ const TestSystem={
     syncCefrHintFromSubject();
   },
   installMockGemini(){
-    const original=callGemini;
-    callGemini=async(parts)=>{
-      const txt=(parts||[]).map(p=>p&&p.text?p.text:'').join('\n');
+    dplEnsureAiCore();
+    const testing=window.GHRAB_AI&&window.GHRAB_AI.__testing;
+    if(!testing||typeof testing.setTestHooks!=='function')throw new Error('GHRAB AI Core neposkytuje test hooks.');
+    const snapshot=testing.snapshot();
+    const previousHooks=snapshot&&snapshot.state&&snapshot.state.testHooks?snapshot.state.testHooks:{};
+    const mockText='1. visited\n2. has already finished\n3. They saw the museum exhibition.';
+    const directGemini=async({operation})=>{
       await new Promise(res=>setTimeout(res,20));
-      if(/Urči jazykovou úroveň podle CEFR/i.test(txt))return 'A2';
-      if(/Zkontroluj tento pracovní list/i.test(txt))return this.mockQuality;
-      if(/Ke každé úloze/i.test(txt))return '1. visited\n2. has already finished\n3. They saw the museum exhibition.';
-      return this.sampleStructured();
+      if(operation==='cefr-detection')return {text:'A2'};
+      if(operation==='worksheet-quality-audit')return {text:this.mockQuality};
+      if(operation==='answer-key-generation'||operation==='material-extraction')return {text:mockText};
+      return JSON.parse(this.sampleStructured());
     };
-    return ()=>{callGemini=original};
+    testing.setTestHooks({isEnabled:()=>true,directGemini});
+    return ()=>testing.setTestHooks(previousHooks);
   },
   async runAuditRegressionTests(){
     this.assert(['Anglický jazyk','Německý jazyk','Ruský jazyk','Italský jazyk','Konverzace v anglickém jazyce'].every(looksLikeLanguageSubject)
@@ -159,6 +180,34 @@ const TestSystem={
     }finally{
       if($('#messageOverlay'))$('#messageOverlay').classList.remove('show');
       geminiApiKey=oldKey; geminiKeyScope=oldScope; updateKeyStatus();
+    }
+  },
+  async runModelSwitchIntegrationTest(){
+    const oldModel=geminiModel,oldDeployment=window.__GHRAB_DEPLOYMENT_CONFIG__,testing=window.GHRAB_AI&&window.GHRAB_AI.__testing;
+    if(!testing||typeof testing.snapshot!=='function'||typeof testing.setTestHooks!=='function')throw new Error('GHRAB AI Core neposkytuje test hooks pro T6.');
+    const lite=FALLBACK_MODELS[0];
+    try{
+      setModel(lite);dplEnsureAiCore();
+      let state=testing.snapshot().state;
+      let credentials=await state.credentialProvider({mode:'direct-gemini',operation:'worksheet-generation',modelProfile:'economy'});
+      const liteSignature=dplAiSignature();
+      setModel(MODEL_DEFAULT);dplEnsureAiCore();
+      state=testing.snapshot().state;
+      const strongCredentials=await state.credentialProvider({mode:'direct-gemini',operation:'worksheet-generation',modelProfile:'balanced'});
+      const strongSignature=dplAiSignature();
+      this.assert(credentials.modelOverride===lite&&strongCredentials.modelOverride===MODEL_DEFAULT&&liteSignature!==strongSignature,'T6 přepnutí modelu · direct','Po setModel() další přímé volání používá aktuální Flash / Flash-Lite a mění konfigurační podpis.','Přímá AI cesta po setModel() zůstala na starém modelu');
+
+      window.__GHRAB_DEPLOYMENT_CONFIG__={...(oldDeployment||{}),profile:'school-server',aiTransport:'school-gateway',apiBaseUrl:'https://school.example/api/v1/',endpoints:{...(oldDeployment?.endpoints||{}),aiGenerate:'ai/generate',aiHealth:'ai/health'}};
+      const seen=[];
+      const response=payload=>({schema:window.GHRAB_AI.responseSchema,requestId:'mock-gateway',clientRequestId:payload.clientRequestId,result:JSON.parse(this.sampleStructured()),usage:{providerRequests:1,retryRequests:0,generatedOutputs:1},meta:{latencyMs:0}});
+      setModel(lite);dplEnsureAiCore();testing.setTestHooks({isEnabled:()=>true,schoolGateway:async payload=>{seen.push(payload.modelProfile);return response(payload)}});
+      await callGemini([{text:'Test T6 gateway Lite'}],{json:true,operation:'worksheet-generation'});
+      setModel(MODEL_DEFAULT);dplEnsureAiCore();testing.setTestHooks({isEnabled:()=>true,schoolGateway:async payload=>{seen.push(payload.modelProfile);return response(payload)}});
+      await callGemini([{text:'Test T6 gateway Flash'}],{json:true,operation:'worksheet-generation'});
+      this.assert(seen.length===2&&seen[0]==='economy'&&seen[1]==='balanced','T6 přepnutí modelu · gateway','Školní gateway dostala po setModel() postupně profily economy a balanced.','Školní gateway po přepnutí modelu použila starý modelProfile');
+    }finally{
+      if(oldDeployment===undefined)delete window.__GHRAB_DEPLOYMENT_CONFIG__;else window.__GHRAB_DEPLOYMENT_CONFIG__=oldDeployment;
+      setModel(oldModel);dplConfiguredSignature='';dplEnsureAiCore();
     }
   },
   runProjectRoundtripTest(){
