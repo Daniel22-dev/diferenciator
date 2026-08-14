@@ -8,6 +8,7 @@
 - M4: odstraněny čtyři potvrzené nepoužívané helpery obrazové vrstvy;
 - M6 uzavřeno bez změny: pipe zápis bez oddělovacího řádku není GFM tabulka, tolerantní parser zůstává případným budoucím UX rozšířením;
 - doplněny regrese T25–T27; performance baseline z 1.3.24 zůstává zmrazená.
+- CI hotfix: GitHub Actions workflowy, které spouštějí `qa:p5:ci`, nyní explicitně instalují `poppler-utils`; `qa:stem` při chybějícím nebo selhaném `pdftotext` končí s diagnostickou chybou a T28 hlídá návrat této závislosti.
 
 ## 1.3.24 — GARP stabilizace po auditu 1.3.19
 

@@ -303,5 +303,15 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   else ok('T27: direct runtime hlídá kompatibilní thinking level pro Důkladný profil');
 }
 
+// T28: every CI workflow that runs the full P5 gate must provision the PDF text extractor used by qa:stem.
+{
+  const workflows=['.github/workflows/p3-quality.yml','.github/workflows/p4-release.yml','.github/workflows/deploy.yml','.github/workflows/p5-release-gate.yml'];
+  const missing=workflows.filter(file=>{const yml=read(file);return !yml.includes('poppler-utils')||!yml.includes('pdftotext -v')||!yml.includes('npm run qa:p5:ci');});
+  const stem=read('scripts/qa-stem-browser.mjs');
+  const explicitFailure=stem.includes('function pdfText(path)')&&stem.includes('qa:stem vyžaduje pdftotext')&&stem.includes('r.status!==0');
+  if(missing.length||!explicitFailure)bad('T28: CI STEM PDF toolchain není explicitně zajištěn'+(missing.length?': '+missing.join(', '):''));
+  else ok('T28: CI explicitně instaluje poppler-utils a qa:stem hlásí chybějící/selhaný pdftotext');
+}
+
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
 console.log('CELKEM: regresní brána zelená.');
