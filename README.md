@@ -28,7 +28,9 @@ npm test
 
 `npm test` nejprve znovu sestaví `dist/`, ověří centrální profily Úsporný / Doporučený / Důkladný přes `qa:profiles`, fyzickými Chromium kliknutími ověří jejich propsání do Core requestu, spustí regresní brány včetně skutečných `qa:visuals`, `qa:scan`, `qa:stem`, rozšířeného `qa:all-subjects`, `qa:office-rich`, `qa:multimedia`, `qa:multimedia:browser`, `qa:specialists` a `qa:renderers` Chromium/PDF testů a zkontroluje PWA, bezpečnost, duplicity ID, manifest i interní testy. Test použije systémový Chromium/Chrome nebo prohlížeč nainstalovaný Playwrightem. Pokud na čistém stroji prohlížeč chybí, spusť jednou `npx playwright install chromium`.
 
-Pro skutečný release nastav v GitHub repozitáři secret **`DPL_LIVE_GEMINI_API_KEY`**. Push/release workflow potom povinně spustí `npm run qa:provider:live:required` nad krátkým audio i video vzorkem. Bez secretu nebo při chybě provideru release workflow skončí chybou; běžný PR secret nevyžaduje.
+### API kvóta a CI
+
+V aktuální vývojové fázi **GitHub Actions nikdy nevolají Gemini API**. Push, pull request, P5 gate i GitHub Pages deploy používají pouze deterministické, browserové a lokální multimediální testy, takže spotřebují **0 Gemini requests** a nevyžadují žádný repository secret s API klíčem. Live provider smoke byl z CI i z package scripts odstraněn; případné znovuzavedení patří až do budoucí serverové/tierové fáze s vědomě nastaveným kvótovým rozpočtem.
 
 ## Struktura
 

@@ -2,7 +2,7 @@
 
 ## 1.3.31 — GARP audit fixes (2026-08-15)
 
-- CI hotfix (2026-08-16): release workflowy `deploy.yml` a `p5-release-gate.yml` nyní explicitně instalují `ffmpeg` a ověřují `ffmpeg -version` před povinným live audio/video provider smoke; nová regrese T29 hlídá, že se tato závislost z release CI neztratí. Verze aplikace zůstává 1.3.31.
+- CI quota hotfix (2026-08-16): z aktuálního vývojového CI byl úplně odstraněn live Gemini audio/video provider smoke, repository secret i související package skripty. Push, PR, P5 gate a deploy nyní spotřebují 0 Gemini API requests; T29 tuto politiku blokujícím testem hlídá. Předchozí ffmpeg CI hotfix je tímto překonán a `ffmpeg` už release workflow nepotřebují. Verze aplikace zůstává 1.3.31.
 - `EDU_TRACE`: opraven fail-open konflikt `//` s komentáři; celočíselné dělení má Python-like floor semantiku, modulo záporných čísel Python-like výsledek, porovnání polí je hodnotové a číselný výstup se stabilně formátuje. Bezpečný limit lze zvýšit do 2000 kroků a dlouhé stopy se v pracovním listu řízeně zkrátí místo odmítnutí.
 - `EDU_REACTION`: validace všech 118 symbolů H–Og; nejednoznačná bilanční soustava bez doplňující podmínky je fail-closed, `expectedCoefficients` lze použít jako explicitní pedagogickou podmínku.
 - Tisk/PDF nyní explicitně čeká na hydrataci odborných vizuálů. `data-edu-ready="error"` tisk zablokuje a ukáže učiteli seznam chyb; pokračovat lze až po samostatném vědomém potvrzení výjimky.

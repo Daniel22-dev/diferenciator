@@ -31,13 +31,12 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           node -e "console.log('CHROMIUM_PATH=' + require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
-      - name: Install PDF and multimedia audit dependencies
+      - name: Install PDF audit dependencies
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends poppler-utils ffmpeg
+          sudo apt-get install -y --no-install-recommends poppler-utils
           pdftotext -v
-          ffmpeg -version
       - name: Run unified error reporter regression
         run: npm run test:reporter
       - name: Verify GHRAB Platform P3 conformance
@@ -46,11 +45,6 @@ jobs:
       - name: Enforce P5 R2 release gate
         run: npm run qa:p5:ci
 
-      - name: Live audio/video provider smoke on release
-        if: github.event_name != 'pull_request'
-        env:
-          DPL_LIVE_GEMINI_API_KEY: ${{ secrets.DPL_LIVE_GEMINI_API_KEY }}
-        run: npm run qa:provider:live:required
 
       - uses: actions/configure-pages@v5
         if: github.event_name != 'pull_request'

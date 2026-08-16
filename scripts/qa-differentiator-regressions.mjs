@@ -313,12 +313,15 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   else ok('T28: CI explicitně instaluje poppler-utils a qa:stem hlásí chybějící/selhaný pdftotext');
 }
 
-// T29: release workflows that execute the live audio/video provider smoke must provision ffmpeg.
+// T29: current development CI must never consume Gemini quota or require provider secrets.
 {
-  const workflows=['.github/workflows/deploy.yml','.github/workflows/p5-release-gate.yml'];
-  const missing=workflows.filter(file=>{const yml=read(file);return !yml.includes('ffmpeg')||!yml.includes('ffmpeg -version')||!yml.includes('npm run qa:provider:live:required');});
-  if(missing.length)bad('T29: CI live multimedia toolchain postrádá ffmpeg'+': '+missing.join(', '));
-  else ok('T29: release CI explicitně instaluje ffmpeg pro live audio/video provider smoke');
+  const workflowDir=join(ROOT,'.github','workflows');
+  const workflowFiles=readdirSync(workflowDir).filter(x=>/\.ya?ml$/i.test(x));
+  const forbidden=/DPL_LIVE_GEMINI_API_KEY|GEMINI_API_KEY|qa:provider:live|qa-provider-multimedia-live|generativelanguage\.googleapis\.com/i;
+  const offenders=workflowFiles.filter(file=>forbidden.test(read(join('.github','workflows',file))));
+  const pkg=read('package.json');
+  if(offenders.length||/qa:provider:live|qa-provider-multimedia-live/.test(pkg))bad('T29: CI nesmí automaticky spotřebovávat Gemini requests'+(offenders.length?': '+offenders.join(', '):''));
+  else ok('T29: push/PR/deploy CI neobsahuje live Gemini provider smoke ani provider secret');
 }
 
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}

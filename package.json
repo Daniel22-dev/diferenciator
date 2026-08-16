@@ -50,8 +50,6 @@
     "qa:multimedia": "node scripts/qa-multimedia.mjs",
     "qa:renderers": "node scripts/qa-renderers-browser.mjs",
     "qa:multimedia:browser": "node scripts/qa-multimedia-browser.mjs",
-    "qa:provider:live": "node scripts/qa-provider-multimedia-live.mjs",
-    "qa:provider:live:required": "DPL_LIVE_REQUIRED=1 node scripts/qa-provider-multimedia-live.mjs",
     "qa:specialists": "node scripts/qa-specialist-engines.mjs"
   },
   "engines": {
