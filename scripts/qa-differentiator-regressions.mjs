@@ -313,5 +313,13 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   else ok('T28: CI explicitně instaluje poppler-utils a qa:stem hlásí chybějící/selhaný pdftotext');
 }
 
+// T29: release workflows that execute the live audio/video provider smoke must provision ffmpeg.
+{
+  const workflows=['.github/workflows/deploy.yml','.github/workflows/p5-release-gate.yml'];
+  const missing=workflows.filter(file=>{const yml=read(file);return !yml.includes('ffmpeg')||!yml.includes('ffmpeg -version')||!yml.includes('npm run qa:provider:live:required');});
+  if(missing.length)bad('T29: CI live multimedia toolchain postrádá ffmpeg'+': '+missing.join(', '));
+  else ok('T29: release CI explicitně instaluje ffmpeg pro live audio/video provider smoke');
+}
+
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
 console.log('CELKEM: regresní brána zelená.');

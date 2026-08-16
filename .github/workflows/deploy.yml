@@ -31,12 +31,13 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           node -e "console.log('CHROMIUM_PATH=' + require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
-      - name: Install PDF text audit dependency
+      - name: Install PDF and multimedia audit dependencies
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends poppler-utils
+          sudo apt-get install -y --no-install-recommends poppler-utils ffmpeg
           pdftotext -v
+          ffmpeg -version
       - name: Run unified error reporter regression
         run: npm run test:reporter
       - name: Verify GHRAB Platform P3 conformance
