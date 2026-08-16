@@ -1,5 +1,62 @@
 # Changelog
 
+## 1.3.31 — GARP audit fixes (2026-08-15)
+
+- `EDU_TRACE`: opraven fail-open konflikt `//` s komentáři; celočíselné dělení má Python-like floor semantiku, modulo záporných čísel Python-like výsledek, porovnání polí je hodnotové a číselný výstup se stabilně formátuje. Bezpečný limit lze zvýšit do 2000 kroků a dlouhé stopy se v pracovním listu řízeně zkrátí místo odmítnutí.
+- `EDU_REACTION`: validace všech 118 symbolů H–Og; nejednoznačná bilanční soustava bez doplňující podmínky je fail-closed, `expectedCoefficients` lze použít jako explicitní pedagogickou podmínku.
+- Tisk/PDF nyní explicitně čeká na hydrataci odborných vizuálů. `data-edu-ready="error"` tisk zablokuje a ukáže učiteli seznam chyb; pokračovat lze až po samostatném vědomém potvrzení výjimky.
+- `EDU_ANNOTATE` používá viewBox podle skutečného poměru stran zdrojového obrázku, takže body, text a šipky se na nečtvercových podkladech nedeformují.
+- `map-presets.js` je součástí offline precache; build nově selže, pokud service worker neeviduje některý specialistický modul.
+- Interní testovací konzole byla vyjmuta z kritického inline bundle do lazy `internal-tests.js`; zmrazené raw performance budgety nebyly zvýšeny.
+- Specialistická adversariální QA obsahuje regresní případy pro `//`, URL v řetězci, záporné modulo, pole, float formatting, zvýšený step budget, bubble sort na 10 prvcích, neplatný chemický symbol a nejednoznačné rovnice.
+
+## 1.3.30 — Deep subject engines (2026-08-15)
+
+- Přidán `EDU_TRACE`: omezený interpret školního pseudokódu bez `eval`/`Function`, s přiřazením, poli, IF/ELSE, FOR, WHILE, PRINT a krokovou trace tabulkou; běh je tvrdě omezen počtem kroků.
+- Přidán `EDU_REACTION`: parser vzorců, atomová i nábojová bilance, deterministické vyčíslování běžných školních rovnic a jednoduchá stechiometrie pro mol/mmol/g/částice. Ionty používají explicitní zápis náboje (např. `Fe^3+`).
+- Přidán `EDU_ANNOTATE`: body, šipky a rámečky nad zachovaným zdrojem `VISUAL_n`; originální obraz se nepřekresluje a při použití anotace se nevkládá duplicitně vedle ní.
+- `EDU_TIMELINE` nyní podporuje období, nejistotu a přibližnou dataci; `EDU_PHYS` podporuje free-body diagramy a umí ověřit zadanou výslednici i vztah ΣF = m·a.
+- Rozšířena předmětová QA, validační a browserová vrstva; nové specialistické enginy jsou dostupné i v offline cache a nevalidní vstupy zůstávají fail-closed.
+
+## 1.3.29 — Cross-subject specialist engines (2026-08-15)
+
+- Přidány deterministické odborné markery `EDU_FLOW`, `EDU_TIMELINE`, `EDU_GENETICS` a `EDU_PHYS`.
+- STEM routing je rozdělen podle matematiky, fyziky, chemie, biologie a věd o Zemi; biologie už nedostává elektrická schémata jen proto, že patří do STEM.
+- Přidán validovaný engine pro vývojové diagramy/algoritmické vazby, chronologické osy, Punnettovy čtverce a rodokmeny a fyzikální vektorové součty + školní diagram spojné čočky s reálným obrazem.
+- Rozšířeny statické i browserové QA tak, aby ověřovaly předmětově specifické prompty, neplatné markery a reálnou hydrataci nových SVG rendererů.
+- Zachován princip fail-safe: nevalidní nebo odborně nepodporované zadání se nesmí vykreslit jako zdánlivě správný diagram.
+
+## 1.3.28 — Komplexní odborné enginy (2026-08-15)
+
+- notový renderer rozšířen z jednoduché melodie na více osnov a hlasů, houslový/basový/altový/tenorový klíč, akordy, pomlky, posuvky, pomocné linky, taktové čáry, předznamenání/metrum, dynamiku, text, artikulaci, ligatury a tečkované hodnoty;
+- chemická vrstva dostala kompaktní SMILES parser, deterministický graf, valenční kontrolu a školní Lewisovy prvky včetně izotopu, explicitních vodíků, formálního náboje, volných elektronových párů a radikálových elektronů; nevalidní nebo přetížená struktura se blokuje před vykreslením;
+- nový `EDU_CIRCUIT` renderer pokrývá běžné školní elektrické značky a také vícevývodové prvky NPN/PNP, operační zesilovač, transformátor a SPDT;
+- mapová vrstva přijímá přímo `.geojson` a `EDU_MAP` umí libovolné validní Polygon/MultiPolygon vrstvy; vstup se lokálně validuje, velikostně omezuje a adaptivně zjednodušuje bez síťového převodu;
+- matematika má samostatný TeX→MathML parser pro gymnaziální sazbu a deterministický školní CAS pro ekvivalenci, derivaci, numerické dosazení, lineární/kvadratické rovnice a Gaussovo řešení lineárních soustav do 8 neznámých; neznámé TeX příkazy se explicitně hlásí;
+- Office rich import rekonstruuje běžné DrawingML tvary/spojnice z DOCX/PPTX/XLSX do `EDU_OFFICE`; proprietární nebo nepodporovaný objekt se označí `OFFICE_VISUAL_REVIEW` a musí se zachovat přes PDF/snímek místo tichého zkreslení;
+- přidána živá audio/video providerová QA brána; release workflow ji vyžaduje přes repository secret `DPL_LIVE_GEMINI_API_KEY`, zatímco lokální běh bez credentialu končí výslovným `skipped`, nikoli falešným PASS;
+- nové specialistické QA 19/19, all-subject static 79/79, renderer browser gate PASS, Office-rich browser gate PASS, 111položková školní browserová matice PASS, 142/142 interních testů a performance gate 31/31; výkonové budgety nebyly zvýšeny.
+
+## 1.3.27 — Multimédia a deterministické odborné renderery (2026-08-14)
+
+- přímý audio/video vstup pro poslechy, hudební a audiovizuální ukázky; zdrojové médium zůstává pevné i pro paralelní variantu a projektový export/import jej umí zachovat;
+- `[[MEDIA_SOURCE]]` odděluje zdroj od žákovského textu, QA blokuje souvislý únik zdrojového přepisu do instrukcí/úloh a PDF uvádí pouze název zdrojového média + pokyn k přehrání;
+- nové deterministické `EDU_*` SVG renderery: sloupcový/čárový/koláčový graf, souřadnicový nákres, jednoduchá jednohlasá notace, jednoduchá 2D chemická struktura a slepé mapové presety world/europe/czechia;
+- validace hlídá syntaxi odborných markerů a QA/revize musí zachovat konzistenci dat markeru se zadáním a `answer_key`;
+- DOCX/PPTX/XLSX nativní grafy s použitelnou cached datovou vrstvou se převádějí na `EDU_CHART`; DOCX a PPTX SmartArt/nativní diagramy zachovávají alespoň textovou vrstvu;
+- multimediální a rendererové moduly jsou lazy-loaded; zmrazené výkonové rozpočty zůstaly beze změny;
+- nové blokující brány `qa:multimedia`, `qa:multimedia:browser` a `qa:renderers`; all-subject static gate 70/70, 111položková browserová klasifikace, 142/142 interních testů a performance gate 31/31 jsou zelené.
+
+## 1.3.26 — Gymnasium coverage hardening (2026-08-14)
+
+- all-subject browserová brána rozšířena na 111 názvů předmětů, seminářů, praktik a průřezových školních označení;
+- STEM safety nově pokrývá algebru, geometrii, statistiku, pravděpodobnost, astronomii, ekologii, genetiku a samostatnou větev geologie/věd o Zemi;
+- jazyková vrstva doplněna o italštinu, portugalštinu, řečtinu a polštinu včetně CEFR rozpoznání; společenské vědy/informatika/humanitní vrstva doplněna o finanční gramotnost, databáze, robotiku, datovou vědu, dramatickou a audiovizuální výchovu;
+- zachovaný mapový, grafický, diagramový, notový a další obrazový podklad je při paralelní variantě obsahově neměnný; AI smí měnit jen otázky nebo údaje mimo obraz;
+- PPTX a XLSX import nově přenáší vložené obrázky do stejné visual-assets pipeline jako DOCX;
+- nativní grafy v PPTX i XLSX se detekují a jejich datové oblasti + uložené hodnoty se předávají AI jako technický přepis; PPTX SmartArt/nativní diagramy předávají alespoň textovou vrstvu; pixelově shodný vzhled nadále vyžaduje PDF/snímek;
+- all-subject matice rozšířena o obsahová a vizuální primitiva, zdrojové formáty a výstupní režimy; nová `qa:office-rich` brána fyzicky ověřuje PPTX/XLSX archive import v Chromiu.
+
 ## 1.3.25 — GARP follow-up po auditu 1.3.24 (2026-08-14)
 
 - M1: direct multimodální timeout zvýšen z 60 s na 120 s a QA hlídá shodu se school profilem;

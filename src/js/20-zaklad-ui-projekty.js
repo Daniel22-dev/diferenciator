@@ -102,11 +102,9 @@ function normalizeSubjectCode(value){
 function looksLikeLanguageSubject(value){
   const raw=String(value||'').trim();
   const s=normalizeSubjectCode(raw);
-  // Kmeny pokrývají podstatné i přídavné jméno: „angličtina“ i „anglický jazyk“, „němčina“ i „německý jazyk“.
-  if(/(cestina pro cizince|czech as a foreign language|anglick|anglict|english|spanel|spanish|nemeck|nemcin|german|francouz|french|italsk|italst|italian|rusk|rust|russian|latin|cizi jazyk|foreign language)/i.test(s))return true;
+  if(/(cestina pro cizince|czech as a foreign language|anglick|anglict|english|spanel|spanish|nemeck|nemcin|german|francouz|french|italsk|italst|italian|portugal|portuguese|rectin|recky jazyk|greek|polst|polsky jazyk|polish|slovenst|slovensky jazyk|ukrajinst|ukrajinsky jazyk|rusk|rust|russian|latin|konverzac|cizi jazyk|foreign language)/i.test(s))return true;
   const tokens=s.split(/[^a-z0-9]+/).filter(Boolean);
-  // „čj/cj“ je čeština a „it“ bývá informatika; obě zkratky by dávaly falešné CEFR nálezy.
-  const abbrev=new Set(['aj','anj','ang','en','eng','sj','spj','spa','esp','nj','nej','nem','de','ger','fj','frj','fra','fr','ij','itj','ita','rj','ruj','rus','ru','lj','lat']);
+  const abbrev=new Set(['aj','anj','ang','en','eng','sj','spj','spa','esp','nj','nej','nem','de','ger','fj','frj','fra','fr','ij','itj','ita','pj','pt','por','gr','el','pol','pl','rj','ruj','rus','ru','lj','lat']);
   return tokens.some(t=>abbrev.has(t));
 }
 function getSubjectValue(){return $('#subject')?$('#subject').value.trim():''}
@@ -352,8 +350,9 @@ const PROJECT_APP='Diferenciátor pracovních listů a testů';
 const MAX_PROJECT_FILE_BYTES=32*1024*1024;
 const MAX_PROJECT_SHEETS=12;
 function safeProjectText(value,max=MAX_TEXT_CHARS){return (typeof value==='string'||typeof value==='number')?String(value).slice(0,max):''}
-const MAX_PROJECT_VISUALS=8,MAX_PROJECT_VISUAL_DATA_CHARS=18*1024*1024;
+const MAX_PROJECT_VISUALS=8,MAX_PROJECT_VISUAL_DATA_CHARS=18*1024*1024,MAX_PROJECT_MEDIA_DATA_CHARS=18*1024*1024;
 function normalizeProjectVisualAsset(value){if(!value||typeof value!=='object'||Array.isArray(value))return null;const id=String(value.id||'').toUpperCase();if(!/^VISUAL_\d+$/.test(id))return null;const mime=String(value.mime_type||'');if(!/^image\/(?:png|jpe?g|webp|gif)$/i.test(mime))return null;const data=String(value.data||'').replace(/\s+/g,'');if(!data||data.length>MAX_PROJECT_VISUAL_DATA_CHARS||!/^[A-Za-z0-9+/=]+$/.test(data))return null;return {id,name:safeProjectText(value.name,300),mime_type:mime,data,role:VISUAL_ROLES.includes(value.role)?value.role:'unknown',type:VISUAL_TYPES.includes(value.type)?value.type:'other',description:safeProjectText(value.description,500),mode:'preserve',source:safeProjectText(value.source,80)||'project',optimized:!!value.optimized}}
+function normalizeProjectMediaSource(value){if(!value||typeof value!=='object'||Array.isArray(value))return null;const kind=String(value.kind||'');if(!/^(?:audio|video)$/.test(kind))return null;const mime=String(value.mime_type||'');if(!new RegExp('^'+kind+'\\/','i').test(mime))return null;const data=String(value.data||'').replace(/\s+/g,'');if(!data||data.length>MAX_PROJECT_MEDIA_DATA_CHARS||!/^[A-Za-z0-9+/=]+$/.test(data))return null;return {kind,name:safeProjectText(value.name,300)||kind,mime_type:mime,data,bytes:Number(value.bytes)||0}}
 function normalizeProjectForm(form){
   form=(form&&typeof form==='object'&&!Array.isArray(form))?form:{};
   const meta=(form.meta&&typeof form.meta==='object'&&!Array.isArray(form.meta))?form.meta:{};
@@ -380,12 +379,12 @@ function normalizeProjectSheet(item){
 function normalizeProject(data){
   if(!data||typeof data!=='object'||Array.isArray(data)||data.app!==PROJECT_APP||Number(data.schemaVersion)!==PROJECT_SCHEMA_VERSION)throw makeAppError('Soubor není kompatibilní projekt této verze Diferenciátoru.','BAD_PROJECT');
   const sheets=(Array.isArray(data.sheets)?data.sheets:[]).slice(0,MAX_PROJECT_SHEETS).map(normalizeProjectSheet);
-  return {...data,form:normalizeProjectForm(data.form),sheets};
+  return {...data,form:normalizeProjectForm(data.form),sourceMedia:normalizeProjectMediaSource(data.sourceMedia),sheets};
 }
 function collectProjectSheets(){return Array.from(document.querySelectorAll('#results .sheet')).map(sheet=>({
   tierKey:sheet._tierKey||'core',text:sheet._text||'',answerKey:sheet._key||'',quality:sheet._quality||'',qualityStage:sheet._qualityStage||'none',qualityApplied:[...(sheet._qualityApplied||[])],finalAuditUsed:!!sheet._finalAuditUsed,scoringMode:sheet._scoringMode||'none',manualScores:{...(sheet._manualScores||{})},visualAssets:(sheet._visualAssets||[]).map(cloneVisualAsset).filter(Boolean),parts:sheet._parts||{},structured:!!sheet._structured,validation:sheet._validation||{ok:true,issues:[]}
 })).filter(x=>x.text||x.answerKey||x.quality)}
-function serializeProject(){return {app:PROJECT_APP,schemaVersion:PROJECT_SCHEMA_VERSION,release:RELEASE.version,exportedAt:new Date().toISOString(),note:'Soubor neobsahuje API klíč.',form:getAppFormState(),sheets:collectProjectSheets()}}
+function serializeProject(){return {app:PROJECT_APP,schemaVersion:PROJECT_SCHEMA_VERSION,release:RELEASE.version,exportedAt:new Date().toISOString(),note:'Soubor neobsahuje API klíč. Zdrojové audio/video je součástí projektu pouze tehdy, pokud bylo použito.',form:getAppFormState(),sourceMedia:cloneMediaSource(sourceMediaAsset,true),sheets:collectProjectSheets()}}
 async function exportProject(){
   const data=serializeProject();
   const base=filenameSafe((data.form&&data.form.meta&&data.form.meta.topic)||data.form.subject||'diferenciator-projekt');
@@ -397,7 +396,7 @@ async function exportProject(){
 }
 function restoreProjectSheet(item){
   const sheet=makeSheet(item.tierKey||'core',false);
-  sheet._tierKey=item.tierKey||'core';sheet._text=item.text||'';sheet._key=item.answerKey||'';sheet._quality=item.quality||'';sheet._qualityStage=item.qualityStage||(sheet._quality?'initial':'none');sheet._qualityApplied=[...(item.qualityApplied||[])];sheet._finalAuditUsed=!!item.finalAuditUsed;sheet._scoringMode=SCORING_MODES.includes(item.scoringMode)?item.scoringMode:'none';sheet._manualScores={...(item.manualScores||{})};sheet._visualAssets=(item.visualAssets||[]).map(cloneVisualAsset).filter(Boolean);sheet._parts=item.parts||{title:'',instructions:'',tasks:item.text||'',answerKey:item.answerKey||'',teacherNote:''};sheet._structured=!!item.structured;sheet._validation=item.validation||validateWorksheetResponse({worksheet:sheet._text,structured:true,structureType:'json',parts:sheet._parts});sheet._pdfWarningSkipped=false;
+  sheet._tierKey=item.tierKey||'core';sheet._text=item.text||'';sheet._key=item.answerKey||'';sheet._quality=item.quality||'';sheet._qualityStage=item.qualityStage||(sheet._quality?'initial':'none');sheet._qualityApplied=[...(item.qualityApplied||[])];sheet._finalAuditUsed=!!item.finalAuditUsed;sheet._scoringMode=SCORING_MODES.includes(item.scoringMode)?item.scoringMode:'none';sheet._manualScores={...(item.manualScores||{})};sheet._visualAssets=(item.visualAssets||[]).map(cloneVisualAsset).filter(Boolean);sheet._mediaSource=cloneMediaSource(sourceMediaAsset,true);sheet._parts=item.parts||{title:'',instructions:'',tasks:item.text||'',answerKey:item.answerKey||'',teacherNote:''};sheet._structured=!!item.structured;sheet._validation=item.validation||validateWorksheetResponse({worksheet:sheet._text,structured:true,structureType:'json',parts:sheet._parts});sheet._pdfWarningSkipped=false;
   renderSheetBody(sheet);
   renderTeacherNote(sheet);
   showStructureWarning(sheet,sheet._validation);
@@ -408,7 +407,7 @@ function restoreProjectSheet(item){
 }
 function applyProject(data){
   data=normalizeProject(data);
-  uploaded=null;if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
+  uploaded=null;sourceMediaAsset=cloneMediaSource(data.sourceMedia,true);if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
   const fc=$('#filechip');if(fc)fc.classList.remove('show');const th=$('#thumb');if(th)th.classList.remove('show');setUploadInfo('');
   applyAppFormState(data.form);
   const results=$('#results');if(results)results.innerHTML='';
@@ -444,7 +443,7 @@ function clearPreferenceData(){
   resetAdvancedSettings();loadModelProfile();loadTheme();restoreCefrPreference();closeDataManagement();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
 }
 function clearWorkingData(){
-  uploaded=null;resetSourceVisualAssets();if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
+  uploaded=null;resetSourceMedia();resetSourceVisualAssets();if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
   $('#pasteText').value='';$('#baseText').value='';$('#subject').value='';$('#mSubject').value='';$('#mTopic').value='';$('#mClass').value='';$('#mDate').value='';
   resetAdvancedSettings();$('#results').innerHTML='';hide($('#resultsPanel'));hide($('#configPanel'));show($('#inputPanel'));
   const fc=$('#filechip');if(fc)fc.classList.remove('show');const th=$('#thumb');if(th)th.classList.remove('show');setUploadInfo('');

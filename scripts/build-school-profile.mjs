@@ -9,6 +9,9 @@ const targetDist = path.join(root, "dist-school-server");
 if (!fs.existsSync(sourceDist)) throw new Error("Chybí dist/. Nejprve spusťte standardní build.");
 fs.rmSync(targetDist, { recursive: true, force: true });
 fs.cpSync(sourceDist, targetDist, { recursive: true });
+fs.mkdirSync(path.join(targetDist,'config'),{recursive:true});
+fs.copyFileSync(path.join(root,'src','config','deployment.school-server.json'),path.join(targetDist,'config','deployment.school-server.json'));
+fs.copyFileSync(path.join(root,'src','runtime-config.school-server.js'),path.join(targetDist,'runtime-config.school-server.js'));
 
 function walk(dir) {
   const files = [];

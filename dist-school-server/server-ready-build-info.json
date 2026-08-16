@@ -1,0 +1,20 @@
+{
+  "schema": "ghrab-server-ready-build-v1",
+  "app": "ghrab-diferenciator",
+  "appId": "differentiator",
+  "version": "1.3.31",
+  "phase": "P3",
+  "profile": "school-server",
+  "builtAt": "2026-08-15T08:19:06.138Z",
+  "activeAuthMode": "server-session",
+  "activeAiTransport": "school-gateway",
+  "telemetryMode": "server",
+  "appBaseUrl": "/apps/diferenciator/",
+  "apiBaseUrl": "/api/v1/",
+  "containsSecrets": false,
+  "localProviderKeysAllowed": false,
+  "serverSessionReady": true,
+  "schoolGatewayReady": true,
+  "aiCoreVersion": "1.0.0",
+  "contractVersion": "1"
+}

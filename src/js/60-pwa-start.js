@@ -1,6 +1,3 @@
-/* ===================== PWA INSTALACE ===================== */
-/* Viditelné oznámení nové verze: dřív šla informace jen do konzole, kde ji učitel nikdy neuvidí.
-   Proužek dole nabídne okamžité načtení nové verze, nebo jde zavřít a nová verze se načte při příštím otevření. */
 function showUpdateNotice(){
   if($('#updateNotice'))return;
   const bar=document.createElement('div');
@@ -37,7 +34,31 @@ function registerPwa(){
 }
 registerPwa();
 
-TestSystem.init();
+let internalTestsPromise=null;
+function loadInternalTests(){
+  if(globalThis.TestSystem)return Promise.resolve(globalThis.TestSystem);
+  if(internalTestsPromise)return internalTestsPromise;
+  internalTestsPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');script.src='./internal-tests.js';script.async=true;
+    script.addEventListener('load',()=>globalThis.TestSystem?resolve(globalThis.TestSystem):reject(new Error('Interní testovací modul se načetl bez TestSystem.')),{once:true});
+    script.addEventListener('error',()=>reject(new Error('Interní testovací modul se nepodařilo načíst.')),{once:true});
+    document.head.appendChild(script);
+  }).catch(error=>{internalTestsPromise=null;throw error});
+  return internalTestsPromise;
+}
+function initInternalTestsLoader(){
+  const toggle=$('#testToggle');
+  if(IS_TEST_MODE){loadInternalTests().then(system=>system.init()).catch(error=>console.error('Interní testy se nepodařilo načíst:',error));return}
+  if(!toggle)return;
+  const firstClick=async event=>{
+    if(globalThis.TestSystem){toggle.removeEventListener('click',firstClick,true);return}
+    event.preventDefault();event.stopImmediatePropagation();
+    try{const system=await loadInternalTests();system.init();toggle.removeEventListener('click',firstClick,true);system.toggle()}
+    catch(error){console.error('Interní testy se nepodařilo načíst:',error)}
+  };
+  toggle.addEventListener('click',firstClick,true);
+}
+initInternalTestsLoader();
 
 const TIER_ORDER=['support','core','extend'];
 function insertSheetInTierOrder(results,sheet){
@@ -108,7 +129,7 @@ function initAccessibleModals(){
 initAccessibleModals();
 
 function doRestart(){
-  uploaded=null;fileInput.value='';$('#filechip').classList.remove('show');$('#thumb').classList.remove('show');
+  uploaded=null;resetSourceMedia();resetSourceVisualAssets();fileInput.value='';$('#filechip').classList.remove('show');$('#thumb').classList.remove('show');
   $('#pasteText').value='';$('#baseText').value='';$('#subject').value='';
   $('#mSubject').value='';$('#mTopic').value='';$('#mClass').value='';$('#mDate').value='';
   resetAdvancedSettings();

@@ -45,6 +45,12 @@ jobs:
       - name: Enforce P5 R2 release gate
         run: npm run qa:p5:ci
 
+      - name: Live audio/video provider smoke on release
+        if: github.event_name != 'pull_request'
+        env:
+          DPL_LIVE_GEMINI_API_KEY: ${{ secrets.DPL_LIVE_GEMINI_API_KEY }}
+        run: npm run qa:provider:live:required
+
       - uses: actions/configure-pages@v5
         if: github.event_name != 'pull_request'
       - uses: actions/upload-pages-artifact@v3

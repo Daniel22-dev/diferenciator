@@ -52,7 +52,6 @@ function showStructureWarning(sheet,validation){
   box.innerHTML=html; box.classList.toggle('show',!!html);
 }
 
-/* Opak funkce render(): vrátí z upraveného HTML čistý text i s markery **tučného**. */
 function editableToText(el){
   const walk=node=>{
     if(node.nodeType===3)return node.nodeValue;
@@ -104,7 +103,7 @@ function normalizeParsedVisuals(parsed,assets){
   parts.tasks=keep.length?ensureVisualMarkers(parts.tasks||parsed.worksheet||'',keep):sanitizeVisualMarkers(parts.tasks||parsed.worksheet||'',[]);
   parts.answerKey=sanitizeVisualMarkers(parts.answerKey||parsed.answerKey||'',keep);
   const worksheet=[parts.title,parts.instructions,parts.tasks].map(x=>String(x||'').trim()).filter(Boolean).join('\n\n');
-  return {...parsed,parts,worksheet:worksheet||parts.tasks||'',answerKey:parts.answerKey||parsed.answerKey||''};
+  return {...parsed,parts,worksheet:worksheet||parts.tasks||'',answerKey:parts.answerKey||parsed.answerKey||'',_visualAssetIds:keep.map(a=>String(a.id||'').toUpperCase()).filter(Boolean)};
 }
 function sheetScoringMode(sheet){return sheet&&SCORING_MODES.includes(sheet._scoringMode)?sheet._scoringMode:scoringMode()}
 let pendingManualScoring=null;
@@ -148,7 +147,7 @@ function pdfDataForSheet(sheet,title,text,isKey=false){
   const worksheetTitle=structured?String(parts.title||'').trim():'';
   const instructions=!isKey&&structured?String(parts.instructions||'').trim():'';
   const bodyText=isKey?String(sheet&&sheet._key||text||''):(structured&&String(parts.tasks||'').trim()?String(parts.tasks):String(text||sheet&&sheet._text||''));
-  return {title:title||tier.name+' verze',text:bodyText,opts:{isKey,worksheetTitle,instructions,subtitle:isKey?tier.name+' verze — řešení':tier.name+' verze',keyBody:isKey,visualAssets:(sheet&&sheet._visualAssets||[]).map(cloneVisualAsset).filter(Boolean),manualScores:!isKey&&sheetScoringMode(sheet)==='manual'?(sheet&&sheet._manualScores||{}):null}};
+  return {title:title||tier.name+' verze',text:bodyText,opts:{isKey,worksheetTitle,instructions,subtitle:isKey?tier.name+' verze — řešení':tier.name+' verze',keyBody:isKey,visualAssets:(sheet&&sheet._visualAssets||[]).map(cloneVisualAsset).filter(Boolean),mediaSource:cloneMediaSource(sheet&&sheet._mediaSource,true),manualScores:!isKey&&sheetScoringMode(sheet)==='manual'?(sheet&&sheet._manualScores||{}):null}};
 }
 const PrintPdf={
   request(sheet,title,text){
@@ -174,16 +173,54 @@ let pendingPrintFileName='';
 let previousDocumentTitle='';
 let previousTopDocumentTitle='';
 let printCleanupTimer=0;
+let pendingPrintVisualErrors=[];
+
+function updatePrintConfirmState(){
+  const button=$('#printConfirm'),teacher=$('#printTeacherConfirmed'),override=$('#printVisualOverride');
+  if(button)button.disabled=!(teacher&&teacher.checked)||(pendingPrintVisualErrors.length>0&&!(override&&override.checked));
+}
+function clearPrintVisualErrors(){
+  pendingPrintVisualErrors=[];
+  const box=$('#printVisualErrors'),row=$('#printVisualOverrideRow'),override=$('#printVisualOverride');
+  if(box){box.textContent='';box.classList.add('hide')}
+  if(row)row.classList.add('hide');
+  if(override)override.checked=false;
+  updatePrintConfirmState();
+}
+function showPrintVisualErrors(errors){
+  const list=(Array.isArray(errors)?errors:[]).map(x=>String(x||'Neznámá chyba odborného vizuálu.')).filter(Boolean);
+  const same=JSON.stringify(list)===JSON.stringify(pendingPrintVisualErrors);
+  pendingPrintVisualErrors=list;
+  const box=$('#printVisualErrors'),row=$('#printVisualOverrideRow'),override=$('#printVisualOverride');
+  if(box){box.replaceChildren();const strong=document.createElement('strong');strong.textContent=list.length+' odborných vizuálů se nepodařilo bezpečně připravit pro tisk.';box.appendChild(strong);const ul=document.createElement('ul');for(const message of list){const li=document.createElement('li');li.textContent=message;ul.appendChild(li)}box.appendChild(ul);box.classList.remove('hide')}
+  if(row)row.classList.remove('hide');
+  if(override&&!same)override.checked=false;
+  updatePrintConfirmState();
+}
+async function hydratePrintVisualsAndCollectErrors(){
+  const root=$('#printArea');
+  if(!root)return ['Tisková oblast není dostupná.'];
+  try{
+    const module=await import('./modules/educational-renderers.js');
+    await module.hydrateEducationalVisuals(root);
+  }catch(error){return ['Renderer odborných vizuálů se nepodařilo načíst: '+String(error&&error.message||error||'neznámá chyba')];}
+  return [...root.querySelectorAll('figure.edu-visual[data-edu-ready="error"]')].map((fig,i)=>{
+    const caption=fig.querySelector('figcaption')?.textContent?.trim();
+    const detail=fig.textContent?.trim()||'Odborný vizuál nelze vykreslit.';
+    return (caption?caption+': ':'Vizuál '+(i+1)+': ')+detail;
+  });
+}
+
 function downloadPdf(title,rawText,opts){
   opts=opts||{};
   const splitBody = opts.split===false
-    ? '<div class="pa-ex">'+renderTextWithVisuals(rawText,opts.visualAssets||[],true)+'</div>'
-    : buildPrintBody(rawText,opts.manualScores,opts.visualAssets||[]);
+    ? '<div class="pa-ex">'+renderTextWithVisuals(rawText,opts.visualAssets||[],true,opts.mediaSource)+'</div>'
+    : buildPrintBody(rawText,opts.manualScores,opts.visualAssets||[],opts.mediaSource);
   const keyTag = opts.isKey ? '<div class="pa-keytag">Řešení / klíč — nedávat studentům</div>' : '';
   const visibleTitle=String(opts.worksheetTitle||title||'Pracovní list').trim();
   const subtitle=String(opts.subtitle||'').trim();
   const titleBlock='<div class="pa-title-block"><h1 class="pa-title">'+render(visibleTitle)+'</h1>'+(subtitle&&subtitle!==visibleTitle?'<div class="pa-subtitle">'+render(subtitle)+'</div>':'')+'</div>';
-  const instructions=opts.instructions?'<div class="pa-instructions">'+renderTextWithVisuals(opts.instructions,opts.visualAssets||[],true)+'</div>':'';
+  const instructions=opts.instructions?'<div class="pa-instructions">'+renderTextWithVisuals(opts.instructions,opts.visualAssets||[],true,opts.mediaSource)+'</div>':'';
   const head=printHead()+metaLine(opts.isKey)+keyTag+titleBlock+instructions;
   const scoreTotal=opts.manualScores?manualScoreTotal(opts.manualScores):0;
   const scoreTotalHtml=opts.manualScores&&scoreTotal>0?'<div class="pa-score-total">Celkem: '+formatScoreNumber(scoreTotal)+' b.</div>':'';
@@ -194,14 +231,17 @@ function downloadPdf(title,rawText,opts){
   $('#printPreview').innerHTML=head+body;
   const pf=$('#printFileName'); if(pf){pf.textContent='Doporučený název souboru: '+pendingPrintFileName+'.pdf';pf.classList.add('show')}
   const teacherConfirm=$('#printTeacherConfirmed'); if(teacherConfirm)teacherConfirm.checked=false;
-  const printConfirm=$('#printConfirm'); if(printConfirm)printConfirm.disabled=true;
+  clearPrintVisualErrors();
+  updatePrintConfirmState();
   $('#printOverlay').classList.add('show');
 }
 $('#printCancel').addEventListener('click',()=>$('#printOverlay').classList.remove('show'));
 $('#printOverlay').addEventListener('click',e=>{if(e.target.id==='printOverlay')$('#printOverlay').classList.remove('show')});
 $('#pdfCheckOverlay').addEventListener('click',e=>{if(e.target.id==='pdfCheckOverlay')closePdfCheck()});
 const printTeacherConfirmed=$('#printTeacherConfirmed');
-if(printTeacherConfirmed)printTeacherConfirmed.addEventListener('change',()=>{const b=$('#printConfirm');if(b)b.disabled=!printTeacherConfirmed.checked});
+if(printTeacherConfirmed)printTeacherConfirmed.addEventListener('change',updatePrintConfirmState);
+const printVisualOverride=$('#printVisualOverride');
+if(printVisualOverride)printVisualOverride.addEventListener('change',updatePrintConfirmState);
 $('#pdfCheckContinue').addEventListener('click',()=>{
   const data=pendingPdfData,sheet=pendingPdfSheet;
   if(sheet)sheet._pdfWarningSkipped=true;
@@ -251,13 +291,19 @@ function schedulePrintCleanup(){
   if(printCleanupTimer)clearTimeout(printCleanupTimer);
   printCleanupTimer=setTimeout(finishPrintSession,2500);
 }
-$('#printConfirm').addEventListener('click',()=>{
+$('#printConfirm').addEventListener('click',async()=>{
   if(printTeacherConfirmed&&!printTeacherConfirmed.checked)return;
-  $('#printOverlay').classList.remove('show');
+  const button=$('#printConfirm'),originalLabel=button?button.textContent:'';
+  if(button){button.disabled=true;button.textContent='Připravuji odborné vizuály…'}
   if(pendingPrintHtml)$('#printArea').innerHTML=pendingPrintHtml;
+  const errors=await hydratePrintVisualsAndCollectErrors();
+  const override=$('#printVisualOverride');
+  if(errors.length){showPrintVisualErrors(errors);if(!(override&&override.checked)){if(button)button.textContent=originalLabel;$('#printOverlay').classList.add('show');return}}else clearPrintVisualErrors();
+  $('#printOverlay').classList.remove('show');
   setPrintDocumentTitle(pendingPrintFileName);
   document.body.classList.add('do-print');
   schedulePrintCleanup();
+  if(button)button.textContent=originalLabel;
   requestAnimationFrame(()=>{try{window.print()}catch(err){finishPrintSession();throw err}});
 });
 window.addEventListener('afterprint',finishPrintSession);
@@ -279,7 +325,6 @@ function downloadKeyPdf(sheet){
 async function toggleKey(sheet,btn){
   const box=sheet.querySelector('.keybox');
   if(sheet._key){
-    // klíč už máme — jen přepneme zobrazení a (poprvé) vyplníme obsah
     if(!box.dataset.filled){box.innerHTML=keyHeaderHtml()+render(sheet._key);box.dataset.filled='1'}
     box.classList.toggle('show');
     return;
@@ -287,7 +332,7 @@ async function toggleKey(sheet,btn){
   if(!requireApiKeyForAction('vytvoření řešení'))return;
   btn.disabled=true;const old=btn.innerHTML;btn.innerHTML='<span class="mini"></span>';
   try{
-    const out=await callGemini([{text:"Ke každé úloze v tomto pracovním listu napiš stručné správné řešení / klíč. Vycházej výhradně z pracovního listu níže a zachovej jazyk úloh. Pokud úloha závisí na přiloženém obrazovém podkladu, pracuj s tím, co je na něm skutečně vidět; nic si nedomýšlej."+(typeof stemAnswerKeyPromptLine==='function'?stemAnswerKeyPromptLine(getSubjectValue()):'')+(typeof subjectAnswerKeyPromptLine==='function'?subjectAnswerKeyPromptLine(getSubjectValue()):'')+" Pouze klíč, očíslovaně podle úloh, bez úvodu.\n\nPRACOVNÍ LIST:\n"+sheet._text},...sheetVisualAiParts(sheet)],{thinking:THINKING_CHEAP,operation:'answer-key-generation'});
+    const out=await callGemini([{text:"Ke každé úloze v tomto pracovním listu napiš stručné správné řešení / klíč. Vycházej výhradně z pracovního listu níže a zachovej jazyk úloh. Pokud úloha závisí na přiloženém obrazovém podkladu, pracuj s tím, co je na něm skutečně vidět; nic si nedomýšlej."+(typeof stemAnswerKeyPromptLine==='function'?stemAnswerKeyPromptLine(getSubjectValue()):'')+(typeof subjectAnswerKeyPromptLine==='function'?subjectAnswerKeyPromptLine(getSubjectValue()):'')+" Pouze klíč, očíslovaně podle úloh, bez úvodu.\n\nPRACOVNÍ LIST:\n"+sheet._text},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{thinking:THINKING_CHEAP,operation:'answer-key-generation'});
     sheet._key=out;if(sheet._parts)sheet._parts.answerKey=out;
     sheet._validation=validateWorksheetResponse({worksheet:sheet._text,answerKey:out,parts:{...(sheet._parts||{}),answerKey:out},structured:!!sheet._structured,structureType:sheet._structured?'json':'fallback'});showStructureWarning(sheet,sheet._validation);
     box.innerHTML=keyHeaderHtml()+render(out);box.dataset.filled='1';
@@ -323,7 +368,9 @@ const PromptBuilder={
       ...advancedPromptLines(key),
       ...(typeof stemGenerationPromptLines==='function'?stemGenerationPromptLines(subject):[]),
       ...(typeof subjectGenerationPromptLines==='function'?subjectGenerationPromptLines(subject):[]),
-      ...sourceVisualPromptLines()
+      ...(typeof educationalVisualPromptLines==='function'?educationalVisualPromptLines(subject):[]),
+      ...sourceVisualPromptLines(),
+      ...sourceMediaPromptLines()
     ];
     const jsonSchema=[
       'VNITŘNÍ STRUKTURA VÝSTUPU: Odpověz pouze platným JSON objektem bez Markdownu, bez komentáře před/po a bez code fence. Použij přesně tyto klíče. Hodnoty piš jako textové řetězce; pokud poznámka pro učitele není nutná, nech teacher_note prázdné.',
@@ -358,11 +405,11 @@ function renderSheetBody(sheet){
   if(sheet._structured&&(title||instructions||tasks)){
     const nodes=[];
     if(title){const h=document.createElement('div');h.className='worksheet-title';h.textContent=title;nodes.push(h);}
-    if(instructions){const i=document.createElement('div');i.className='worksheet-instructions';setRichTextWithVisuals(i,instructions,sheet._visualAssets||[]);nodes.push(i);}
-    if(tasks){const t=document.createElement('div');t.className='worksheet-tasks';setRichTextWithVisuals(t,tasks,sheet._visualAssets||[]);nodes.push(t);}
+    if(instructions){const i=document.createElement('div');i.className='worksheet-instructions';setRichTextWithVisuals(i,instructions,sheet._visualAssets||[],sheet._mediaSource);nodes.push(i);}
+    if(tasks){const t=document.createElement('div');t.className='worksheet-tasks';setRichTextWithVisuals(t,tasks,sheet._visualAssets||[],sheet._mediaSource);nodes.push(t);}
     body.replaceChildren(...nodes);return;
   }
-  setRichText(body,sheet._text||'');
+  setRichTextWithVisuals(body,sheet._text||'',sheet._visualAssets||[],sheet._mediaSource);
 }
 function renderTeacherNote(sheet){
   const box=sheet&&sheet.querySelector('.teacherbox');if(!box)return;
@@ -370,12 +417,12 @@ function renderTeacherNote(sheet){
   box.innerHTML=note?'<div class="kh"><span class="teacher-kicker">Učitelská část</span> Poznámka pro učitele</div>'+render(note):'';
   box.classList.toggle('show',!!note);
 }
-function snapshotSheet(sheet){return {tierKey:sheet._tierKey,text:sheet._text,key:sheet._key,quality:sheet._quality,qualityStage:sheet._qualityStage||'none',qualityApplied:[...(sheet._qualityApplied||[])],finalAuditUsed:!!sheet._finalAuditUsed,scoringMode:sheet._scoringMode||'none',manualScores:{...(sheet._manualScores||{})},visualAssets:(sheet._visualAssets||[]).map(cloneVisualAsset).filter(Boolean),parts:JSON.parse(JSON.stringify(sheet._parts||{})),structured:sheet._structured,validation:JSON.parse(JSON.stringify(sheet._validation||{ok:true,issues:[]})),html:sheet.innerHTML,statusClass:sheet.className,pdfWarningSkipped:sheet._pdfWarningSkipped}}
-function restoreSheetSnapshot(sheet,snap){sheet._tierKey=snap.tierKey;sheet._text=snap.text;sheet._key=snap.key;sheet._quality=snap.quality;sheet._qualityStage=snap.qualityStage||'none';sheet._qualityApplied=[...(snap.qualityApplied||[])];sheet._finalAuditUsed=!!snap.finalAuditUsed;sheet._scoringMode=snap.scoringMode||'none';sheet._manualScores={...(snap.manualScores||{})};sheet._visualAssets=(snap.visualAssets||[]).map(cloneVisualAsset).filter(Boolean);sheet._parts=snap.parts;sheet._structured=snap.structured;sheet._validation=snap.validation;sheet._pdfWarningSkipped=snap.pdfWarningSkipped;sheet.className=snap.statusClass;sheet.innerHTML=snap.html;attachSheetTools(sheet)}
+function snapshotSheet(sheet){return {tierKey:sheet._tierKey,text:sheet._text,key:sheet._key,quality:sheet._quality,qualityStage:sheet._qualityStage||'none',qualityApplied:[...(sheet._qualityApplied||[])],finalAuditUsed:!!sheet._finalAuditUsed,scoringMode:sheet._scoringMode||'none',manualScores:{...(sheet._manualScores||{})},visualAssets:(sheet._visualAssets||[]).map(cloneVisualAsset).filter(Boolean),mediaSource:cloneMediaSource(sheet._mediaSource,true),parts:JSON.parse(JSON.stringify(sheet._parts||{})),structured:sheet._structured,validation:JSON.parse(JSON.stringify(sheet._validation||{ok:true,issues:[]})),html:sheet.innerHTML,statusClass:sheet.className,pdfWarningSkipped:sheet._pdfWarningSkipped}}
+function restoreSheetSnapshot(sheet,snap){sheet._tierKey=snap.tierKey;sheet._text=snap.text;sheet._key=snap.key;sheet._quality=snap.quality;sheet._qualityStage=snap.qualityStage||'none';sheet._qualityApplied=[...(snap.qualityApplied||[])];sheet._finalAuditUsed=!!snap.finalAuditUsed;sheet._scoringMode=snap.scoringMode||'none';sheet._manualScores={...(snap.manualScores||{})};sheet._visualAssets=(snap.visualAssets||[]).map(cloneVisualAsset).filter(Boolean);sheet._mediaSource=cloneMediaSource(snap.mediaSource,true);sheet._parts=snap.parts;sheet._structured=snap.structured;sheet._validation=snap.validation;sheet._pdfWarningSkipped=snap.pdfWarningSkipped;sheet.className=snap.statusClass;sheet.innerHTML=snap.html;attachSheetTools(sheet)}
 function makeSheet(key,loading){
   const t=TIERS[key];
   const sheet=document.createElement('div');
-  sheet.className='sheet';sheet.dataset.t=t.color;sheet._tierKey=key;sheet._text='';sheet._key='';sheet._quality='';sheet._qualityStage='none';sheet._qualityApplied=[];sheet._finalAuditUsed=false;sheet._scoringMode='none';sheet._manualScores={};sheet._visualAssets=[];sheet._parts={title:'',instructions:'',tasks:'',answerKey:'',teacherNote:''};sheet._structured=false;sheet._validation={ok:true,issues:[]};sheet._pdfWarningSkipped=false;
+  sheet.className='sheet';sheet.dataset.t=t.color;sheet._tierKey=key;sheet._text='';sheet._key='';sheet._quality='';sheet._qualityStage='none';sheet._qualityApplied=[];sheet._finalAuditUsed=false;sheet._scoringMode='none';sheet._manualScores={};sheet._visualAssets=[];sheet._mediaSource=null;sheet._parts={title:'',instructions:'',tasks:'',answerKey:'',teacherNote:''};sheet._structured=false;sheet._validation={ok:true,issues:[]};sheet._pdfWarningSkipped=false;
   sheet.innerHTML='<div class="hd"><div class="tier-head"><span class="tier-icon">'+(t.icon||'📄')+'</span><span class="tier-text"><span class="nm">'+t.name+'</span>'+(t.cefrLbl?'<span class="level-badge">'+t.cefrLbl+'</span>':'')+'</span></div><span class="sheet-status '+(loading?'busy':'')+'">'+(loading?'generuji…':'připraveno')+'</span><span class="tools"></span></div><div class="student-section-head">Žákovská verze</div><div class="body">'+(loading?'<span class="muted"><span class="mini"></span> generuji…</span>':'')+'</div><div class="teacherbox"></div><div class="structurebox"></div><div class="keybox"></div><div class="qualitybox"></div>';
   attachSheetTools(sheet);
   return sheet;
@@ -425,13 +472,13 @@ async function generateIntoSheet(sheet,key,base,idx,total){
   setProgress((total>1?'Verze '+(idx+1)+' z '+total+': ':'Generuji ')+t.name.toLowerCase()+' verzi…',true);
   const sourceAssets=preservedSourceVisualAssets(),generationParts=[{text:makePromptForTier(key,base,total)},...generationVisualParts()];
   const out=await callGemini(generationParts,{json:true,operation:'worksheet-generation'});
-  let parsed=normalizeParsedVisuals(parseWorksheetResponse(out),sourceAssets);
+  let parsed=ensureMediaSourceMarker(normalizeParsedVisuals(parseWorksheetResponse(out),sourceAssets));
   let validation=validateWorksheetResponse(parsed);
   if(!validation.ok){
     try{
       setProgress('Opravuji strukturu výstupu…',true);
       const fixed=await repairWorksheetJson(out,validation,base,key);
-      const fixedParsed=normalizeParsedVisuals(parseWorksheetResponse(fixed),sourceAssets);
+      const fixedParsed=ensureMediaSourceMarker(normalizeParsedVisuals(parseWorksheetResponse(fixed),sourceAssets));
       const fixedValidation=validateWorksheetResponse(fixedParsed);
       if(fixedParsed&&String(fixedParsed.worksheet||'').trim()&&(fixedValidation.ok||fixedValidation.issues.length<validation.issues.length)){
         parsed=fixedParsed;validation=fixedValidation;
@@ -439,8 +486,8 @@ async function generateIntoSheet(sheet,key,base,idx,total){
     }catch(_){/* původní výstup zůstane zachovaný a zobrazí se varování */}
   }
   if(!String(parsed&&parsed.worksheet||'').trim())throw makeAppError('Model nevrátil použitelný pracovní list. Původní výstup zůstává zachovaný.','INCOMPLETE_RESPONSE');
-  const generatedScoringMode=scoringMode();parsed=normalizeParsedScoring(parsed,generatedScoringMode);parsed=normalizeParsedVisuals(parsed,sourceAssets);validation=validateWorksheetResponse(parsed);
-  sheet._tierKey=key;sheet._scoringMode=generatedScoringMode;sheet._manualScores={};sheet._visualAssets=sourceAssets.map(cloneVisualAsset).filter(Boolean);sheet._text=parsed.worksheet;sheet._key=parsed.answerKey;sheet._quality='';sheet._qualityStage='none';sheet._qualityApplied=[];sheet._finalAuditUsed=false;sheet._parts=parsed.parts||{title:'',instructions:'',tasks:parsed.worksheet,answerKey:parsed.answerKey,teacherNote:''};sheet._structured=!!parsed.structured;sheet._validation=validation;sheet._pdfWarningSkipped=false;
+  const generatedScoringMode=scoringMode();parsed=normalizeParsedScoring(parsed,generatedScoringMode);parsed=ensureMediaSourceMarker(normalizeParsedVisuals(parsed,sourceAssets));validation=validateWorksheetResponse(parsed);const mediaSafety=mediaStudentSafetyIssues(parsed,base);if(mediaSafety.length)throw makeAppError('Multimediální bezpečnost výstupu selhala: '+mediaSafety.join(' '),'MEDIA_TRANSCRIPT_LEAK');
+  sheet._tierKey=key;sheet._scoringMode=generatedScoringMode;sheet._manualScores={};sheet._visualAssets=sourceAssets.map(cloneVisualAsset).filter(Boolean);sheet._mediaSource=cloneMediaSource(sourceMediaAsset,true);sheet._text=parsed.worksheet;sheet._key=parsed.answerKey;sheet._quality='';sheet._qualityStage='none';sheet._qualityApplied=[];sheet._finalAuditUsed=false;sheet._parts=parsed.parts||{title:'',instructions:'',tasks:parsed.worksheet,answerKey:parsed.answerKey,teacherNote:''};sheet._structured=!!parsed.structured;sheet._validation=validation;sheet._pdfWarningSkipped=false;
   renderSheetBody(sheet);
   renderTeacherNote(sheet);
   showStructureWarning(sheet,validation);
@@ -503,6 +550,7 @@ const QualityCheck={
       ...(typeof stemQualityPromptLines==='function'?stemQualityPromptLines(getSubjectValue()):[]),
       ...(typeof subjectQualityPromptLines==='function'?subjectQualityPromptLines(getSubjectValue()):[]),
       'Zaměř se na: 1) věcnou správnost a zachování odborného zápisu, 2) soulad s požadovanou diferenciací a zvolenou variantou, 3) jazykovou správnost, 4) úplnost a použitelnost řešení, 5) rizika nejasného zadání, 6) přiměřenost rozsahu a času, 7) zachování formátu, počtu úloh a bodování tam, kde bylo v originálu, a konzistenci nově navržených bodů, 8) přítomnost hlavního pedagogického cíle a ověřovaných dovedností, 9) možná citlivá data, jména žáků nebo údaje, které je vhodné anonymizovat, 10) pokud jsou přiložené mapy, grafy, schémata nebo jiné obrazy, zda zadání skutečně odpovídá tomu, co je na nich vidět, a zda je materiál bez nich řešitelný tak, jak má být.',
+      'ODBORNÉ RENDERERY: pokud text obsahuje [[EDU_...|{...}]], ověř, že JSON marker je platný a jeho data přesně souhlasí se zadáním i answer_key; vizuál nesmí zobrazovat jiné hodnoty, body, vazby, noty nebo zvýraznění než text.',
       'Každé tvrzení Opravit musí být konkrétní a skutečně opravitelné. Doporučení používej jen pro užitečné nepovinné zlepšení; nevytvářej další práci jen kvůli stylu. Pokud je vše správně, napiš to jako OK a nevymýšlej problém.',
       'Pokud jsou v textu české pasáže, uplatni nulovou toleranci ke gramatickým, stylistickým a lexikálním chybám.',
       'Vrať krátký audit v češtině, každý bod na samostatném řádku, každý řádek začni jedním ze štítků OK: / Opravit: / Doporučení: podle závažnosti. Bez úvodu a bez závěru.',
@@ -525,7 +573,9 @@ const QualityRevision={
       'Po zapracování proveď ještě v rámci TÉHOŽ požadavku interní závěrečné ověření: zkontroluj, že oprava nezavedla nový rozpor, že všechny odpovědi v answer_key stále sedí k úlohám a že případné bodování je konzistentní. U STEM materiálu znovu přepočítej změněné výsledky, jednotky a rovnice. Výstup už dál nerozebírej; vrať rovnou čistou opravenou verzi.',
       ...(typeof stemQualityPromptLines==='function'?stemQualityPromptLines(getSubjectValue()):[]),
       ...(typeof subjectQualityPromptLines==='function'?subjectQualityPromptLines(getSubjectValue()):[]),
-      (sheet._visualAssets&&sheet._visualAssets.length)?'OBRAZOVÉ PODKLADY: zachovej všechny existující markery [[VISUAL_n]] na smysluplném místě. Původní obrazy se nesmí překreslit ani nahradit textovou imitací; aplikace je vloží sama.':'' ,
+      (sheet._visualAssets&&sheet._visualAssets.length)?'OBRAZOVÉ PODKLADY: zachovej všechny existující markery [[VISUAL_n]] na smysluplném místě. Původní obrazy se nesmí překreslit ani nahradit textovou imitací; aplikace je vloží sama.':'',
+      sheet._mediaSource?'MULTIMÉDIA: zachovej marker [[MEDIA_SOURCE]]. Do student_instructions ani tasks nepřenášej transkript, titulky ani popis odpovědí ze zdrojového audia/videa; ty patří nanejvýš do answer_key nebo teacher_note.':'',
+      'ODBORNÉ RENDERERY: existující [[EDU_...|{...}]] marker zachovej jako jeden samostatný řádek s platným JSON. Pokud oprava mění data úlohy, aktualizuj marker i answer_key konzistentně; pokud data nemění, marker svévolně neupravuj.',
       'Vrať pouze platný JSON objekt bez Markdownu se stejnými klíči: worksheet_title, student_instructions, tasks, answer_key, teacher_note. Všechny hodnoty jsou textové řetězce. Pokud úprava změní správnou odpověď, aktualizuj answer_key.',
       'AKTUÁLNÍ NÁZEV:\n'+(parts.title||''),
       'AKTUÁLNÍ INSTRUKCE:\n'+(parts.instructions||''),
@@ -556,7 +606,7 @@ async function runQualityAudit(sheet,btn,finalPass=false){
   btn.disabled=true;const old=btn.innerHTML;btn.innerHTML='<span class="mini"></span>';
   try{
     const prompt=QualityCheck.makePrompt(sheet,finalPass);
-    const out=await callGemini([{text:prompt},...sheetVisualAiParts(sheet)],{thinking:THINKING_DEFAULT,operation:'worksheet-quality-audit'});
+    const out=await callGemini([{text:prompt},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{thinking:THINKING_DEFAULT,operation:'worksheet-quality-audit'});
     sheet._quality=out;sheet._qualityApplied=[];
     if(finalPass){sheet._qualityStage='final';sheet._finalAuditUsed=true;setSheetStatus(sheet,'finálně zkontrolováno','ok');}
     else{sheet._qualityStage='initial';setSheetStatus(sheet,'zkontrolováno','ok');}
@@ -579,13 +629,13 @@ async function applySelectedQualitySuggestions(){
   if(!requireApiKeyForAction('zapracování vybraných bodů kontroly'))return;
   const btn=$('#qualityApply'),oldNodes=[...btn.childNodes].map(n=>n.cloneNode(true)),sheet=qualityActiveSheet,snapshot=snapshotSheet(sheet),wasFinal=sheet._qualityStage==='final'||sheet._qualityStage==='final-revised';btn.disabled=true;const spin=document.createElement('span');spin.className='mini';btn.replaceChildren(spin,document.createTextNode(' Zapracovávám…'));
   try{
-    const raw=await callGemini([{text:QualityRevision.makePrompt(sheet,selected)},...sheetVisualAiParts(sheet)],{json:true,operation:'worksheet-quality-revision'});
+    const raw=await callGemini([{text:QualityRevision.makePrompt(sheet,selected)},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{json:true,operation:'worksheet-quality-revision'});
     let parsed=normalizeParsedVisuals(parseWorksheetResponse(raw),sheet._visualAssets||[]),validation=validateWorksheetResponse(parsed);
     if(!validation.ok){
       try{const fixed=await repairWorksheetJson(raw,validation,$('#baseText').value.trim(),sheet._tierKey),fp=normalizeParsedVisuals(parseWorksheetResponse(fixed),sheet._visualAssets||[]),fv=validateWorksheetResponse(fp);if(fp&&String(fp.worksheet||'').trim()&&(fv.ok||fv.issues.length<validation.issues.length)){parsed=fp;validation=fv}}catch(_){}
     }
     if(!String(parsed&&parsed.worksheet||'').trim())throw makeAppError('Model nevrátil použitelnou upravenou verzi. Původní výstup zůstal zachovaný.','INCOMPLETE_RESPONSE');
-    parsed=normalizeParsedScoring(parsed,sheetScoringMode(sheet));parsed=normalizeParsedVisuals(parsed,sheet._visualAssets||[]);validation=validateWorksheetResponse(parsed);sheet._manualScores={};
+    parsed=normalizeParsedScoring(parsed,sheetScoringMode(sheet));parsed=ensureMediaSourceMarker(normalizeParsedVisuals(parsed,sheet._visualAssets||[]));validation=validateWorksheetResponse(parsed);const mediaSafety=mediaStudentSafetyIssues(parsed,$('#baseText').value.trim());if(mediaSafety.length)throw makeAppError('Úprava by odhalila zdrojový přepis v žákovské části: '+mediaSafety.join(' '),'MEDIA_TRANSCRIPT_LEAK');sheet._manualScores={};
     sheet._text=parsed.worksheet;sheet._key=parsed.answerKey||'';sheet._qualityApplied=[...already,...indexes];sheet._qualityStage=wasFinal?'final-revised':'revised';sheet._finalAuditUsed=wasFinal?true:!!sheet._finalAuditUsed;sheet._parts=parsed.parts||{title:'',instructions:'',tasks:parsed.worksheet,answerKey:parsed.answerKey||'',teacherNote:''};sheet._structured=!!parsed.structured;sheet._validation=validation;sheet._pdfWarningSkipped=false;
     renderSheetBody(sheet);renderTeacherNote(sheet);showStructureWarning(sheet,validation);const kb=sheet.querySelector('.keybox');if(kb){kb.innerHTML='';kb.classList.remove('show');delete kb.dataset.filled}const qb=sheet.querySelector('.qualitybox');if(qb){qb.innerHTML='';qb.classList.remove('show')}attachSheetTools(sheet);
     if(wasFinal){setSheetStatus(sheet,'finální opravy zapracovány · ověř učitelem','ok');showMessage('Finální opravy zapracovány','Další automatickou kontrolu už aplikace nenabízí, aby nevznikla smyčka dotazů. Projdi výsledek jako učitel a můžeš přejít k řešení nebo PDF.');}

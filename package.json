@@ -1,13 +1,13 @@
 {
   "name": "ghrab-diferenciator",
-  "version": "1.3.25",
+  "version": "1.3.31",
   "private": true,
   "description": "Diferenciátor pracovních listů a testů — samostatná PWA pro GitHub Pages",
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
     "pretest": "npm run build",
-    "test": "npm run qa:profiles && npm run qa:regressions && npm run qa:all-subjects && npm run qa:profiles:browser && npm run qa:visuals && npm run qa:scan && npm run qa:stem && npm run qa:all-subjects:browser && node scripts/test.mjs",
+    "test": "npm run qa:profiles && npm run qa:regressions && npm run qa:all-subjects && npm run qa:profiles:browser && npm run qa:visuals && npm run qa:scan && npm run qa:stem && npm run qa:all-subjects:browser && npm run qa:office-rich && npm run qa:multimedia && npm run qa:multimedia:browser && npm run qa:specialists && npm run qa:renderers && node scripts/test.mjs",
     "test:reporter": "node scripts/test-error-reporter.mjs",
     "build:school-server": "npm run build && node scripts/build-school-profile.mjs",
     "verify:platform": "node scripts/ghrab-platform-conformance.mjs",
@@ -24,8 +24,8 @@
     "qa:a11y": "node scripts/qa-p5-runtime.mjs",
     "qa:p4": "npm run qa:p5",
     "qa:p4:ci": "npm run qa:p5:ci",
-    "qa:p5": "npm run qa:lock && npm run qa:profiles && npm run qa:all-subjects && npm run build && npm run verify:platform && npm run qa:school-build && npm run qa:quality && npm run qa:browser && npm run qa:visuals && npm run qa:scan && npm run qa:stem && npm run qa:all-subjects:browser && npm run qa:runtime && npm run qa:xss && node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
-    "qa:p5:ci": "npm run qa:lock && npm run qa:profiles && npm run qa:all-subjects && npm run build && npm run verify:platform && npm run qa:school-build && npm run qa:quality && npm run qa:browser && npm run qa:visuals && npm run qa:scan && npm run qa:stem && npm run qa:all-subjects:browser && npm run qa:runtime && npm run qa:xss && npm run qa:axe && AXE_REQUIRED=1 node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
+    "qa:p5": "npm run qa:lock && npm run qa:profiles && npm run qa:all-subjects && npm run build && npm run verify:platform && npm run qa:school-build && npm run qa:quality && npm run qa:browser && npm run qa:visuals && npm run qa:scan && npm run qa:stem && npm run qa:all-subjects:browser && npm run qa:office-rich && npm run qa:multimedia && npm run qa:multimedia:browser && npm run qa:specialists && npm run qa:renderers && npm run qa:runtime && npm run qa:xss && node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
+    "qa:p5:ci": "npm run qa:lock && npm run qa:profiles && npm run qa:all-subjects && npm run build && npm run verify:platform && npm run qa:school-build && npm run qa:quality && npm run qa:browser && npm run qa:visuals && npm run qa:scan && npm run qa:stem && npm run qa:all-subjects:browser && npm run qa:office-rich && npm run qa:multimedia && npm run qa:multimedia:browser && npm run qa:specialists && npm run qa:renderers && npm run qa:runtime && npm run qa:xss && npm run qa:axe && AXE_REQUIRED=1 node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
     "test:p5": "npm run qa:p5",
     "qa:runtime": "node scripts/qa-p5-runtime.mjs",
     "qa:xss": "node scripts/qa-p5-xss-sinks.mjs",
@@ -45,7 +45,14 @@
     "qa:all-subjects:browser": "node scripts/qa-all-subjects-browser.mjs",
     "qa:all-subjects:school": "node scripts/qa-all-subjects-browser.mjs --school",
     "qa:budget-freeze": "node scripts/qa-performance-budget-freeze.mjs",
-    "qa:school-build": "node scripts/build-school-profile.mjs"
+    "qa:school-build": "node scripts/build-school-profile.mjs",
+    "qa:office-rich": "node scripts/qa-office-rich-browser.mjs",
+    "qa:multimedia": "node scripts/qa-multimedia.mjs",
+    "qa:renderers": "node scripts/qa-renderers-browser.mjs",
+    "qa:multimedia:browser": "node scripts/qa-multimedia-browser.mjs",
+    "qa:provider:live": "node scripts/qa-provider-multimedia-live.mjs",
+    "qa:provider:live:required": "DPL_LIVE_REQUIRED=1 node scripts/qa-provider-multimedia-live.mjs",
+    "qa:specialists": "node scripts/qa-specialist-engines.mjs"
   },
   "engines": {
     "node": ">=18"

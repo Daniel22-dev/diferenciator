@@ -1,0 +1,569 @@
+================================================================================
+NEZÁVISLÝ HLOUBKOVÝ AUDIT — DIFERENCIÁTOR 1.3.30 "DEEP SUBJECT ENGINES"
+Datum:            15. 8. 2026
+Auditovaný balík: diferenciator-1_3_30-DEEP-SUBJECT-ENGINES.zip
+Verze:            1.3.30 · GHRAB Platform 1.1.0 · AI Core 1.0.0
+Role auditora:    primární hloubkový auditor dle GARP 1.1 (neopravuje)
+Určeno pro:       ChatGPT jako zadání oprav 1.3.31
+================================================================================
+
+VERDIKT
+--------------------------------------------------------------------------------
+NE-GO pro plošné nasazení. ANO pro řízený pilot v rukou autora.
+
+Datový model nových engine je solidní a fail-closed logika u fyziky, časové osy
+a validace anotací skutečně funguje. Blokující nálezy nejsou v návrhu, ale
+ve třech místech: (1) release gate je jeden bajt od červeného buildu,
+(2) dva ze tří nejnovějších engine mají fail-open díru přímo v datové cestě,
+(3) tisková cesta nečeká na vykreslení vizuálů.
+
+Žádný z nálezů P0/P1 níže se nevyskytuje v dokumentech AUDIT-1.3.30,
+RELEASE-NOTES-1.3.30 ani v AUDIT-REVIEW-1.3.25.
+
+
+METODA A ROZSAH
+--------------------------------------------------------------------------------
+Provedeno:
+  - rozbalení, npm ci, reprodukce buildu (npm run build)
+  - porovnání dodaného dist/ s přestavěným dist/
+  - statické QA brány: qa:profiles, qa:regressions, qa:all-subjects,
+    qa:multimedia, qa:specialists, qa:lock, qa:xss, qa-p3-quality
+  - vlastní adversariální testy nad src/modules/* přímo v Node
+    (mimo dodanou testovací sadu — cílem bylo najít to, co sada nekryje)
+  - statická analýza tiskové cesty, hydratace, CSP, service workeru,
+    zacházení s API klíčem a build pipeline
+  - experiment s performance budgetem (viz P0-1)
+
+Neprovedeno:
+  - browserové/Playwright testy: Chromium se v auditním sandboxu nestáhl
+    (download failure, ne ERR_BLOCKED_BY_ADMINISTRATOR jako u tebe)
+  - live provider smoke: bez credentialu
+  - reálný uživatelský průchod aplikací
+
+Vše níže je tedy ověřeno buď spuštěným kódem, nebo přímo zdrojem — nic není
+převzato z tvých auditních dokumentů.
+
+
+CO SE POTVRDILO JAKO PRAVDIVÉ
+--------------------------------------------------------------------------------
+  - Build je reprodukovatelný. Dodaný dist/ se od přestaveného liší pouze
+    v builtAt/publishedAt a v QA reportech (quality-report.json,
+    qa-p3-browser-report.json, config/quality-manifest.json) — tj. jen
+    v artefaktech, které vznikají až testy. Žádný obsahový rozdíl.
+  - qa:all-subjects        92/92 PASS
+  - qa:specialists         46/46 PASS
+  - qa:multimedia          19/19 PASS
+  - qa:profiles            22/22 PASS
+  - qa:lock, qa:xss        PASS
+  - QA skripty obsahují skutečná funkční tvrzení (CAS, SMILES, Punnett,
+    bilance, trace), ne jen kontrolu výskytu řetězců. Zelená čísla mají váhu.
+  - normalizePhysicsSpec: kontrola ΣF = m·a funguje správně, včetně
+    korektního nevyžadování hmotnosti u statiky.
+  - normalizeTimelineSpec: obrácený interval odmítnut.
+  - normalizeAnnotationSpec: souřadnice mimo 0–1 odmítnuty.
+  - Iontové a redoxní rovnice se vyčíslují správně
+    (MnO4^- + Fe^2+ + H^+ -> Mn^2+ + Fe^3+ + H2O  →  1,5,8,1,5,4;
+     KMnO4 + HCl -> KCl + MnCl2 + Cl2 + H2O       →  2,16,2,2,5,8).
+  - Zacházení s API klíčem je v pořádku: loadKey() migruje klíč
+    z localStorage do sessionStorage a localStorage čistí.
+  - CSP omezuje connect-src na 'self' + generativelanguage.googleapis.com.
+  - visualDataUrl() validuje MIME i base64 znakovou sadu; visualFigureHtml()
+    escapuje. Cesta AI text → DOM jde přes budování uzlů, ne přes syrové HTML.
+  - Ikony 48/72/96/128/180 px byly odstraněny bez visících odkazů
+    (manifest, sw.js i index.html odkazují jen na existující soubory).
+  - Všech 10 z 11 modulů je v offline precache (výjimka viz P1-8).
+
+
+================================================================================
+P0 — BLOKUJÍCÍ
+================================================================================
+
+P0-1  PERFORMANCE BUDGET JE 1 BAJT OD ČERVENÉHO BUILDU — DEMONSTROVÁNO
+--------------------------------------------------------------------------------
+Kde:      scripts/build.mjs (chybí minifikace), config/performance-budget-*.json
+Stav:     largestInlineScriptBytes = 379 999 / 380 000 B
+
+Reprodukce:
+  V src/js/36-all-subject-safety.js jsem do jediné promptové věty přidal
+  slovo "čísla, " (rozdíl 9 bajtů):
+      'PŘEDMĚTOVÁ PŘESNOST: nevymýšlej fakta, citace ani hodnoty.'
+    → 'PŘEDMĚTOVÁ PŘESNOST: nevymýšlej fakta, čísla, citace ani hodnoty.'
+  Výsledek:
+      npm run build            → OK
+      node scripts/qa-p3-quality.mjs → FAILED
+      budget.largestInlineScriptBytes: 380 008 <= 380 000   ✗
+      summary: 30/31, failed 1
+
+Dopad:
+  Jakákoli redakční úprava české promptové vrstvy — jedno doplněné slovo,
+  jedna upřesněná instrukce pro model — shodí CI. To je stav, ve kterém
+  se přestane vyvíjet obsah a začne se šetřit znaky. Už teď to vedlo
+  k rozhodnutím, která nemají s výkonem nic společného (mazání PWA ikon
+  kvůli bajtům, ruční minifikace zdrojů — viz P2-10).
+
+Kořenová příčina:
+  Build JS vůbec neminifikuje. scripts/build.mjs čte src/js/*.js a spojuje
+  je verbatim ('\n;\n'). CSS se ořezává o komentáře a whitespace, JS ne.
+  Autor to kompenzuje ruční minifikací zdroje — tedy platí maintainability
+  za něco, co má dělat nástroj.
+
+Měření (esbuild --minify --target=es2020 na už ručně minifikovaný bundle):
+      380 000 B  →  336 305 B     úspora 43 694 B (11,5 %)
+  To je bez jediné změny zdrojového kódu. Rezerva by skočila z 1 B na ~44 kB.
+
+Druhá vrstva problému — budget měří špatnou veličinu:
+      inline bundle:  raw 379 999 B   gzip 114 444 B
+      index.html:     raw 489 961 B   gzip 141 242 B
+  GitHub Pages servíruje gzip/brotli. Reálný přenos je ~141 kB, což je
+  v naprostém pořádku. Zmrazený limit tedy reguluje nekomprimované bajty,
+  které nikdo nikdy nestáhne, a přitom už blokuje obsahovou práci.
+
+Návrh opravy:
+  1. Přidat esbuild (nebo terser) do scripts/build.mjs na spojený inline
+     bundle. Zdroje nechat čitelné.
+  2. Přepočítat budget proti gzipované velikosti, ne raw. Raw ponechat
+     jako druhý, výrazně volnější limit proti nekontrolovanému růstu.
+  3. Teprve potom rozminifikovat zdroje zpět do čitelné podoby (P2-10).
+  4. Doporučený nový limit: gzip entry ≤ 170 kB, raw entry ≤ 600 kB.
+
+
+P0-2  EDU_TRACE TIŠE ZAHAZUJE CELOČÍSELNÉ DĚLENÍ (FAIL-OPEN)
+--------------------------------------------------------------------------------
+Kde:      src/modules/algorithm-trace-engine.js, funkce cleanLines()
+Kód:      .replace(/\/\/.*$/,'')
+
+Reprodukce (Node):
+  traceProgram({program:['a = 7','b = a // 2','PRINT b']})
+  → vars: {a:7, b:7}   output: ["7"]   errors: []   steps: 3
+
+  Očekáváno: b = 3, nebo tvrdá chyba "nepodporovaný operátor".
+  Skutečnost: řádek se ořízne na "b = a", program doběhne, vygeneruje se
+  kompletní trace tabulka, která je celá špatně, a nikdo se nic nedozví.
+
+Proč to je vážné:
+  Python je v gymnaziální informatice dominantní jazyk a "//" je jeho
+  standardní celočíselné dělení. Model, který dostane instrukci
+  "školní pseudokód", bude "//" produkovat běžně. Engine je přitom
+  v release notes prodáván jako fail-closed: "mimo definovaný školní
+  pseudojazyk se vstup odmítne". Tady se neodmítne — tiše se přepíše.
+
+Druhý dopad stejného řádku:
+  traceProgram({program:['s = "http://skola.cz"','PRINT s']})
+  → errors: ["Řádek 1: Neuzavřený řetězec."]
+  Komentář se strhává před tokenizací, takže "//" uvnitř řetězce rozbije
+  literál.
+
+Návrh opravy:
+  Strip komentářů provádět až po tokenizaci, nebo alespoň:
+  - "//" uvnitř řetězcového literálu ignorovat,
+  - "//" v pozici binárního operátoru (mezi dvěma operandy) NEbrat jako
+    komentář a buď implementovat jako Math.floor(a/b), nebo vyhodit
+    explicitní chybu "celočíselné dělení není podporováno".
+  Doporučuji implementovat — je to pět řádků a odstraní to celou třídu chyb.
+
+
+P0-3  EDU_REACTION NEOVĚŘUJE SYMBOLY PRVKŮ (FAIL-OPEN)
+--------------------------------------------------------------------------------
+Kde:      src/modules/reaction-engine.js, funkce parseGroup()
+Kód:      if(/[A-Z]/.test(c)){const m=s.slice(i).match(/^[A-Z][a-z]?/) ... }
+
+Parser přijme jako prvek libovolnou sekvenci [A-Z][a-z]? bez porovnání
+s tabulkou prvků. Bilance pak proběhne nad fiktivními prvky.
+
+Reprodukce (Node):
+  balanceReaction('NAOH + HCl -> NACl + H2O')
+  → coefficients: [1,1,1,1]   errors: []
+    (parser rozložil NAOH na N, A, O, H — "A" není prvek)
+
+  balanceReaction('Q2 + R2 -> 2 QR')   → [1,1,2]   errors: []
+  balanceReaction('Xx + O2 -> XxO2')   → [1,1,1]   errors: []
+
+Dopad:
+  Nejběžnější chemický překlep — zápis všemi velkými písmeny (NAOH, NACL,
+  CACO3) — projde jako korektně vyčíslená rovnice a dostane se do klíče
+  i do bilanční tabulky pod nadpisem "Prvek | Levá | Pravá", kde bude
+  sloupec s neexistujícím prvkem A.
+
+Poznámka k WEIGHTS:
+  Tabulka molárních hmotností má 45 prvků. Chybí mj. Cs, W, U, Y, Zr, Mo,
+  Sb, Te. Pro gramové převody to failuje korektně
+  ("Pro převod gramů chybí podporovaná molární hmotnost"), ale bilance
+  proběhne, protože ta hmotnosti nepotřebuje. Po zavedení whitelistu
+  se z toho stane jednotné chování.
+
+Návrh opravy:
+  Zavést zmrazený seznam platných symbolů prvků (postačí H–Og, 118 položek,
+  ~700 B) a v parseGroup odmítnout vše mimo něj s hláškou
+  "Neznámý symbol prvku: XX". WEIGHTS pak může zůstat řidší tabulkou
+  hmotností — validita symbolu a znalost hmotnosti jsou dvě různé věci.
+
+
+P0-4  EDU_REACTION VRACÍ U NEJEDNOZNAČNÝCH ROVNIC LIBOVOLNÉ ŘEŠENÍ
+--------------------------------------------------------------------------------
+Kde:      src/modules/reaction-engine.js, funkce positiveVector()
+
+Když má bilanční soustava jádro dimenze ≥ 2, rovnice má nekonečně mnoho
+platných vyčíslení. Kód v takovém případě hrubou silou prochází kombinace
+(6^n, strop 5000) a vrátí PRVNÍ nalezený kladný celočíselný vektor —
+bez jakéhokoli varování.
+
+Reprodukce (Node):
+  balanceReaction('C + O2 -> CO + CO2')
+  → coefficients: [4,3,2,2]   errors: []
+  (opakovaně stejný výsledek — je to deterministické, ale chemicky arbitrární;
+   stejně platné je 2,3,... a nekonečně mnoho dalších poměrů)
+
+Dopad:
+  Do klíče se dostane jedna z nekonečně mnoha možností prezentovaná jako
+  "ta správná". Žák, který vyčíslí jinak a správně, bude podle klíče
+  označen za chybného. To je horší než chyba renderingu — je to chyba,
+  která se dostane do hodnocení.
+
+Rozpor s deklarací:
+  AUDIT-1.3.30 uvádí "Bilance používá přesnou racionální lineární algebru,
+  nikoli numerické hádání." To je pravda pro nalezení jádra. Ale výběr
+  jednoho vektoru z vícerozměrného jádra hádání je.
+
+Návrh opravy:
+  V positiveVector(): pokud basis.length > 1, vrátit chybu
+  "Rovnice není jednoznačně vyčíslitelná; doplň chybějící látku nebo zadej
+  očekávané koeficienty." Volitelně: pokud uživatel dodal
+  expectedCoefficients a ty leží v jádru, přijmout je jako doplňující
+  podmínku a ověřit je — to je pedagogicky správné chování.
+
+
+================================================================================
+P1 — VÁŽNÉ
+================================================================================
+
+P1-5  TISK MŮŽE PROBĚHNOUT PŘED DOKONČENÍM HYDRATACE VIZUÁLŮ
+--------------------------------------------------------------------------------
+Kde:      src/js/40-vystup-pdf-kvalita.js, handler #printConfirm (cca ř. 256)
+
+Kód:
+    if(pendingPrintHtml)$('#printArea').innerHTML=pendingPrintHtml;
+    ...
+    requestAnimationFrame(()=>{try{window.print()}catch(err){...}});
+
+Problém:
+  Přiřazení innerHTML zahodí už vykreslená SVG a znovu vytvoří prázdné
+  <figure class="edu-visual"> bez data-edu-ready. Hydratace se pak spustí
+  přes MutationObserver → hydrateEducationalVisualsLazy → dynamický
+  import('./modules/educational-renderers.js') → hydrateOne → a u trace,
+  reaction, chem, math, map, annotate ještě další await import().
+  window.print() se přitom volá už v následujícím snímku (~16 ms).
+  U studeného modulu to nedoběhne.
+
+Zesilující faktory:
+  - hydrateEducationalVisuals() vrací Promise, který tisková cesta
+    nikdy nečeká.
+  - hydrateEducationalVisualsLazy má .catch(()=>{}) — selhání importu
+    je pohlceno beze stopy.
+
+Dopad:
+  PDF s prázdnými rámečky, ve kterých je jen popisek ("Algoritmická stopa",
+  "Chemická reakce") a žádný obsah. Učitel to zjistí až po vytištění.
+
+Návrh opravy:
+  Handler udělat async:
+    await import('./modules/educational-renderers.js')
+      .then(m => m.hydrateEducationalVisuals($('#printArea')));
+  a teprve pak window.print(). Selhání importu musí být viditelné, ne
+  spolknuté.
+
+
+P1-6  CHYBNÝ VIZUÁL SE VYTISKNE DO ŽÁKOVSKÉHO LISTU BEZ ZABLOKOVÁNÍ
+--------------------------------------------------------------------------------
+Kde:      src/modules/educational-renderers.js, hydrateOne()
+Kód:      catch(e){fig.dataset.eduReady='error';
+                   fig.textContent='Odborný vizuál nelze vykreslit: '+...}
+
+Grep přes celý src/: řetězec eduReady se vyskytuje POUZE v tomto souboru.
+Nic v tiskové cestě, v PDF kontrole ani ve varovném boxu učiteli nekontroluje
+data-edu-ready="error".
+
+Dopad:
+  Do vytištěného pracovního listu se dostane česká technická věta
+  "Odborný vizuál nelze vykreslit: Algoritmická stopa je příliš dlouhá
+  pro pracovní list; zkrať program nebo vstup." — na místě, kde měla být
+  tabulka. Žák dostane chybovou hlášku jako součást zadání.
+
+Návrh opravy:
+  Po hydrataci #printArea projít [data-edu-ready="error"]. Pokud je jich
+  víc než 0, tisk zablokovat a zobrazit učiteli souhrn
+  ("3 odborné vizuály se nepodařilo vykreslit — seznam a důvody").
+  Stejnou kontrolu přidat do PDF kontrolní brány, kde už existuje
+  mechanismus pendingPdfData / #pdfCheckContinue.
+
+
+P1-7  EDU_ANNOTATE DEFORMUJE GEOMETRII U NEČTVERCOVÝCH OBRÁZKŮ
+--------------------------------------------------------------------------------
+Kde:      src/modules/educational-renderers.js, renderAnnotate()  →  svgBase(1000,1000)
+          + svg.setAttribute('preserveAspectRatio','none')
+          src/styles.css ř. 1049:
+          .edu-annotate-overlay{position:absolute;inset:0;width:100%;height:100%}
+
+Overlay má čtvercový viewBox 0 0 1000 1000, ale roztahuje se přes obdélníkový
+<img> s vypnutým zachováním poměru stran. Normalizované souřadnice 0–1 tím
+sedí správně (to je záměr), ale všechno ostatní se anizotropně zdeformuje:
+
+  fotka 1600×900  →  horizontální měřítko 1,78× vůči vertikálnímu
+  - .edu-annotate-point (circle r=8)  →  elipsa
+  - hroty šipek (marker-end)          →  zkosené
+  - .edu-annotate-label (text 26px)   →  roztažené o 78 %
+
+  vector-effect:non-scaling-stroke řeší jen tloušťku čáry, ne tvar ani text.
+
+Proč to QA nechytila:
+  Browserová visual-assets kontrola ověřuje noDuplicate, sourceBound,
+  printBound a zdroj VISUAL_1 — tedy datové vazby. Nikdo neověřil, jak
+  výsledek vypadá. To je systémová slabina celé sady: asserty na data,
+  nikoli na vizuální korektnost. U vlajkové funkce verze 1.3.30 se to
+  projevilo naplno.
+
+Rozsah dopadu:
+  Prakticky všechny reálné podklady jsou nečtvercové — skeny stránek A4
+  (1 : 1,41), fotografie (4 : 3, 16 : 9), mapy, anatomické schéma.
+  Čtvercový obrázek je výjimka.
+
+Návrh opravy:
+  Zjistit skutečný poměr stran obrázku (img.naturalWidth/naturalHeight po
+  onload, nebo z base64 hlavičky) a nastavit viewBox="0 0 W H" podle něj;
+  souřadnice pak násobit W a H místo 1000. preserveAspectRatio="none"
+  potom může zůstat, protože viewBox už bude odpovídat.
+  Pozor: v tiskové cestě musí být rozměr znám před voláním print() —
+  souvisí s P1-5.
+
+
+P1-8  MAP-PRESETS.JS CHYBÍ V OFFLINE PRECACHE
+--------------------------------------------------------------------------------
+Kde:      src/sw.js (seznam core assets), dist/quality-report.json (precacheAssets)
+
+  src/modules/ obsahuje 11 modulů.
+  sw.js i precacheAssets obsahují 10.
+  Chybí:  modules/map-presets.js  (24 386 B — zdaleka největší modul)
+
+Ověřeno:  grep -c "map-presets" dist/sw.js  →  0
+
+Dopad:
+  EDU_MAP s presetem (world / europe / czechia) offline selže — dynamický
+  import se nedostane přes prázdnou cache a hydrateOne skončí chybou.
+  Aplikace je přitom prodávána jako PWA pro provoz bez sítě a všech
+  10 ostatních engine precachováno je. Zeměpis tak jako jediný předmět
+  přijde offline o svůj hlavní vizuál.
+
+Návrh opravy:
+  1. Doplnit modules/map-presets.js do core assets v src/sw.js.
+  2. Do scripts/sw-assets.mjs přidat tvrdou kontrolu: počet souborů
+     v src/modules/ musí odpovídat počtu modulů v precache listu,
+     jinak build failne. Tahle chyba se jinak zopakuje u dalšího modulu.
+
+
+P1-9  NEUVEDENÝ PRAKTICKÝ STROP EDU_TRACE
+--------------------------------------------------------------------------------
+Kde:      src/modules/educational-renderers.js, renderTrace():
+            if(r.trace.length>140) throw Error('Algoritmická stopa je příliš dlouhá...')
+          src/modules/algorithm-trace-engine.js: MAX_STEPS=600
+
+Naměřeno (počet řádků trace tabulky):
+    bublinkové řazení n=5     54   OK
+    bublinkové řazení n=6     80   OK
+    bublinkové řazení n=7    111   OK
+    bublinkové řazení n=8    147   ODMÍTNUTO (>140)
+    bublinkové řazení n=10   234   ODMÍTNUTO
+    selection sort n=8       107   OK
+    selection sort n=10      160   ODMÍTNUTO
+    Fibonacci 20 kroků       102   OK
+    Fibonacci 40 kroků       202   ODMÍTNUTO
+
+  Binární vyhledávání (14 řádků) a faktoriál 10 (22 řádků) procházejí bez potíží.
+
+Dvě samostatné vady:
+  a) spec.maxSteps jde jen dolů, nikdy nahoru:
+        Math.min(MAX_STEPS, Math.max(1, Number(spec.maxSteps)||MAX_STEPS))
+     Učitel nemůže limit zvýšit ani vědomě.
+  b) Chybová hláška při vyčerpání limitu tvrdí "možná nekonečná smyčka",
+     i když jde o prosté vyčerpání rozpočtu kroků u korektního programu.
+     To je matoucí diagnostika.
+
+Dopad:
+  Deklarace "informatika získala skutečný tracer" je pravdivá, ale strop
+  je nižší, než kde běžný gymnaziální příklad začíná. Řadicí algoritmus
+  na osmi prvcích už neprojde. Bez uvedení stropu do dokumentace to autor
+  zjistí až v hodině.
+
+Návrh opravy:
+  1. Limit 140 řádků udělat konfigurovatelným a zvednout na ~250.
+  2. Umožnit režim "ukázat prvních N kroků + posledních M" místo tvrdého
+     odmítnutí — u pracovního listu to je pedagogicky lepší než chyba.
+  3. Odlišit hlášku "překročen limit kroků" od "podezření na nekonečnou smyčku"
+     (druhá jen tehdy, když se stav proměnných mezi iteracemi nemění).
+  4. Strop uvést do promptové instrukce, aby model negeneroval příklady,
+     které se nevejdou.
+
+
+================================================================================
+P2 — TECHNICKÝ DLUH A DROBNOSTI
+================================================================================
+
+P2-10  ZDROJOVÝ KÓD JE RUČNĚ MINIFIKOVANÝ — A U MODULŮ ZBYTEČNĚ
+--------------------------------------------------------------------------------
+Naměřené metriky čitelnosti:
+    src/modules/map-presets.js             2 řádky,   nejdelší 24 386 znaků
+    src/modules/tex-math.js               18 řádků,   nejdelší  3 600
+    src/modules/algorithm-trace-engine.js 31 řádků,   nejdelší  3 123
+    src/modules/reaction-engine.js        21 řádků,   nejdelší  1 888
+    src/modules/school-cas.js             34 řádků,   nejdelší  1 849
+    src/js/30-api-gemini.js              867 řádků,   nejdelší  2 290
+
+Důsledky:
+  - Git diff nedává smysl: oprava jednoho znaku se zobrazí jako změna
+    celého 3 000znakového řádku. Historie změn je nečitelná.
+  - Čísla řádků v chybových hláškách a stack trace jsou k ničemu.
+  - Code review je prakticky nemožné pro kohokoli kromě autora a LLM.
+    Tohle je při jednočlenném týmu reálné riziko pro udržitelnost.
+
+A hlavně — u modulů to nešetří nic:
+  scripts/build.mjs vkládá do inline skriptu pouze vendor AI Core
+  + src/js/*.js. src/modules/* se kopírují bokem do dist/modules/
+  a načítají se lazy importem. Do largestInlineScriptBytes, tedy do
+  limitu, který tě tlačí, se nedostanou vůbec.
+  147 kB modulů je minifikováno kvůli limitu, který se jich netýká.
+
+Návrh: viz P0-1. Po zavedení esbuildu rozminifikovat zdroje zpět.
+Prioritně src/modules/*, kde je poměr bolesti a užitku nejhorší.
+
+
+P2-11  DROBNÉ SÉMANTICKÉ NESROVNALOSTI EDU_TRACE
+--------------------------------------------------------------------------------
+  a) Modulo záporných čísel:  -1 % 3  →  -1  (JS zbytek)
+     V Pythonu i v matematické konvenci  →  2.
+     U pseudokódu inspirovaného Pythonem to dá špatný výsledek bez varování.
+
+  b) Desetinná aritmetika bez zaokrouhlení:
+     x = 0.1 + 0.2  →  v trace tabulce se vytiskne 0.30000000000000004
+     Do pracovního listu pro žáka to nepatří. renderTrace by měl hodnoty
+     formátovat (např. Number(v.toPrecision(12))).
+
+  c) Porovnání polí je vždy false:
+     A = [1,2] / B = [1,2] / r = A == B  →  false
+     primary() vrací clone(v), takže === porovnává reference.
+
+  d) Nepodporované, ale běžné konstrukce školního pseudokódu:
+       IF x > 0 THEN PRINT x        →  "Nepodporovaný příkaz"
+       ELSE IF x > 1 THEN           →  "Nepodporovaný příkaz"
+     Promptová instrukce přitom hlásí podporu "IF/ELSE" bez uvedení, že
+     ELSE IF je nutné psát jako vnořené IF uvnitř ELSE a že jednořádkový
+     zápis neexistuje. Model bude obojí generovat.
+
+  Návrh: (a) a (b) opravit v engine/rendereru, (c) zdokumentovat,
+  (d) doplnit do promptové instrukce nebo implementovat ELSE IF
+  (je to jeden regex a jedno rozvinutí na vnořené IF).
+
+
+P2-12  REPOZITÁŘ NESE SESTAVENÉ ARTEFAKTY
+--------------------------------------------------------------------------------
+  .gitignore obsahuje pouze: node_modules/, qa-results/, .DS_Store, *.log
+  V balíku jsou zakomitované dist/ i dist-school-server/ včetně
+  quality-report.json a qa-p3-browser-report.json — tedy výstupů testů.
+  Celkem 4,4 MB, z toho tři kopie stejných modulů (src, dist, dist-school-server).
+
+  Chápu důvod (GitHub Pages, deploy workflow), ale minimálně QA reporty
+  a platform-build-info.json do gitu nepatří — generují se při každém běhu
+  a vytvářejí falešné diffy. Doporučuji je přesunout do qa-results/,
+  které už ignorované je.
+
+
+P2-13  XSS BRÁNA JE INVENTURA, NE DŮKAZ
+--------------------------------------------------------------------------------
+  scripts/qa-p5-xss-sinks.mjs počítá výskyty vzorů a porovnává s baseline
+  (innerHTML ≤ 62, aktuálně 57). Samo si to poctivě přiznává v poli
+  limitations. Stojí ale za explicitní pojmenování v release dokumentaci:
+  gate zůstane zelený i tehdy, když se bezpečný innerHTML sink nahradí
+  nebezpečným — počet se nezmění.
+
+  Zároveň: script-src stále obsahuje 'unsafe-inline', takže CSP proti
+  injektovanému skriptu prakticky nechrání. Architektura jednosouborového
+  buildu to vynucuje. Po zavedení minifikace (P0-1) je vhodná chvíle
+  zvážit hash-based CSP — inline skript je jeden a build ho zná.
+
+
+================================================================================
+DOPORUČENÉ POŘADÍ OPRAV PRO 1.3.31
+================================================================================
+  1. P0-1  esbuild do build.mjs + přepočet budgetu proti gzipu.
+           Musí být první — odemyká všechno ostatní.
+  2. P0-2  cleanLines: strip komentářů až po tokenizaci.
+  3. P0-3  whitelist symbolů prvků v parseGroup.
+  4. P0-4  positiveVector: basis.length > 1 → chyba, ne první řešení.
+  5. P1-5  await hydratace před window.print().
+  6. P1-6  blokace tisku při data-edu-ready="error" + souhrn učiteli.
+  7. P1-8  map-presets.js do precache + kontrola úplnosti v sw-assets.mjs.
+  8. P1-7  viewBox anotační vrstvy podle skutečného poměru stran obrázku.
+  9. P1-9  strop trace: zvýšit, zkonfigurovat, opravit hlášku, do promptu.
+ 10. P2-10 rozminifikace zdrojů (po bodu 1).
+ 11. P2-11, P2-12, P2-13 dle kapacity.
+
+Body 2–4 a 7 jsou malé, ohraničené zásahy do jednoho souboru.
+Bod 1 je jednorázová změna build pipeline s největší návratností.
+Bod 8 je jediný, který vyžaduje asynchronní práci s rozměrem obrázku.
+
+
+================================================================================
+AKCEPTAČNÍ KRITÉRIA PRO UZAVŘENÍ 1.3.31
+================================================================================
+  1. Po vložení 500 náhodných bajtů do promptové vrstvy zůstává
+     qa:quality 31/31 PASS. (Test na rezervu, ne na obsah.)
+  2. traceProgram({program:['b = 7 // 2']}) vrátí buď b = 3,
+     nebo neprázdné errors. Nikdy b = 7 s prázdnými errors.
+  3. balanceReaction('NAOH + HCl -> NACl + H2O').errors není prázdné.
+  4. balanceReaction('C + O2 -> CO + CO2').errors není prázdné.
+  5. Tisk pracovního listu s EDU_TRACE, EDU_REACTION a EDU_ANNOTATE
+     při vyprázdněné cache modulů obsahuje vykreslené SVG, ne prázdné rámečky.
+  6. Pracovní list s vadným markerem nelze vytisknout bez explicitního
+     potvrzení učitele, kterému se zobrazí seznam vadných vizuálů.
+  7. EDU_ANNOTATE nad obrázkem 1600×900: bodová značka je kruh, ne elipsa.
+  8. S vypnutou sítí a čerstvou instalací PWA se EDU_MAP s presetem "czechia"
+     vykreslí.
+  9. Trace tabulka bublinkového řazení na 10 prvcích se vykreslí
+     (nebo se korektně zkrátí s viditelnou poznámkou), nikoli odmítne.
+
+Doporučuji z bodů 2, 3, 4 a 9 udělat rovnou položky v qa:specialists —
+jsou to přesně ty případy, které stávající sada 46/46 nechytila.
+
+
+================================================================================
+POZNÁMKA K DALŠÍMU SMĚRU
+================================================================================
+Doporučení z AUDIT-1.3.30 nedělat další marker a místo toho postavit
+corpus-driven acceptance benchmark považuji za správné a podporuji ho.
+
+S jednou korekcí. Tři z devíti nálezů P0/P1 výše (fail-open na "//",
+neexistující prvky, deformovaná anotace) by benchmark nad reálnými
+materiály nemusel odhalit vůbec — projevují se jako věrohodně vypadající
+špatný výstup, ne jako selhání. Korpus měří, jestli výstup vznikl a dává
+smysl; neměří, jestli engine tiše nepřepsal vstup.
+
+Než se pustíš do korpusu, doporučuji doplnit pro každý engine sadu
+"adversariálních vstupů": překlepy, nepodporovaná syntaxe, nejednoznačná
+zadání, degenerované případy. Je to levnější než korpus a chytá jinou
+třídu chyb. Korpus pak měří to, k čemu je určený — sémantickou věrnost
+na reálných materiálech.
+
+
+================================================================================
+CO TENTO AUDIT NEPOKRYL
+================================================================================
+  - Browserové a klikací testy (Chromium se nepodařilo v sandboxu nainstalovat).
+    Nálezy P1-5, P1-6 a P1-7 jsou odvozeny ze zdroje a CSS, ne z běhu
+    v prohlížeči. Doporučuji je před opravou potvrdit ručně —
+    zvlášť P1-5, kde záleží na načasování konkrétního prohlížeče.
+  - Live provider (audio/video) — bez credentialu.
+  - Reálný uživatelský průchod: import zdroje → generování → kontrola kvality
+    → bodování → tisk.
+  - Kvalita samotných promptů a pedagogická hodnota výstupů.
+  - Přístupnost (axe) — spouští se jen v browserovém běhu.
+
+================================================================================
+KONEC DOKUMENTU
+================================================================================

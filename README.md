@@ -1,14 +1,14 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.25  
+**Aktuální verze:** 1.3.31  
 
-1.3.25 je cílený GARP follow-up po auditu 1.3.24: sjednocuje multimodální timeout na 120 s, opravuje pořadí profilů AI tak, aby Důkladný byl skutečně nejsilnější, přidává kompatibilní thinking guard pro Gemini 3.7, odstraňuje duplicitní text ročníku a potvrzený mrtvý kód. Funkční rozsah 1.3.20–1.3.24 zůstává beze změny a výkonová baseline z 1.3.24 zůstává zmrazená.
+1.3.31 uzavírá nezávislý GARP audit 1.3.30: tracer bezpečně rozlišuje celočíselné dělení `//` od komentářů, chemický parser odmítá neexistující prvky a nejednoznačné rovnice, tisk čeká na hydrataci odborných vizuálů a blokuje jejich chyby, anotace respektují skutečný poměr stran a mapové presety jsou povinně zahrnuté v offline cache. Kritický bundle má novou rezervu bez zvýšení zmrazených performance budgetů.
 **Platforma:** GHRAB Platform 1.1.0 · etapa P5
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.25
+- **Verze:** 1.3.31
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž
@@ -26,7 +26,9 @@ npm ci
 npm test
 ```
 
-`npm test` nejprve znovu sestaví `dist/`, ověří centrální profily Úsporný / Doporučený / Důkladný přes `qa:profiles`, fyzickými Chromium kliknutími ověří jejich propsání do Core requestu, spustí regresní brány včetně skutečných `qa:visuals`, `qa:scan` a `qa:stem` Chromium/PDF testů a zkontroluje PWA, bezpečnost, duplicity ID, manifest i interní testy. Test použije systémový Chromium/Chrome nebo prohlížeč nainstalovaný Playwrightem. Pokud na čistém stroji prohlížeč chybí, spusť jednou `npx playwright install chromium`.
+`npm test` nejprve znovu sestaví `dist/`, ověří centrální profily Úsporný / Doporučený / Důkladný přes `qa:profiles`, fyzickými Chromium kliknutími ověří jejich propsání do Core requestu, spustí regresní brány včetně skutečných `qa:visuals`, `qa:scan`, `qa:stem`, rozšířeného `qa:all-subjects`, `qa:office-rich`, `qa:multimedia`, `qa:multimedia:browser`, `qa:specialists` a `qa:renderers` Chromium/PDF testů a zkontroluje PWA, bezpečnost, duplicity ID, manifest i interní testy. Test použije systémový Chromium/Chrome nebo prohlížeč nainstalovaný Playwrightem. Pokud na čistém stroji prohlížeč chybí, spusť jednou `npx playwright install chromium`.
+
+Pro skutečný release nastav v GitHub repozitáři secret **`DPL_LIVE_GEMINI_API_KEY`**. Push/release workflow potom povinně spustí `npm run qa:provider:live:required` nad krátkým audio i video vzorkem. Bez secretu nebo při chybě provideru release workflow skončí chybou; běžný PR secret nevyžaduje.
 
 ## Struktura
 

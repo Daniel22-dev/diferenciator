@@ -179,7 +179,7 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   if(!projects.includes('visualAssets')||!projects.includes('normalizeProjectVisualAsset'))problems.push('projektový export/import ztrácí obrazové assety');
   for(const name of ['answer-key-generation','worksheet-quality-audit','worksheet-quality-revision']){
     const op=ops.operations.find(x=>x.operation===name);if(!op||!op.inputTypes.includes('image'))problems.push(name+' nepovoluje image vstup v manifestu');
-    if(!new RegExp("'"+name+"':[\\s\\S]{0,400}inputTypes:\\['text','image'\\]").test(core))problems.push(name+' nepovoluje image vstup v Core konfiguraci');
+    if(!new RegExp("'"+name+"':[\\s\\S]{0,400}inputTypes:\\[[^\\]]*'image'[^\\]]*\\]").test(core))problems.push(name+' nepovoluje image vstup v Core konfiguraci');
   }
   if(pkg.scripts?.['qa:visuals']!=='node scripts/qa-visual-assets-browser.mjs')problems.push('chybí blokující klikací visual QA skript');
   if(problems.length)bad('T16: obrazově klíčové podklady: '+problems.join('; ')); else ok('T16: mapa/graf/schéma se zachovávají jako skutečné assety až do výsledku/PDF');

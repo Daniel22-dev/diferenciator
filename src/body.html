@@ -102,14 +102,14 @@
     <div class="drop" id="drop" tabindex="0" role="button" aria-label="Nahrát soubor nebo vyfotit" style="margin-top:14px">
       <div class="ico">📄</div>
       <div class="big">Vyfoť, nahraj nebo přetáhni</div>
-      <div class="sub">více fotek · PDF · obrázek/sken · Word (.docx) · PowerPoint (.pptx) · Excel (.xlsx) · text/CSV/HTML</div>
+      <div class="sub">více fotek · PDF · obrázek/sken · audio/video · Word (.docx) · PowerPoint (.pptx) · Excel (.xlsx) · GeoJSON · text/CSV/HTML</div>
     </div>
     <div class="input-formats" aria-label="Podporované vstupy">
-      <span class="format-chip">fotky</span><span class="format-chip">PDF</span><span class="format-chip">DOCX</span><span class="format-chip">PPTX</span><span class="format-chip">XLSX</span><span class="format-chip">CSV/TSV</span><span class="format-chip">HTML/JSON</span>
+      <span class="format-chip">fotky</span><span class="format-chip">PDF</span><span class="format-chip">audio/video</span><span class="format-chip">DOCX</span><span class="format-chip">PPTX</span><span class="format-chip">XLSX</span><span class="format-chip">CSV/TSV</span><span class="format-chip">HTML/JSON</span>
     </div>
-    <p class="formats-compact">Podporuje fotky, PDF, Office soubory, text, CSV a HTML.</p>
+    <p class="formats-compact">Podporuje fotky, PDF, audio/video, Office soubory, text, CSV a HTML.</p>
     <p class="file-format-note"><b>Office soubory:</b> aplikace čte textovou vrstvu z DOCX/PPTX/XLSX. Po načtení vždy zkontroluj pořadí textu, tabulky, textová pole, vzorce a prvky vložené jako obrázek.</p>
-    <input id="file" type="file" multiple accept="image/*,application/pdf,.docx,.pptx,.xlsx,.txt,.rtf,.md,.csv,.tsv,.html,.htm,.json" class="hide" />
+    <input id="file" type="file" multiple accept="image/*,audio/*,video/mp4,video/webm,video/quicktime,application/pdf,.mp3,.wav,.m4a,.aac,.ogg,.oga,.flac,.mp4,.m4v,.webm,.mov,.ogv,.docx,.pptx,.xlsx,.txt,.rtf,.md,.csv,.tsv,.html,.htm,.json,.geojson" class="hide" />
     <div class="filechip" id="filechip"><span id="filename"></span><button class="x" id="filex" aria-label="Odebrat">✕</button></div>
     <div class="thumb" id="thumb"><img id="thumbImg" alt="Náhled nahraného zadání" /></div>
     <div class="upload-status" id="uploadInfo"></div>
@@ -336,6 +336,8 @@
     <p class="muted">Takto bude materiál vypadat. Pak pokračuj do systémového dialogu, kde zvol „Uložit jako PDF".</p>
     <div class="print-file-name" id="printFileName"></div>
     <div class="print-preview" id="printPreview"></div>
+    <div class="print-visual-errors hide" id="printVisualErrors" role="alert"></div>
+    <label class="teacher-confirm hide" id="printVisualOverrideRow"><input type="checkbox" id="printVisualOverride"><span><strong>Vědomé pokračování s vadným vizuálem.</strong> Rozumím uvedeným chybám odborných vizuálů a přesto chci pokračovat k tisku/PDF.</span></label>
     <label class="teacher-confirm"><input type="checkbox" id="printTeacherConfirmed"><span><strong>Finální učitelská kontrola.</strong> Potvrzuji, že jsem prošel/prošla zadání, řešení i případné citlivé údaje a materiál je připraven k použití.</span></label>
     <p class="print-hint"><b>Čistý školní výstup:</b> tisková šablona je nastavená tak, aby prohlížeč neměl prostor pro vlastní datum ani webovou adresu. Pokud je přesto vynutí místní nastavení prohlížeče, vypni v Dalších nastaveních položku Záhlaví a zápatí.</p>
     <div class="modal-actions">

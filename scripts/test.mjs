@@ -22,7 +22,8 @@ function testHtml(raw){
     .replace(/<script[^>]*src="\.\/runtime-config\.js"[^>]*><\/script>/i,()=>`<script data-ghrab-runtime-config data-ghrab-test-inline>${runtimeConfig}<\/script>`)
     .replace(/<script[^>]*src="\.\/ghrab\/ghrab-platform\.js"[^>]*><\/script>/i,()=>`<script data-ghrab-platform-loader data-ghrab-test-inline>${platform}<\/script>`)
     .replace('type="application/ghrab-protected" data-ghrab-protected','type="text/javascript" data-ghrab-test-executable')
-    .replace(/<script type="module" data-ghrab-access-bootstrap>[\s\S]*?<\/script>/,'');
+    .replace(/<script type="module" data-ghrab-access-bootstrap>[\s\S]*?<\/script>/,'')
+    .replace('</body>',()=>{const tests=readFileSync(join(BASE,'internal-tests.js'),'utf-8').replace(/<\/script/gi,'<\\/script');return `<script data-ghrab-internal-tests>${tests};TestSystem.init();<\/script></body>`});
 }
 function findChromium(){const candidates=[process.env.CHROMIUM_PATH,process.env.CHROME_PATH,"/usr/bin/chromium","/usr/bin/google-chrome","/usr/bin/google-chrome-stable"].filter(Boolean);try{candidates.push(require("playwright").chromium.executablePath())}catch{}for(const p of candidates)if(p&&existsSync(p))return p;throw new Error("Chromium není dostupné. Spusť `npx playwright install chromium` nebo nastav CHROMIUM_PATH/CHROME_PATH.")}
 async function waitJson(url){for(let i=0;i<150;i++){try{const r=await fetch(url);if(r.ok)return await r.json()}catch{}await sleep(100)}throw new Error("Chromium remote debugging se nespustil")}

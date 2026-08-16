@@ -68,11 +68,10 @@ function updateModelUI(){
 document.querySelectorAll("[data-model-profile]").forEach(btn=>{btn.onclick=()=>setModelProfile(btn.dataset.modelProfile)});
 loadKey();loadModelProfile();applyAiRuntimeUi();
 
-// Přímé volání generateContent posílá média jako inline_data. Oficiální dokumentace uvádí limit celého inline požadavku pod 20 MB,
-// proto držíme bezpečnou rezervu 18 MB včetně promptu, textu a base64 dat.
 const MAX_INLINE_REQUEST_BYTES=18*1024*1024;
 const MAX_TEXT_CHARS=180000;
 const MAX_SINGLE_MEDIA_ORIGINAL_BYTES=12*1024*1024;
+const MAX_MULTIMEDIA_SOURCE_BYTES=12*1024*1024;
 const MAX_PDF_BYTES=13*1024*1024;
 const MAX_IMAGE_SOURCE_BYTES=40*1024*1024;
 const MAX_IMAGE_SOURCE_TOTAL_BYTES=80*1024*1024;
@@ -105,7 +104,6 @@ function friendlyApiMessage(e){
   if(e.status>=500)return "Služba Gemini má dočasný problém. Zkus to znovu.";
   return e.message||"Nepovedlo se spojit s modelem.";
 }
-/* Produkční implementaci callGemini doplní následující integrační modul GHRAB AI Core. */
 let callGemini;
 
 function openGuide(auto=false){
@@ -250,10 +248,40 @@ function extractionMediaParts(upload){
   return out;
 }
 function mediaBytes(items){return items.reduce((sum,it)=>sum+utf8Bytes(it.data||''),0)}
+let multimediaModulePromise=null;
+function loadMultimediaModule(){return multimediaModulePromise||(multimediaModulePromise=import('./modules/multimedia.js'))}
+let sourceMediaAsset=null;
+function cloneMediaSource(value,withData=true){if(!value||!/^(?:audio|video)$/.test(String(value.kind||'')))return null;const mime=String(value.mime_type||'');if(!/^(?:audio|video)\//i.test(mime))return null;const out={kind:value.kind,name:String(value.name||value.kind).slice(0,300),mime_type:mime,bytes:Number(value.bytes)||0};if(withData)out.data=String(value.data||'').replace(/\s+/g,'');return out}
+function resetSourceMedia(){sourceMediaAsset=null}
+function sourceMediaPromptLines(){if(!sourceMediaAsset)return [];const k=sourceMediaAsset.kind==='audio'?'AUDIO / POSLECH':'VIDEO / AUDIOVIZUÁLNÍ PODKLAD';return [k+': zdrojový soubor „'+sourceMediaAsset.name+'“ je pevnou součástí materiálu. V tasks vlož marker [[MEDIA_SOURCE]] tam, kde má žák dostat pokyn k přehrání podkladu. Pokud jde o poslechovou nebo observační úlohu, NESMÍŠ do student_instructions ani tasks prozradit transkript, titulky, přesné repliky, popis odpovědí nebo jiné informace, které má žák teprve zjistit ze záznamu. Transkript/rozbor smí být použit v answer_key a teacher_note. Zdrojové médium při paralelní variantě neměň ani nepředstírej, že vznikl nový soubor.'];}
+function sheetMediaAiParts(sheet){const m=cloneMediaSource(sheet&&sheet._mediaSource,true);return m&&m.data?[{text:(m.kind==='audio'?'Zdrojové audio':'Zdrojové video')+' pro tento pracovní list: '+m.name+'.'},{inline_data:{mime_type:m.mime_type,data:m.data}}]:[]}
+
+function ensureMediaSourceMarker(parsed){
+  if(!sourceMediaAsset||!parsed)return parsed;
+  const parts={...(parsed.parts||{})},combined=[parts.instructions,parts.tasks,parsed.worksheet].join('\n');
+  if(!/\[\[MEDIA_SOURCE\]\]/i.test(combined))parts.tasks='[[MEDIA_SOURCE]]\n\n'+String(parts.tasks||parsed.worksheet||'').trim();
+  const worksheet=[parts.title,parts.instructions,parts.tasks].map(x=>String(x||'').trim()).filter(Boolean).join('\n\n');
+  return {...parsed,parts,worksheet:worksheet||parts.tasks||parsed.worksheet};
+}
+function normalizedSafetyWords(value){return String(value||'').normalize('NFKC').toLowerCase().replace(/\[\[media_source\]\]/gi,' ').replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(/\s+/).filter(w=>w.length>1)}
+function mediaStudentSafetyIssues(parsed,sourceText){
+  if(!sourceMediaAsset||!parsed)return [];
+  const parts=parsed.parts||{},student=normalizedSafetyWords([parts.instructions,parts.tasks].join(' ')),source=normalizedSafetyWords(sourceText),issues=[];
+  if(!/\[\[MEDIA_SOURCE\]\]/i.test(String(parts.instructions||'')+'\n'+String(parts.tasks||'')))issues.push('V žákovské části chybí marker [[MEDIA_SOURCE]].');
+  if(student.length<14||source.length<14)return issues;
+  const studentText=' '+student.join(' ')+' ',windowSize=14;
+  for(let i=0;i<=source.length-windowSize;i++){
+    const seq=source.slice(i,i+windowSize).join(' ');
+    if(seq.length>50&&studentText.includes(' '+seq+' ')){issues.push('Žákovská část obsahuje souvislou pasáž zdrojového přepisu ('+source.slice(i,i+Math.min(windowSize,8)).join(' ')+' …).');break}
+  }
+  return issues;
+}
+function mediaSourceNode(media,printMode=false){const m=cloneMediaSource(media,true);if(!m)return null;const box=document.createElement('figure');box.className=printMode?'print-media-source':'worksheet-media-source';const cap=document.createElement('figcaption');cap.textContent=(m.kind==='audio'?'Poslechový podklad: ':'Video podklad: ')+m.name;box.appendChild(cap);if(!printMode&&m.data){const el=document.createElement(m.kind==='audio'?'audio':'video');el.controls=true;el.preload='metadata';el.src='data:'+m.mime_type+';base64,'+m.data;if(m.kind==='video')el.playsInline=true;box.appendChild(el)}else{const note=document.createElement('div');note.className='media-print-note';note.textContent='Zdrojový soubor přehraje učitel / je přiložen samostatně.';box.appendChild(note)}return box}
+function mediaSourceHtml(media){const m=cloneMediaSource(media,false);return m?'<figure class="print-media-source"><figcaption>'+esc((m.kind==='audio'?'Poslechový podklad: ':'Video podklad: ')+m.name)+'</figcaption><div class="media-print-note">Zdrojový soubor přehraje učitel / je přiložen samostatně.</div></figure>':''}
 
 const VISUAL_MODES=Object.freeze(['preserve','reference','ignore']);
 const VISUAL_ROLES=Object.freeze(['critical','supporting','page_scan','decorative','unknown']);
-const VISUAL_TYPES=Object.freeze(['map','graph','diagram','geometry','biology','chemistry','table','notation','other']);
+const VISUAL_TYPES=Object.freeze(['map','graph','diagram','geometry','biology','chemistry','table','notation','timeline','circuit','molecule','anatomy','artwork','photograph','source','other']);
 let sourceVisualAssets=[];
 let sourceDocumentVisualNotes=[];
 let sourceScanReport=null;
@@ -263,7 +291,7 @@ function nextVisualId(){visualAssetSeq+=1;return 'VISUAL_'+visualAssetSeq}
 function isImageMime(mime){return /^image\/(?:png|jpe?g|webp|gif)$/i.test(String(mime||''))}
 function visualDataUrl(asset){return asset&&isImageMime(asset.mime_type)&&/^[A-Za-z0-9+/=\r\n]+$/.test(String(asset.data||''))?'data:'+asset.mime_type+';base64,'+String(asset.data||'').replace(/\s+/g,''):''}
 function visualRoleLabel(role){return ({critical:'obrazově klíčový podklad',supporting:'podpůrný obrázek',page_scan:'fotografie / sken celé stránky',decorative:'dekorativní obrázek',unknown:'nerozpoznaný obrázek'})[role]||'nerozpoznaný obrázek'}
-function visualTypeLabel(type){return ({map:'mapa',graph:'graf',diagram:'schéma',geometry:'geometrický nákres',biology:'biologický obrázek',chemistry:'chemický obrazový podklad',table:'tabulka jako obraz',notation:'speciální zápis / notace',other:'jiný obrazový podklad'})[type]||'jiný obrazový podklad'}
+function visualTypeLabel(type){return ({map:'mapa',graph:'graf',diagram:'schéma',geometry:'geometrický nákres',biology:'biologický obrázek',chemistry:'chemický obrazový podklad',table:'tabulka jako obraz',notation:'speciální zápis / notace',timeline:'časová osa',circuit:'elektrické schéma',molecule:'strukturní / molekulový obraz',anatomy:'anatomický obraz',artwork:'reprodukce díla',photograph:'fotografie',source:'obrazový pramen',other:'jiný obrazový podklad'})[type]||'jiný obrazový podklad'}
 function normalizeVisualMode(value){return VISUAL_MODES.includes(value)?value:'reference'}
 function defaultVisualMode(role){return role==='critical'?'preserve':role==='decorative'?'ignore':'reference'}
 function cloneVisualAsset(asset){return asset?{id:String(asset.id||''),name:String(asset.name||''),mime_type:String(asset.mime_type||''),data:String(asset.data||''),role:VISUAL_ROLES.includes(asset.role)?asset.role:'unknown',type:VISUAL_TYPES.includes(asset.type)?asset.type:'other',description:String(asset.description||'').slice(0,500),mode:normalizeVisualMode(asset.mode),source:String(asset.source||'upload'),optimized:!!asset.optimized,width:Number(asset.width)||0,height:Number(asset.height)||0} : null}
@@ -309,7 +337,7 @@ function applyVisualManifest(entries,documentEntries,scanReports=[]){
 }
 function visualManifestPrompt(actualCount,isPdf=false){
   const rows=actualCount?'Pro KAŽDÝ přiložený obrázek '+Array.from({length:actualCount},(_,i)=>'VISUAL_'+(i+1)).join(', ')+' přidej právě jeden řádek. ':'';
-  return 'Po samotném přepisu přidej technický blok pro aplikaci. Tento blok se žákům nezobrazí.\n<<<VISUAL_MANIFEST>>>\n'+rows+'Formát řádku obrázku: VISUAL_1|role=critical|type=map|description=stručný popis. role použij jen critical / supporting / page_scan / decorative. type použij jen map / graph / diagram / geometry / biology / chemistry / table / notation / other. critical znamená, že bez tohoto obrazu úloha nedává smysl a originální obraz je vhodné přesně zachovat. page_scan znamená fotografii nebo sken celé stránky, ze které se obvykle nemá vkládat celý obraz do nové verze bez výřezu. '+(isPdf?'Pokud PDF obsahuje obrazově klíčový prvek, který není samostatným obrázkem, přidej navíc řádek PDF_VISUAL|page=číslo|role=critical|type=map|description=stručný popis. ':'')+'VŽDY přidej právě jeden řádek SCAN_REPORT|status=good|pages=1|issues=none. status použij good, fair nebo poor podle čitelnosti zdroje; pages je počet zpracovaných stran/obrázků, pokud ho lze určit; do issues stručně napiš stín, rozmazání, ořez, šikmou perspektivu, nečitelnou část nebo none. Nehádej nečitelný obsah. Nevymýšlej obrazové prvky, které ve zdroji nejsou.\n<<<END_VISUAL_MANIFEST>>>';
+  return 'Po samotném přepisu přidej technický blok pro aplikaci. Tento blok se žákům nezobrazí.\n<<<VISUAL_MANIFEST>>>\n'+rows+'Formát řádku obrázku: VISUAL_1|role=critical|type=map|description=stručný popis. role použij jen critical / supporting / page_scan / decorative. type použij jen map / graph / diagram / geometry / biology / chemistry / table / notation / timeline / circuit / molecule / anatomy / artwork / photograph / source / other. critical znamená, že bez tohoto obrazu úloha nedává smysl a originální obraz je vhodné přesně zachovat. page_scan znamená fotografii nebo sken celé stránky, ze které se obvykle nemá vkládat celý obraz do nové verze bez výřezu. '+(isPdf?'Pokud PDF obsahuje obrazově klíčový prvek, který není samostatným obrázkem, přidej navíc řádek PDF_VISUAL|page=číslo|role=critical|type=map|description=stručný popis. ':'')+'VŽDY přidej právě jeden řádek SCAN_REPORT|status=good|pages=1|issues=none. status použij good, fair nebo poor podle čitelnosti zdroje; pages je počet zpracovaných stran/obrázků, pokud ho lze určit; do issues stručně napiš stín, rozmazání, ořez, šikmou perspektivu, nečitelnou část nebo none. Nehádej nečitelný obsah. Nevymýšlej obrazové prvky, které ve zdroji nejsou.\n<<<END_VISUAL_MANIFEST>>>';
 }
 function sourceVisualPromptLines(){
   const active=sourceVisualAssets.filter(a=>a.mode!=='ignore');if(!active.length&&!sourceDocumentVisualNotes.length)return [];
@@ -317,7 +345,7 @@ function sourceVisualPromptLines(){
   for(const a of active){
     const action=a.mode==='preserve'?'ZACHOVAT PŮVODNÍ OBRAZ VE VÝSTUPU':'POUŽÍT JEN JAKO REFERENCI';
     lines.push(a.id+': '+action+'; '+visualTypeLabel(a.type)+'; '+(a.description||visualRoleLabel(a.role))+'.');
-    if(a.mode==='preserve')lines.push('Pro '+a.id+' vlož do tasks marker [['+a.id+']] přesně tam, kde má původní obraz v žákovské verzi být. Obraz nepřekresluj, nepřepisuj do textu a neměň jeho obsah; aplikace marker nahradí uloženým zdrojovým obrázkem.');
+    if(a.mode==='preserve')lines.push('Pro '+a.id+' vlož do tasks marker [['+a.id+']] přesně tam, kde má původní obraz v žákovské verzi být. Obraz nepřekresluj, nepřepisuj do textu a neměň jeho obsah; aplikace marker nahradí uloženým zdrojovým obrázkem. VŠECHNY hodnoty, popisky, polohy, symboly a fakta zakódované v tomto zachovaném obrazu jsou neměnné i při paralelní variantě; novost vytvoř jinými otázkami nebo změnou pouze těch údajů, které nejsou na obrazu.');
   }
   if(sourceDocumentVisualNotes.length)lines.push('Zdrojový PDF/dokument obsahuje obrazově důležitý prvek. Pokud k němu učitel přidal samostatný snímek nebo výřez mezi VISUAL_n, použij přesně tento zachovaný obraz. Pokud samostatný obraz přidán není, nevymýšlej náhradu a v teacher_note upozorni, že původní obraz z PDF nelze pixelově přenést bez doplňkového snímku.');
   return [lines.join(' ')];
@@ -416,12 +444,13 @@ async function applyVisualCrop(){
 function visualAssetMap(assets){return new Map((assets||[]).filter(Boolean).map(a=>[String(a.id||'').toUpperCase(),a]))}
 function visualMarkerRegex(){return /\[\[(VISUAL_\d+)\]\]/gi}
 function sanitizeVisualMarkers(text,assets){const allowed=visualAssetMap(assets);return String(text||'').replace(visualMarkerRegex(),(m,id)=>allowed.has(String(id).toUpperCase())?'[['+String(id).toUpperCase()+']]':'')}
-function ensureVisualMarkers(text,assets){let out=sanitizeVisualMarkers(text,assets);const missing=[];for(const a of (assets||[])){const id=String(a.id||'').toUpperCase();if(!id)continue;const re=new RegExp('\\[\\['+id+'\\]\\]','i');if(!re.test(out))missing.push('[['+id+']]')}return (missing.length?missing.join('\n\n')+'\n\n':'')+out.trim()}
-function appendRichSegment(parent,text){if(typeof appendEducationalRichText==='function'){appendEducationalRichText(parent,text);return}if(typeof appendStemRichText==='function'){appendStemRichText(parent,text);return}const src=String(text||'');const re=/\*\*(.+?)\*\*/g;let last=0,m;while((m=re.exec(src))){if(m.index>last)parent.appendChild(document.createTextNode(src.slice(last,m.index)));const b=document.createElement('b');b.textContent=m[1];parent.appendChild(b);last=re.lastIndex}if(last<src.length)parent.appendChild(document.createTextNode(src.slice(last)))}
+function visualReferenceUsed(text,id){const src=String(text||''),re=new RegExp('\\[\\['+id+'\\]\\]','i');if(re.test(src))return true;if(typeof educationalMarkerInfo==='function')for(const line of src.split(/\r?\n/)){const m=educationalMarkerInfo(line);if(m&&!m.error&&m.kind==='annotate'&&String(m.spec&&m.spec.source||'').toUpperCase()===id)return true}return false}
+function ensureVisualMarkers(text,assets){let out=sanitizeVisualMarkers(text,assets);const missing=[];for(const a of (assets||[])){const id=String(a.id||'').toUpperCase();if(id&&!visualReferenceUsed(out,id))missing.push('[['+id+']]')}return (missing.length?missing.join('\n\n')+'\n\n':'')+out.trim()}
+function appendRichSegment(parent,text,assets=[]){if(typeof appendEducationalRichText==='function'){appendEducationalRichText(parent,text,undefined,assets);return}if(typeof appendStemRichText==='function'){appendStemRichText(parent,text);return}const src=String(text||'');const re=/\*\*(.+?)\*\*/g;let last=0,m;while((m=re.exec(src))){if(m.index>last)parent.appendChild(document.createTextNode(src.slice(last,m.index)));const b=document.createElement('b');b.textContent=m[1];parent.appendChild(b);last=re.lastIndex}if(last<src.length)parent.appendChild(document.createTextNode(src.slice(last)))}
 function makeVisualFigure(asset,printMode=false){const url=visualDataUrl(asset);if(!url)return null;const fig=document.createElement('figure');fig.className=printMode?'print-visual':'worksheet-visual';fig.dataset.visualId=String(asset.id||'');const img=document.createElement('img');img.src=url;img.alt=asset.description||visualTypeLabel(asset.type)||'Obrazový podklad';fig.appendChild(img);return fig}
-function setRichTextWithVisuals(el,text,assets){if(!el)return;const map=visualAssetMap(assets),frag=document.createDocumentFragment(),src=String(text||''),re=visualMarkerRegex();let last=0,m;while((m=re.exec(src))){if(m.index>last)appendRichSegment(frag,src.slice(last,m.index));const a=map.get(String(m[1]).toUpperCase()),fig=makeVisualFigure(a,false);if(fig)frag.appendChild(fig);last=re.lastIndex}if(last<src.length)appendRichSegment(frag,src.slice(last));el.replaceChildren(frag)}
+function setRichTextWithVisuals(el,text,assets,media=null){if(!el)return;const map=visualAssetMap(assets),frag=document.createDocumentFragment(),src=String(text||''),re=/\[\[(VISUAL_\d+|MEDIA_SOURCE)\]\]/gi;let last=0,m;while((m=re.exec(src))){if(m.index>last)appendRichSegment(frag,src.slice(last,m.index),assets);const id=String(m[1]).toUpperCase();if(id==='MEDIA_SOURCE'){const node=mediaSourceNode(media,false);if(node)frag.appendChild(node);else appendRichSegment(frag,'[[MEDIA_SOURCE]]',assets)}else{const a=map.get(id),fig=makeVisualFigure(a,false);if(fig)frag.appendChild(fig)}last=re.lastIndex}if(last<src.length)appendRichSegment(frag,src.slice(last),assets);el.replaceChildren(frag)}
 function visualFigureHtml(asset,printMode=true){const url=visualDataUrl(asset);if(!url)return '';const cls=printMode?'print-visual':'worksheet-visual';return '<figure class="'+cls+'" data-visual-id="'+esc(String(asset.id||''))+'"><img src="'+url+'" alt="'+esc(asset.description||visualTypeLabel(asset.type)||'Obrazový podklad')+'"></figure>'}
-function renderTextWithVisuals(text,assets,printMode=true){const map=visualAssetMap(assets),src=String(text||''),re=visualMarkerRegex();let out='',last=0,m;while((m=re.exec(src))){out+=render(src.slice(last,m.index));const a=map.get(String(m[1]).toUpperCase());if(a)out+=visualFigureHtml(a,printMode);last=re.lastIndex}out+=render(src.slice(last));return out}
+function renderTextWithVisuals(text,assets,printMode=true,media=null){const map=visualAssetMap(assets),src=String(text||''),re=/\[\[(VISUAL_\d+|MEDIA_SOURCE)\]\]/gi,rich=s=>typeof renderEducationalTextHtml==='function'?renderEducationalTextHtml(s,undefined,assets):render(s);let out='',last=0,m;while((m=re.exec(src))){out+=rich(src.slice(last,m.index));const id=String(m[1]).toUpperCase();if(id==='MEDIA_SOURCE')out+=mediaSourceHtml(media);else{const a=map.get(id);if(a)out+=visualFigureHtml(a,printMode)}last=re.lastIndex}out+=rich(src.slice(last));return out}
 function setUploadInfo(msg){const el=$('#uploadInfo');if(msg){el.textContent=msg;el.classList.add('show');setStatus('statusInput','soubor připraven','ok')}else{el.textContent='';el.classList.remove('show');if(!$('#pasteText')||!$('#pasteText').value.trim())setStatus('statusInput','čeká na zadání','warn')}}
 function htmlToPlainText(html){const doc=new DOMParser().parseFromString(String(html||''),'text/html');doc.querySelectorAll('script,style,noscript').forEach(el=>el.remove());return (doc.body?doc.body.innerText:doc.documentElement.textContent||'').replace(/\n{3,}/g,'\n\n').trim()}
 
@@ -495,7 +524,8 @@ async function readDocxRich(file){
   if(!wanted.length)throw new Error('V .docx se nenašel čitelný obsah dokumentu.');
   const chunks=[];let documentXml='';
   for(const entry of wanted){const xml=new TextDecoder('utf-8').decode(await zip.extract(entry));if(/^word\/document\.xml$/i.test(entry.name))documentXml=xml;const text=officeBlockText(xml,/<w:p\b[\s\S]*?<\/w:p>/g);if(text.trim())chunks.push(text.trim())}
-  const text=chunks.join('\n\n').trim();
+  let text=chunks.join('\n\n').trim();
+  const nativeObjects=await (await loadOfficeRichModule()).readDocxNativeObjects(zip,officeRichDeps());if(nativeObjects.text)text+=(text?'\n\n':'')+nativeObjects.text;
   const relEntry=zip.entries.find(e=>/^word\/_rels\/document\.xml\.rels$/i.test(e.name));
   const relsXml=relEntry?new TextDecoder('utf-8').decode(await zip.extract(relEntry)):'';
   let paths=docxReferencedMediaPaths(documentXml,relsXml);
@@ -513,52 +543,22 @@ async function readDocxRich(file){
     items.push(await resizeImage(imageFile,paths.length>1,Math.max(1,paths.length)));
   }
   if(!text&&!items.length)throw new Error('V .docx se nenašel čitelný text ani podporované vložené obrázky.');
-  return {text,items,imageCount:items.length,unsupportedImageCount:unsupportedImagePaths.length,unsupportedImageNames:unsupportedImagePaths.slice(0,8).map(x=>x.split('/').pop())};
+  return {text,items,imageCount:items.length,chartCount:nativeObjects.chartCount,diagramCount:nativeObjects.diagramCount,drawingCount:nativeObjects.drawingCount,unsupportedNativeCount:nativeObjects.unsupportedNativeCount,unsupportedImageCount:unsupportedImagePaths.length,unsupportedImageNames:unsupportedImagePaths.slice(0,8).map(x=>x.split('/').pop())};
 }
-async function readPptx(file){
-  const zip=await readZipEntries(file,'.pptx');
-  const slides=zip.entries.filter(e=>/^ppt\/slides\/slide\d+\.xml$/i.test(e.name)).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
-  if(!slides.length)throw new Error('V .pptx se nenašly čitelné snímky.');
-  const chunks=[];
-  for(let i=0;i<slides.length;i++){const xml=new TextDecoder('utf-8').decode(await zip.extract(slides[i]));const text=officeBlockText(xml,/<a:p\b[\s\S]*?<\/a:p>/g);if(text.trim())chunks.push('Snímek '+(i+1)+':\n'+text.trim())}
-  return chunks.join('\n\n').trim();
-}
-async function readXlsx(file){
-  const zip=await readZipEntries(file,'.xlsx');
-  let shared=[];
-  const xlsxXmlText=xml=>[...String(xml||'').matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map(m=>xmlUnescape(m[1])).join('');
-  const ss=zip.entries.find(e=>/^xl\/sharedStrings\.xml$/i.test(e.name));
-  if(ss){const xml=new TextDecoder('utf-8').decode(await zip.extract(ss));shared=[...xml.matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>/g)].map(m=>xlsxXmlText(m[1]))}
-  const sheets=zip.entries.filter(e=>/^xl\/worksheets\/sheet\d+\.xml$/i.test(e.name)).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
-  if(!sheets.length)throw new Error('V .xlsx se nenašly čitelné listy.');
-  const colIndex=ref=>{let n=0;for(const ch of String(ref||'').replace(/\d/g,'')){n=n*26+(ch.charCodeAt(0)-64)}return Math.max(0,n-1)};
-  function cellText(cell){
-    const type=(cell.match(/\bt="([^"]+)"/)||[])[1]||'',formula=(cell.match(/<f[^>]*>([\s\S]*?)<\/f>/)||[])[1];
-    if(type==='inlineStr')return xlsxXmlText(cell);
-    const v=(cell.match(/<v>([\s\S]*?)<\/v>/)||[])[1];
-    let value=v==null?'':(type==='s'?(shared[Number(v)]||''):xmlUnescape(v));
-    if(formula)value='='+xmlUnescape(formula)+(value?' → '+value:'');
-    return value;
-  }
-  const out=[];
-  for(let i=0;i<sheets.length;i++){
-    const xml=new TextDecoder('utf-8').decode(await zip.extract(sheets[i]));
-    const rows=[...xml.matchAll(/<row\b[^>]*>([\s\S]*?)<\/row>/g)].map(r=>{
-      const cells=[];
-      for(const c of r[1].matchAll(/<c\b[^>]*>[\s\S]*?<\/c>/g)){
-        const ref=(c[0].match(/\br="([A-Z]+\d+)"/)||[])[1];
-        const idx=ref?colIndex(ref):cells.length;
-        while(cells.length<idx)cells.push('');
-        cells[idx]=cellText(c[0]);
-      }
-      return cells.join('\t').replace(/\t+$/,'');
-    });
-    const body=rows.filter(r=>r.trim()).join('\n');
-    if(body.trim())out.push('List '+(i+1)+':\n'+body);
-  }
-  const text=out.join('\n\n').trim();
-  if(!text)throw new Error('V .xlsx se nenašel čitelný obsah.');
-  return text;
+let officeRichModulePromise=null;
+function officeRichDeps(){return {readZipEntries,officeBlockText,officeImageMime,resizeImage,xmlUnescape,makeAppError,maxImageCount:MAX_IMAGE_COUNT}}
+function loadOfficeRichModule(){return officeRichModulePromise||(officeRichModulePromise=import('./modules/office-rich.js'))}
+async function readPptxRich(file){return (await loadOfficeRichModule()).readPptxRich(file,officeRichDeps())}
+async function readXlsxRich(file){return (await loadOfficeRichModule()).readXlsxRich(file,officeRichDeps())}
+let geoJsonModulePromise=null;
+function loadGeoJsonModule(){return geoJsonModulePromise||(geoJsonModulePromise=import('./modules/geojson-engine.js').catch(error=>{geoJsonModulePromise=null;throw error}))}
+async function prepareGeoJsonMap(file){
+  if(file.size>24*1024*1024)throw makeAppError('GeoJSON je příliš velký pro bezpečné lokální zpracování. Maximum je 24 MB.','FILE_TOO_LARGE');
+  const raw=await fileToText(file),g=await loadGeoJsonModule();let fc=null,json='',tol=.00005;
+  for(let i=0;i<9;i++){fc=g.normalizeGeoJson(raw,{tolerance:tol,maxFeatures:1200,maxPoints:60000});json=JSON.stringify(fc);if(json.length<=155000)break;tol=tol?tol*2:.0001}
+  if(!fc||json.length>170000)throw makeAppError('Mapová vrstva je i po bezpečném zjednodušení příliš detailní. Exportuj pouze potřebné kraje/okresy/oblasti nebo použij jednodušší GeoJSON.','FILE_TOO_LARGE');
+  const names=g.geoJsonFeatureSummary(fc).map(x=>x.name).filter(Boolean);
+  return {text:'PŘESNÁ MAPOVÁ VRSTVA ZE ZDROJOVÉHO SOUBORU '+file.name+' — geometrii nepřekresluj ani nevymýšlej. Pro úlohy zachovej tento marker:\n[[EDU_MAP|'+JSON.stringify({title:file.name.replace(/\.geojson$/i,''),geojson:fc})+']]\nPrvky vrstvy: '+names.slice(0,180).join(' | '),featureCount:fc.features.length,pointCount:fc.meta?.pointCount||0,tolerance:tol};
 }
 function readRtf(text){
   const cpMatch=String(text||'').match(/\\ansicpg(\d+)/i);
@@ -593,7 +593,7 @@ const visualSupplementFile=$('#visualSupplementFile'),visualSupplementBtn=$('#vi
 if(visualSupplementBtn&&visualSupplementFile){visualSupplementBtn.addEventListener('click',()=>visualSupplementFile.click());visualSupplementFile.addEventListener('change',async e=>{try{await appendSupplementalVisualFiles(e.target.files||[])}catch(err){showMessage('Podklad se nepodařilo přidat',friendlyApiMessage(err))}finally{visualSupplementFile.value=''}})}
 
 async function handleFiles(fileList){
-  const previous={uploaded,filename:$('#filename').textContent,info:$('#uploadInfo').textContent,chip:$('#filechip').classList.contains('show'),thumb:$('#thumb').classList.contains('show'),thumbSrc:$('#thumbImg').src,visualAssets:sourceVisualAssets.map(cloneSourceVisualAsset),visualNotes:sourceDocumentVisualNotes.map(x=>({...x})),scanReport:sourceScanReport?{...sourceScanReport}:null,visualSeq:visualAssetSeq};
+  const previous={uploaded,filename:$('#filename').textContent,info:$('#uploadInfo').textContent,chip:$('#filechip').classList.contains('show'),thumb:$('#thumb').classList.contains('show'),thumbSrc:$('#thumbImg').src,visualAssets:sourceVisualAssets.map(cloneSourceVisualAsset),visualNotes:sourceDocumentVisualNotes.map(x=>({...x})),scanReport:sourceScanReport?{...sourceScanReport}:null,visualSeq:visualAssetSeq,mediaSource:cloneMediaSource(sourceMediaAsset,true)};
   clearErr($('#inputErr'));setUploadInfo('');$('#thumb').classList.remove('show');
   const files=[...fileList];
   if(!files.length)return;
@@ -607,7 +607,7 @@ async function handleFiles(fileList){
       const items=[];
       if(pdfs.length){const pdf=pdfs[0];if(pdf.size>MAX_PDF_BYTES)throw makeAppError('PDF je příliš velké pro přímé odeslání ('+humanBytes(pdf.size)+'). Bezpečný limit je '+humanBytes(MAX_PDF_BYTES)+'.','FILE_TOO_LARGE');items.push({mime_type:'application/pdf',data:await fileToBase64(pdf),name:pdf.name,bytes:pdf.size,originalBytes:pdf.size,compressed:false})}
       items.push(...imageItems);if(mediaBytes(items)>MAX_INLINE_REQUEST_BYTES)throw makeAppError('Média jsou i po zmenšení pro přímé API volání příliš velká ('+humanBytes(mediaBytes(items))+'). Uber počet fotek, zmenši PDF nebo materiál rozděl.','REQUEST_TOO_LARGE');
-      uploaded={kind:'media',items};setSourceVisualAssetsFromItems(imageItems,pdfs.length?'pdf-supplement':'multi-image');
+      uploaded={kind:'media',items};resetSourceMedia();setSourceVisualAssetsFromItems(imageItems,pdfs.length?'pdf-supplement':'multi-image');
       if(imageItems.length){$('#thumbImg').src='data:'+imageItems[0].mime_type+';base64,'+imageItems[0].data;$('#thumb').classList.add('show')}
       $('#filename').textContent=pdfs.length?'📑 '+pdfs[0].name+' + '+images.length+' obrázků':'🖼️ '+images.length+' obrázků';
       const saved=images.reduce((sum,f)=>sum+f.size,0)-imageItems.reduce((sum,it)=>sum+it.bytes,0);
@@ -618,7 +618,7 @@ async function handleFiles(fileList){
     $('#filechip').classList.add('show');
     $('#pasteText').value='';
   }catch(err){
-    uploaded=previous.uploaded;sourceVisualAssets=previous.visualAssets.map(cloneSourceVisualAsset).filter(Boolean);sourceDocumentVisualNotes=previous.visualNotes.map(x=>({...x}));sourceScanReport=previous.scanReport?{...previous.scanReport}:null;visualAssetSeq=previous.visualSeq;renderSourceVisualPanel();if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';$('#filename').textContent=previous.filename;$('#filechip').classList.toggle('show',previous.chip);$('#thumb').classList.toggle('show',previous.thumb);if(previous.thumbSrc)$('#thumbImg').src=previous.thumbSrc;if(previous.info)setUploadInfo(previous.info);else if(previous.uploaded)setUploadInfo('Původní soubor zůstal vybraný.');
+    uploaded=previous.uploaded;sourceMediaAsset=cloneMediaSource(previous.mediaSource,true);sourceVisualAssets=previous.visualAssets.map(cloneSourceVisualAsset).filter(Boolean);sourceDocumentVisualNotes=previous.visualNotes.map(x=>({...x}));sourceScanReport=previous.scanReport?{...previous.scanReport}:null;visualAssetSeq=previous.visualSeq;renderSourceVisualPanel();if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';$('#filename').textContent=previous.filename;$('#filechip').classList.toggle('show',previous.chip);$('#thumb').classList.toggle('show',previous.thumb);if(previous.thumbSrc)$('#thumbImg').src=previous.thumbSrc;if(previous.info)setUploadInfo(previous.info);else if(previous.uploaded)setUploadInfo('Původní soubor zůstal vybraný.');
     errBox($('#inputErr'),friendlyApiMessage(err)||err.message)
   }
 }
@@ -630,43 +630,59 @@ async function handleSingleFile(file){
   const isPptx=name.endsWith('.pptx')||file.type==='application/vnd.openxmlformats-officedocument.presentationml.presentation';
   const isXlsx=name.endsWith('.xlsx')||file.type==='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
   const isOldOffice=/\.(doc|ppt|xls)$/.test(name)&&!isDocx&&!isPptx&&!isXlsx;
+  const isGeoJson=name.endsWith('.geojson')||file.type==='application/geo+json';
   const isTxt=name.endsWith('.txt')||name.endsWith('.md')||name.endsWith('.csv')||name.endsWith('.tsv')||name.endsWith('.json')||file.type==='text/plain'||/^text\/(csv|markdown)/.test(file.type||'');
   const isHtml=name.endsWith('.html')||name.endsWith('.htm')||file.type==='text/html';
   const isRtf=name.endsWith('.rtf');
-  if(isImg){
+  const mediaModule=await loadMultimediaModule();
+  const mediaMeta=mediaModule.detectMultimediaFile(file);
+  if(mediaMeta){
+    const item=await mediaModule.prepareMultimediaFile(file,{maxBytes:MAX_MULTIMEDIA_SOURCE_BYTES,maxInlineBytes:MAX_INLINE_REQUEST_BYTES,makeAppError,humanBytes,fileToBase64});
+    sourceMediaAsset=cloneMediaSource(item,true);uploaded={kind:'media',items:[item],mediaKind:item.kind};resetSourceVisualAssets();
+    $('#filename').textContent=(item.kind==='audio'?'🎧 ':'🎬 ')+file.name;
+    setUploadInfo((item.kind==='audio'?'Audio':'Video')+' se odešle přímo modelu jako zdrojový podklad. Při tvorbě poslechové/pozorovací úlohy se transkript nebo popis odpovědí nesmí objevit v žákovské části; zdroj zůstává pevný i pro paralelní varianty. V PDF bude uveden název přiloženého souboru.');
+  } else if(isImg){
     const item=await resizeImage(file,false,1);
-    uploaded={kind:'media',items:[item]};setSourceVisualAssetsFromItems([item],'image');
+    uploaded={kind:'media',items:[item]};resetSourceMedia();setSourceVisualAssetsFromItems([item],'image');
     $('#thumbImg').src='data:'+item.mime_type+';base64,'+item.data;$('#thumb').classList.add('show');
     $('#filename').textContent='🖼️ '+file.name;
     setUploadInfo((item.compressed?'Obrázek byl automaticky zmenšen z '+humanBytes(item.originalBytes)+' na '+humanBytes(item.bytes)+' kvůli bezpečnému API limitu.':'Obrázek se odešle v původní kvalitě.')+' Před načtením můžeš v panelu obrazových podkladů upravit pořadí, otočení, čtecí kontrast nebo výřez.');
   } else if(isPdf){
     if(file.size>MAX_PDF_BYTES)throw makeAppError('PDF je příliš velké pro přímé odeslání ('+humanBytes(file.size)+'). Bezpečný limit pro PDF je '+humanBytes(MAX_PDF_BYTES)+'. Zkus PDF zmenšit, rozdělit nebo vložit text.','FILE_TOO_LARGE');
     const data=await fileToBase64(file);
-    uploaded={kind:'media',items:[{mime_type:'application/pdf',data,name:file.name,bytes:file.size,originalBytes:file.size,compressed:false}]};resetSourceVisualAssets();
+    uploaded={kind:'media',items:[{mime_type:'application/pdf',data,name:file.name,bytes:file.size,originalBytes:file.size,compressed:false}]};resetSourceMedia();resetSourceVisualAssets();
     $('#filename').textContent='📑 '+file.name;
     setUploadInfo('PDF se odešle přímo a model vizuálně projde i stránky bez textové vrstvy. Pokud obsahuje mapu, graf nebo schéma, které chceš přesně zachovat v novém listu, po načtení přidej snímek příslušné stránky nebo výřez.');
   } else if(isDocx){
     const rich=await readDocxRich(file);if(rich.text)assertTextLength(rich.text,'Text z .docx');
     if(rich.items.length&&mediaBytes(rich.items)>MAX_INLINE_REQUEST_BYTES)throw makeAppError('Vložené obrázky v DOCX jsou po převodu příliš velké. Ulož dokument jako PDF nebo obrázky zmenši.','REQUEST_TOO_LARGE');
-    uploaded=rich.items.length?{kind:'mixed',text:rich.text,items:rich.items}:{kind:'text',text:rich.text};if(rich.items.length)setSourceVisualAssetsFromItems(rich.items,'docx');else resetSourceVisualAssets();$('#filename').textContent='📝 '+file.name;
-    const docxNote=(rich.items.length?'DOCX byl načten včetně '+rich.items.length+' podporovaných vložených obrázků. Textová vrstva má '+String(rich.text||'').trim().split(/\s+/).filter(Boolean).length+' slov. Word Equation zlomky, exponenty, indexy a běžné odmocniny se převádějí do zachovatelného textového zápisu. Při načtení zadání se modelu pošle text i obrázky, takže cvičení vložená jako screenshoty nezmizí.':officeExtractNote('DOCX',rich.text))+(rich.unsupportedImageCount?' Upozornění: '+rich.unsupportedImageCount+' obrazový prvek je ve formátu, který prohlížeč neumí bezpečně zachovat ('+rich.unsupportedImageNames.join(', ')+'). Pro tento prvek použij PDF nebo obrázek.':'');setUploadInfo(docxNote);
+    uploaded=rich.items.length?{kind:'mixed',text:rich.text,items:rich.items}:{kind:'text',text:rich.text};resetSourceMedia();if(rich.items.length)setSourceVisualAssetsFromItems(rich.items,'docx');else resetSourceVisualAssets();$('#filename').textContent='📝 '+file.name;
+    const docxNote=(rich.items.length?'DOCX byl načten včetně '+rich.items.length+' podporovaných vložených obrázků. Textová vrstva má '+String(rich.text||'').trim().split(/\s+/).filter(Boolean).length+' slov. Word Equation zlomky, exponenty, indexy a běžné odmocniny se převádějí do zachovatelného textového zápisu. Při načtení zadání se modelu pošle text i obrázky, takže cvičení vložená jako screenshoty nezmizí.':officeExtractNote('DOCX',rich.text))+(rich.chartCount?' Nativní grafy: '+rich.chartCount+'; datová cache byla převedena na renderovatelný EDU_CHART tam, kde ji lze bezpečně rekonstruovat.':'')+(rich.drawingCount?' Nativní DrawingML tvary: '+rich.drawingCount+'; geometrie a text byly převedeny na EDU_OFFICE.':'')+(rich.diagramCount?' Nativní diagramy/SmartArt: '+rich.diagramCount+'; jejich textová vrstva byla přidána do přepisu.':'')+(rich.unsupportedNativeCount?' Některé nativní objekty vyžadují vizuální kontrolu: '+rich.unsupportedNativeCount+'; pokud je vzhled podstatný, použij PDF/snímek.':'')+(rich.unsupportedImageCount?' Upozornění: '+rich.unsupportedImageCount+' obrazový prvek je ve formátu, který prohlížeč neumí bezpečně zachovat ('+rich.unsupportedImageNames.join(', ')+'). Pro tento prvek použij PDF nebo obrázek.':'');setUploadInfo(docxNote);
   } else if(isPptx){
-    const text=await readPptx(file);assertTextLength(text,'Text z .pptx');uploaded={kind:'text',text};resetSourceVisualAssets();$('#filename').textContent='🖼️ '+file.name;setUploadInfo(officeExtractNote('PPTX',text));
+    const rich=await readPptxRich(file);if(rich.text)assertTextLength(rich.text,'Text z .pptx');
+    if(rich.items.length&&mediaBytes(rich.items)>MAX_INLINE_REQUEST_BYTES)throw makeAppError('Vložené obrázky v PPTX jsou po převodu příliš velké. Ulož prezentaci jako PDF nebo obrázky zmenši.','REQUEST_TOO_LARGE');
+    uploaded=rich.items.length?{kind:'mixed',text:rich.text,items:rich.items}:{kind:'text',text:rich.text};resetSourceMedia();if(rich.items.length)setSourceVisualAssetsFromItems(rich.items,'pptx');else resetSourceVisualAssets();$('#filename').textContent='🖼️ '+file.name;
+    setUploadInfo(officeExtractNote('PPTX',rich.text)+(rich.items.length?' Vložené obrázky: '+rich.items.length+'; po načtení je zkontroluj v panelu Obrazové podklady.':'')+(rich.chartCount?' Nativní grafy: '+rich.chartCount+'; čitelné datové cache byly převedeny na renderovatelný EDU_CHART.':'')+(rich.drawingCount?' DrawingML tvary/spojnice: '+rich.drawingCount+'; geometrie a text byly převedeny na deterministický EDU_OFFICE.':'')+(rich.diagramCount?' SmartArt/diagramy: '+rich.diagramCount+'; textová vrstva byla zachována.':'')+(rich.unsupportedNativeCount?' Nativní rámce vyžadující vizuální kontrolu: '+rich.unsupportedNativeCount+'. Pokud je přesný vzhled součástí úlohy, použij PDF nebo snímek; aplikace je nesmí tiše nahradit.':'')+(rich.unsupportedImageCount?' Nepodporované obrazové prvky: '+rich.unsupportedImageCount+' ('+rich.unsupportedImageNames.join(', ')+'). Pro ně použij PDF nebo samostatný obrázek.':''));
   } else if(isXlsx){
-    const text=await readXlsx(file);assertTextLength(text,'Text z .xlsx');uploaded={kind:'text',text};resetSourceVisualAssets();$('#filename').textContent='📊 '+file.name;setUploadInfo(officeExtractNote('XLSX',text));
+    const rich=await readXlsxRich(file);if(rich.text)assertTextLength(rich.text,'Text z .xlsx');
+    if(rich.items.length&&mediaBytes(rich.items)>MAX_INLINE_REQUEST_BYTES)throw makeAppError('Vložené obrázky v XLSX jsou po převodu příliš velké. Ulož sešit jako PDF nebo obrázky zmenši.','REQUEST_TOO_LARGE');
+    uploaded=rich.items.length?{kind:'mixed',text:rich.text,items:rich.items}:{kind:'text',text:rich.text};resetSourceMedia();if(rich.items.length)setSourceVisualAssetsFromItems(rich.items,'xlsx');else resetSourceVisualAssets();$('#filename').textContent='📊 '+file.name;
+    setUploadInfo(officeExtractNote('XLSX',rich.text)+(rich.items.length?' Vložené obrázky: '+rich.items.length+'; po načtení je zkontroluj v panelu Obrazové podklady.':'')+(rich.chartCount?' Nativní grafy: '+rich.chartCount+'. Jejich datové oblasti a uložené hodnoty byly přidány do přepisu pro AI; pro pixelově shodný vzhled grafu použij PDF nebo snímek grafu.':'')+(rich.drawingCount?' Nativní DrawingML tvary: '+rich.drawingCount+'; geometrie a text byly převedeny na EDU_OFFICE.':'')+(rich.unsupportedNativeCount?' Nativní objekty vyžadující vizuální kontrolu: '+rich.unsupportedNativeCount+'.':'')+(rich.unsupportedImageCount?' Nepodporované obrazové prvky: '+rich.unsupportedImageCount+' ('+rich.unsupportedImageNames.join(', ')+').':''));
+  } else if(isGeoJson){
+    const map=await prepareGeoJsonMap(file);assertTextLength(map.text,'Mapová vrstva');uploaded={kind:'text',text:map.text};resetSourceMedia();resetSourceVisualAssets();$('#filename').textContent='🗺️ '+file.name;setUploadInfo('GeoJSON byl lokálně validován a zjednodušen se zachováním identifikátorů a pořadí výukových oblastí: '+map.featureCount+' prvků, '+map.pointCount+' bodů. Při generování zůstává geometrie zdrojovým datem a AI smí měnit jen otázky/popisky, ne hranice.');
   } else if(isTxt){
-    const text=await fileToText(file);assertTextLength(text,'Text ze souboru');uploaded={kind:'text',text};resetSourceVisualAssets();$('#filename').textContent='📝 '+file.name;setUploadInfo('Textový soubor byl načten lokálně. Před pokračováním zkontroluj jeho obsah.');
+    const text=await fileToText(file);assertTextLength(text,'Text ze souboru');uploaded={kind:'text',text};resetSourceMedia();resetSourceVisualAssets();$('#filename').textContent='📝 '+file.name;setUploadInfo('Textový soubor byl načten lokálně. Před pokračováním zkontroluj jeho obsah.');
   } else if(isHtml){
-    const text=htmlToPlainText(await fileToText(file));assertTextLength(text,'Text z HTML');uploaded={kind:'text',text};resetSourceVisualAssets();$('#filename').textContent='🌐 '+file.name;setUploadInfo('HTML byl převeden lokálně na čistý text. Zkontroluj tabulky a pořadí prvků.');
+    const text=htmlToPlainText(await fileToText(file));assertTextLength(text,'Text z HTML');uploaded={kind:'text',text};resetSourceMedia();resetSourceVisualAssets();$('#filename').textContent='🌐 '+file.name;setUploadInfo('HTML byl převeden lokálně na čistý text. Zkontroluj tabulky a pořadí prvků.');
   } else if(isRtf){
-    const text=readRtf(await fileToText(file));assertTextLength(text,'Text z .rtf');uploaded={kind:'text',text};resetSourceVisualAssets();$('#filename').textContent='📝 '+file.name;setUploadInfo('RTF byl převeden lokálně na čistý text. Zkontroluj formátování a speciální znaky.');
+    const text=readRtf(await fileToText(file));assertTextLength(text,'Text z .rtf');uploaded={kind:'text',text};resetSourceMedia();resetSourceVisualAssets();$('#filename').textContent='📝 '+file.name;setUploadInfo('RTF byl převeden lokálně na čistý text. Zkontroluj formátování a speciální znaky.');
   } else if(isOldOffice){
     throw makeAppError('Starý binární formát '+name.split('.').pop().toUpperCase()+' appka přímo nepřečte. Otevři ho v Office/Google aplikaci a ulož jako .docx/.pptx/.xlsx, nebo vlož text ručně.','FILE_TOO_LARGE');
   } else {
-    throw makeAppError('Nepodporovaný formát. Appka umí: fotky/obrázky, PDF, .docx, .pptx, .xlsx, .txt, .rtf, .md, .csv, .tsv, .html a .json.','FILE_TOO_LARGE');
+    throw makeAppError('Nepodporovaný formát. Appka umí: fotky/obrázky, audio/video, PDF, .docx, .pptx, .xlsx, .txt, .rtf, .md, .csv, .tsv, .html, .json a .geojson.','FILE_TOO_LARGE');
   }
 }
-$('#filex').addEventListener('click',()=>{uploaded=null;resetSourceVisualAssets();fileInput.value='';$('#filechip').classList.remove('show');$('#thumb').classList.remove('show');setUploadInfo('');setStatus('statusInput',$('#pasteText').value.trim()?'vložený text':'čeká na zadání',$('#pasteText').value.trim()?'ok':'warn')});
+$('#filex').addEventListener('click',()=>{uploaded=null;resetSourceMedia();resetSourceVisualAssets();fileInput.value='';$('#filechip').classList.remove('show');$('#thumb').classList.remove('show');setUploadInfo('');setStatus('statusInput',$('#pasteText').value.trim()?'vložený text':'čeká na zadání',$('#pasteText').value.trim()?'ok':'warn')});
 
 $('#extractBtn').addEventListener('click',async()=>{
   clearErr($('#inputErr'));
@@ -691,13 +707,14 @@ $('#extractBtn').addEventListener('click',async()=>{
   }
   if(!requireApiKeyForAction('načtení souboru')){errBox($('#inputErr'),'Bez API klíče se soubor nezačne zpracovávat. Vlož klíč v kroku 1 pod tlačítkem „Nastavit / změnit API klíč“ a zvol „Použít jen pro relaci“.');return}
   const btn=$('#extractBtn'),extractLabel=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="mini"></span> Načítám zadání…';setStatus('statusFlow','načítám zadání','busy');
-  const extractionCore="Toto je zadání školního testu, pracovního listu nebo učebního materiálu libovolného předmětu. Vstup může být digitální dokument, fotografie, sken nebo PDF bez textové vrstvy. Vizuálně projdi KAŽDOU stránku a všechny přiložené snímky v daném pořadí; nespoléhej jen na textovou vrstvu PDF. Přepiš jeho obsah do čistého, čitelného textu. Zachovej přesně původní jazyk nebo kombinaci jazyků u každé části; nic nepřekládej jen proto, že aplikace má české UI. Zachovej odbornou terminologii, matematický/chemický/fyzikální zápis, jednotky, značky, symboly, tabulkové údaje, číslování a také veškeré původní bodování: body za úlohy, celkové součty, váhy a případné bodové hranice. STEM přepis musí být znak po znaku věrný v číslech, desetinných čárkách/tečkách, znaménkách, indexech, exponentech, závorkách, zlomcích, odmocninách, chemických koeficientech a nábojích; nesmíš opravovat domnělou věcnou chybu tím, že změníš data zadání. Běžné matematické objekty můžeš zapsat čitelně pomocí standardních symbolů nebo podporovaného zápisu \\frac{a}{b}, \\sqrt{x}, x^{2}, a_{1}; chemické vzorce zapisuj např. H2SO4 a koeficienty odděluj mezerou (2 H2O), aby aplikace rozlišila index od koeficientu. U českých pasáží oprav jen zjevné OCR překlepy, ale výsledná čeština musí být gramaticky, stylisticky i lexikálně bezchybná. Na první řádek dej téma/nadpis, pak očíslované úlohy s plným zněním. Obsah zachovej věrně, nic nepřidávej a nevymýšlej nové úlohy. Pokud část kvůli rozmazání, stínu, ořezu nebo nízkému rozlišení skutečně nejde bezpečně přečíst, NEHÁDEJ čísla, značky ani slova; napiš [NEČITELNÉ] nebo [ČÁSTEČNĚ NEČITELNÉ] a problém uveď v SCAN_REPORT. Pokud jde o více fotek, zpracuj je v pořadí nahrání jako pokračování jednoho materiálu. Pokud úloha závisí na mapě, grafu, schématu, geometrickém nákresu, biologickém obrázku nebo jiném vizuálním podkladu, v textovém přepisu jasně zachovej instrukci, co s ním má žák dělat; samotný obraz ale nenahrazuj vymyšleným slovním popisem.";
+  const extractionCore="Toto je zadání školního testu, pracovního listu nebo učebního materiálu libovolného předmětu. Vstup může být digitální dokument, fotografie, sken, PDF bez textové vrstvy, zvuková nahrávka nebo video. Vizuálně projdi KAŽDOU stránku a všechny přiložené snímky v daném pořadí; nespoléhej jen na textovou vrstvu PDF. Přepiš jeho obsah do čistého, čitelného textu. Zachovej přesně původní jazyk nebo kombinaci jazyků u každé části; nic nepřekládej jen proto, že aplikace má české UI. Zachovej odbornou terminologii, matematický/chemický/fyzikální zápis, jednotky, značky, symboly, tabulkové údaje, číslování a také veškeré původní bodování: body za úlohy, celkové součty, váhy a případné bodové hranice. STEM přepis musí být znak po znaku věrný v číslech, desetinných čárkách/tečkách, znaménkách, indexech, exponentech, závorkách, zlomcích, odmocninách, chemických koeficientech a nábojích; nesmíš opravovat domnělou věcnou chybu tím, že změníš data zadání. Běžné matematické objekty můžeš zapsat čitelně pomocí standardních symbolů nebo podporovaného zápisu \\frac{a}{b}, \\sqrt{x}, x^{2}, a_{1}; chemické vzorce zapisuj např. H2SO4 a koeficienty odděluj mezerou (2 H2O), aby aplikace rozlišila index od koeficientu. U českých pasáží oprav jen zjevné OCR překlepy, ale výsledná čeština musí být gramaticky, stylisticky i lexikálně bezchybná. Na první řádek dej téma/nadpis, pak očíslované úlohy s plným zněním. Obsah zachovej věrně, nic nepřidávej a nevymýšlej nové úlohy. Pokud část kvůli rozmazání, stínu, ořezu, nízkému rozlišení nebo nesrozumitelnému zvuku skutečně nejde bezpečně přečíst či poslechnout, NEHÁDEJ čísla, značky ani slova; napiš [NEČITELNÉ], [ČÁSTEČNĚ NEČITELNÉ] nebo [NESROZUMITELNÉ]. Pokud jde o více fotek, zpracuj je v pořadí nahrání jako pokračování jednoho materiálu. Pokud úloha závisí na mapě, grafu, schématu, geometrickém nákresu, biologickém obrázku nebo jiném vizuálním podkladu, v textovém přepisu jasně zachovej instrukci, co s ním má žák dělat; samotný obraz ale nenahrazuj vymyšleným slovním popisem.";
   const hasPdf=!!(uploaded&&Array.isArray(uploaded.items)&&uploaded.items.some(it=>it&&it.mime_type==='application/pdf'));
-  const prompt=extractionCore+'\n\n'+visualManifestPrompt(sourceVisualAssets.length,hasPdf);
+  const mediaExtraction=sourceMediaAsset?('MULTIMEDIÁLNÍ VSTUP: '+(sourceMediaAsset.kind==='audio'?'poslechni celý zvukový soubor':'prohlédni a poslechni celý video soubor')+' v časovém pořadí. Přepiš mluvený obsah věrně pro interní učitelský pracovní základ; u videa stručně zachyť také vizuální dění, které je nutné pro řešení úloh. Nevymýšlej neslyšené repliky ani neviděné dění. Tento přepis je pouze zdroj pro následnou tvorbu — žákovská verze poslechové/pozorovací úlohy jej nesmí automaticky prozradit.') : visualManifestPrompt(sourceVisualAssets.length,hasPdf);
+  const prompt=extractionCore+'\n\n'+mediaExtraction;
   let parts;
   try{
     if(uploaded&&uploaded.kind==='media'){
-      parts=[{text:'Zpracuj následující mediální vstup nebo vstupy. PDF projdi stránku po stránce; samostatné obrázky VISUAL_n zpracuj v pořadí, v jakém jsou zde přiloženy. Pokud je přiloženo PDF i obrázky, obrázky mohou být přesné snímky/výřezy obrazových prvků z PDF.'},...extractionMediaParts(uploaded),{text:prompt}];
+      parts=[{text:sourceMediaAsset?('Zpracuj následující '+(sourceMediaAsset.kind==='audio'?'audio':'video')+' jako pevný zdrojový podklad. Zachovej časovou posloupnost a nic nedoplňuj z domněnek.'):'Zpracuj následující mediální vstup nebo vstupy. PDF projdi stránku po stránce; samostatné obrázky VISUAL_n zpracuj v pořadí, v jakém jsou zde přiloženy. Pokud je přiloženo PDF i obrázky, obrázky mohou být přesné snímky/výřezy obrazových prvků z PDF.'},...extractionMediaParts(uploaded),{text:prompt}];
     } else if(uploaded&&uploaded.kind==='mixed'){
       parts=[{text:'Tento Office dokument obsahuje textovou vrstvu i vložené obrázky. Všechny části patří do jednoho materiálu. Přepiš obsah z textu i ze všech obrázků; nic nevynechávej a nedoplňuj úlohy, které ve zdroji nejsou. Každý vložený obrázek je označen VISUAL_n a stejný identifikátor použij v technickém manifestu.\n\nTEXTOVÁ VRSTVA DOKUMENTU:\n'+uploaded.text},...extractionMediaParts(uploaded),{text:prompt}];
     } else if(uploaded&&uploaded.kind==='text'){
@@ -745,9 +762,6 @@ function metaLine(isKey){
   if(!isKey)parts.push('<span><b>Jméno:</b> ……………………</span>');
   return '<div class="pa-meta">'+parts.join('')+'</div>';
 }
-/* Rozdělí vyrenderovaný list na samostatné bloky cvičení.
-   Každé cvičení začíná řádkem typu "1.", "2)", "Cvičení 3", "Exercise 4", "Úloha 5".
-   Bloky se v tisku nesmí rozpůlit (CSS .pa-ex { break-inside:avoid }). */
 function isMainTaskStartLine(line){
   const clean=String(line||'').trim().replace(/^\*{1,2}/,'').replace(/\*{1,2}$/,'').trim();
   return /^(?:(?:cvičení|úloha|exercise|task|part)\s*\d{1,2}[.):]?\s+\S|\d{1,2}[.):]\s+\S)/i.test(clean);
@@ -765,16 +779,16 @@ function manualScoreValue(scores,index){
   if(!scores||typeof scores!=='object')return null;const v=Number(scores[index]);return Number.isFinite(v)&&v>=0?v:null;
 }
 function formatScoreNumber(v){const n=Number(v);return Number.isInteger(n)?String(n):String(Math.round(n*10)/10).replace('.',',')}
-function renderPrintBlock(block,index,scores,visualAssets){
+function renderPrintBlock(block,index,scores,visualAssets,mediaSource){
   const score=block.isTask?manualScoreValue(scores,index):null;
-  if(score==null)return renderTextWithVisuals(block.text,visualAssets||[],true);
+  if(score==null)return renderTextWithVisuals(block.text,visualAssets||[],true,mediaSource);
   const lines=String(block.text||'').split(/\r?\n/),first=lines.shift()||'';
-  return renderTextWithVisuals(first,visualAssets||[],true)+' <span class="pa-points">('+formatScoreNumber(score)+' b.)</span>'+(lines.length?'\n'+renderTextWithVisuals(lines.join('\n'),visualAssets||[],true):'');
+  return renderTextWithVisuals(first,visualAssets||[],true,mediaSource)+' <span class="pa-points">('+formatScoreNumber(score)+' b.)</span>'+(lines.length?'\n'+renderTextWithVisuals(lines.join('\n'),visualAssets||[],true,mediaSource):'');
 }
-function buildPrintBody(text,manualScores,visualAssets){
+function buildPrintBody(text,manualScores,visualAssets,mediaSource){
   const blocks=splitPrintBlocks(text);
-  if(!blocks.length)return '<div class="pa-ex">'+renderTextWithVisuals(text,visualAssets||[],true)+'</div>';
-  return blocks.map((b,i)=>'<div class="pa-ex" data-print-block="'+i+'">'+renderPrintBlock(b,i,manualScores,visualAssets||[])+'</div>').join('');
+  if(!blocks.length)return '<div class="pa-ex">'+renderTextWithVisuals(text,visualAssets||[],true,mediaSource)+'</div>';
+  return blocks.map((b,i)=>'<div class="pa-ex" data-print-block="'+i+'">'+renderPrintBlock(b,i,manualScores,visualAssets||[],mediaSource)+'</div>').join('');
 }
 function stripGeneratedScoring(text){
   const total=/^(?:celkem|total|součet|soucet|maximum|max\.?)\s*[:=]?\s*\d+(?:[.,]\d+)?\s*(?:bod(?:ů|u|y)?|b\.?|points?|pts?)\s*$/i;

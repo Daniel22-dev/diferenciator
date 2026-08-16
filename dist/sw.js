@@ -1,7 +1,7 @@
 const GHRAB_SW_CONTRACT='ghrab-service-worker-v1';
 /* GHRAB service-worker contract v1 · update activation is user-controlled. */
-const APP_VERSION = "1.3.25";
-const CACHE_NAME = "ghrab-differentiator-v1.3.25";
+const APP_VERSION = "1.3.31";
+const CACHE_NAME = "ghrab-differentiator-v1.3.31";
 const CACHE_PREFIXES = ["ghrab-differentiator-v", "diferenciator-"];
 const CORE_ASSETS = [
   "./",
@@ -13,14 +13,10 @@ const CORE_ASSETS = [
   "./access/error-reporter.js",
   "./access/error-reporter.css",
   "./access/error-reporter-adapter.js",
-  "./manual/",
-  "./manual/index.html",
+  "./modules/office-rich.js",
+  "./modules/educational-renderers.js",
+  "./modules/map-presets.js",
   "./icons/icon-32.png",
-  "./icons/icon-48.png",
-  "./icons/icon-72.png",
-  "./icons/icon-96.png",
-  "./icons/icon-128.png",
-  "./icons/icon-180.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
@@ -38,7 +34,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cache.addAll(CORE_ASSETS);
-    const optionalAssets = [];
+    const optionalAssets = ["./modules/multimedia.js", "./modules/geojson-engine.js", "./modules/chemistry-engine.js", "./modules/tex-math.js", "./modules/school-cas.js", "./modules/cross-subject-engine.js", "./modules/algorithm-trace-engine.js", "./modules/reaction-engine.js"];
     if (optionalAssets.length) {
       const results = await Promise.allSettled(optionalAssets.map((asset) => cache.add(asset)));
       const failed = results.filter((item) => item.status === 'rejected').length;
@@ -101,7 +97,7 @@ self.addEventListener('fetch', (event) => {
   const scopePath = new URL('./', self.location.href).pathname;
   if (!url.pathname.startsWith(scopePath) || request.cache === 'no-store' || isRuntimeRequest(url, scopePath)) return;
   if (request.mode === 'navigate') {
-    const fallback = url.pathname.includes('/manual/') ? './manual/index.html' : './index.html';
+    const fallback = new URL(url.pathname.includes('/manual/') ? 'manual/index.html' : 'index.html', self.registration.scope).href;
     event.respondWith(networkFirst(request, fallback));
     return;
   }
@@ -114,5 +110,5 @@ self.addEventListener('fetch', (event) => {
 
 /* GHRAB_PLATFORM_P3_START */
 const GHRAB_PLATFORM_P3_ASSETS=["./ghrab/ghrab-platform.js","./ghrab/ghrab-platform.css","./ghrab/ghrab-artifact-envelope-v1.schema.json","./ghrab/ghrab-app-registry-v2.schema.json","./ghrab/ghrab-platform-manifest-1.1.0.json","./assets/brand/school-logo.png","./ghrab-platform.consumer.json"];
-self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open("ghrab-differentiator-v1.3.25");const results=await Promise.allSettled(GHRAB_PLATFORM_P3_ASSETS.map(asset=>cache.add(asset)));const failed=results.filter(item=>item.status==='rejected');if(failed.length)throw new Error('GHRAB Platform P3 precache selhal: '+failed.length);})()));
+self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open("ghrab-differentiator-v1.3.31");const results=await Promise.allSettled(GHRAB_PLATFORM_P3_ASSETS.map(asset=>cache.add(asset)));const failed=results.filter(item=>item.status==='rejected');if(failed.length)throw new Error('GHRAB Platform P3 precache selhal: '+failed.length);})()));
 /* GHRAB_PLATFORM_P3_END */

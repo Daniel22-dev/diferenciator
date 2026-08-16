@@ -1,0 +1,239 @@
+{
+  "schema": "ghrab-p3-quality-result-v1",
+  "appId": "differentiator",
+  "appVersion": "1.3.31",
+  "contracts": {
+    "accessibility": "ghrab-a11y-v1",
+    "performance": "ghrab-performance-v1",
+    "modules": "ghrab-lazy-modules-v1"
+  },
+  "metrics": {
+    "schema": "ghrab-performance-report-v1",
+    "appId": "differentiator",
+    "appVersion": "1.3.31",
+    "platformVersion": "1.1.0",
+    "measuredAt": "2026-08-15T08:20:51.305Z",
+    "distBytes": 1035096,
+    "jsBytes": 351267,
+    "cssBytes": 24284,
+    "htmlBytes": 495605,
+    "fileCount": 43,
+    "fullHtmlCount": 2,
+    "entryHtmlBytes": 444088,
+    "entryCriticalBytes": 594537,
+    "largestInlineScriptBytes": 333436,
+    "precacheBytes": 914295,
+    "precacheAssetCount": 32,
+    "largestFileBytes": 444088,
+    "largestFilePath": "index.html",
+    "duplicateLargeBytes": 0
+  },
+  "budget": {
+    "distBytes": 1050000,
+    "entryHtmlBytes": 490000,
+    "entryCriticalBytes": 670000,
+    "largestInlineScriptBytes": 380000,
+    "precacheBytes": 970000,
+    "largestFileBytes": 490000,
+    "duplicateLargeBytes": 30000
+  },
+  "precacheAssets": [
+    "access/access-gate.css",
+    "access/deployment-config.js",
+    "access/error-reporter-adapter.js",
+    "access/error-reporter.css",
+    "access/error-reporter.js",
+    "access/reporter-bootstrap.js",
+    "assets/brand/school-logo.png",
+    "config/brand-manifest.json",
+    "config/platform-manifest.json",
+    "ghrab-platform.consumer.json",
+    "ghrab/ghrab-app-registry-v2.schema.json",
+    "ghrab/ghrab-artifact-envelope-v1.schema.json",
+    "ghrab/ghrab-platform-manifest-1.1.0.json",
+    "ghrab/ghrab-platform.css",
+    "ghrab/ghrab-platform.js",
+    "icons/icon-192.png",
+    "icons/icon-32.png",
+    "icons/icon-512.png",
+    "icons/icon-maskable-512.png",
+    "index.html",
+    "manifest.webmanifest",
+    "modules/algorithm-trace-engine.js",
+    "modules/chemistry-engine.js",
+    "modules/cross-subject-engine.js",
+    "modules/educational-renderers.js",
+    "modules/geojson-engine.js",
+    "modules/map-presets.js",
+    "modules/multimedia.js",
+    "modules/office-rich.js",
+    "modules/reaction-engine.js",
+    "modules/school-cas.js",
+    "modules/tex-math.js"
+  ],
+  "duplicateGroups": [],
+  "checks": [
+    {
+      "id": "dist.exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "platform.version",
+      "ok": true,
+      "detail": "1.1.0"
+    },
+    {
+      "id": "contract.a11y",
+      "ok": true,
+      "detail": "ghrab-a11y-v1"
+    },
+    {
+      "id": "contract.performance",
+      "ok": true,
+      "detail": "ghrab-performance-v1"
+    },
+    {
+      "id": "contract.modules",
+      "ok": true,
+      "detail": "ghrab-lazy-modules-v1"
+    },
+    {
+      "id": "platform.runtime",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "platform.styles",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.reduced-motion",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.focus-visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.skip-link",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.html-documents",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "id": "a11y.lang:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.viewport:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.zoom:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.title:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.main:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.runtime:index.html",
+      "ok": true,
+      "detail": "platform=1; engine=0"
+    },
+    {
+      "id": "a11y.lang:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.viewport:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.zoom:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.title:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.main:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.runtime:manual/index.html",
+      "ok": true,
+      "detail": "platform=1; engine=0"
+    },
+    {
+      "id": "budget.distBytes",
+      "ok": true,
+      "detail": "1035096 <= 1050000"
+    },
+    {
+      "id": "budget.entryHtmlBytes",
+      "ok": true,
+      "detail": "444088 <= 490000"
+    },
+    {
+      "id": "budget.entryCriticalBytes",
+      "ok": true,
+      "detail": "594537 <= 670000"
+    },
+    {
+      "id": "budget.largestInlineScriptBytes",
+      "ok": true,
+      "detail": "333436 <= 380000"
+    },
+    {
+      "id": "budget.precacheBytes",
+      "ok": true,
+      "detail": "914295 <= 970000"
+    },
+    {
+      "id": "budget.largestFileBytes",
+      "ok": true,
+      "detail": "444088 <= 490000"
+    },
+    {
+      "id": "budget.duplicateLargeBytes",
+      "ok": true,
+      "detail": "0 <= 30000"
+    },
+    {
+      "id": "budget.minimum-count",
+      "ok": true,
+      "detail": "7"
+    }
+  ],
+  "warnings": [],
+  "summary": {
+    "total": 31,
+    "passed": 31,
+    "failed": 0,
+    "warnings": 0
+  }
+}

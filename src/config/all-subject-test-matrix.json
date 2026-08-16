@@ -1,20 +1,472 @@
 {
   "schema": "ghrab-differentiator-all-subject-matrix-v1",
-  "version": "1.3.25",
+  "version": "1.3.31",
   "domains": [
-    {"id":"language","examples":["Český jazyk","Anglický jazyk","Německý jazyk"],"risks":["grammar","target-language","multiple-valid-answers","tables"]},
-    {"id":"math","examples":["Matematika"],"risks":["calculation","equations","notation","geometry"]},
-    {"id":"physics","examples":["Fyzika"],"risks":["units","formulas","calculation","graphs"]},
-    {"id":"chemistry","examples":["Chemie"],"risks":["formulae","equations","charges","structures"]},
-    {"id":"biology","examples":["Biologie","Přírodopis"],"risks":["terminology","diagrams","processes","classification"]},
-    {"id":"geography","examples":["Zeměpis","Geografie"],"risks":["blind-maps","coordinates","scale","time-zones","current-data"]},
-    {"id":"history","examples":["Dějepis"],"risks":["chronology","dates","sources","quotes","interpretation"]},
-    {"id":"civics","examples":["ZSV","Občanská výchova","Ekonomie"],"risks":["current-law","office-holders","statistics","opinion-vs-fact"]},
-    {"id":"informatics","examples":["Informatika","ICT"],"risks":["code-syntax","escaping","expected-output","versions"]},
-    {"id":"music","examples":["Hudební výchova"],"risks":["accidentals","rhythm","meter","notation-image"]},
-    {"id":"art","examples":["Výtvarná výchova"],"risks":["image-fidelity","artwork-identification","visual-analysis"]},
-    {"id":"pe","examples":["Tělesná výchova"],"risks":["age-appropriateness","safety","health-boundaries"]},
-    {"id":"humanities","examples":["Literatura","Etika"],"risks":["source-fidelity","quotes","interpretation","open-answers"]}
+    {
+      "id": "language",
+      "examples": [
+        "Český jazyk",
+        "Literatura v cizím jazyce",
+        "Angličtina",
+        "Němčina",
+        "Španělština",
+        "Francouzština",
+        "Ruština",
+        "Latina",
+        "Italština",
+        "Portugalština",
+        "Řečtina",
+        "Polština"
+      ],
+      "risks": [
+        "grammar",
+        "target-language",
+        "multiple-valid-answers",
+        "tables"
+      ]
+    },
+    {
+      "id": "math",
+      "examples": [
+        "Matematika",
+        "Algebra",
+        "Geometrie",
+        "Deskriptivní geometrie",
+        "Statistika",
+        "Pravděpodobnost",
+        "Kombinatorika",
+        "Matematická analýza",
+        "Finanční matematika"
+      ],
+      "risks": [
+        "calculation",
+        "equations",
+        "notation",
+        "geometry"
+      ]
+    },
+    {
+      "id": "physics",
+      "examples": [
+        "Fyzika",
+        "Astronomie",
+        "Astrofyzika",
+        "Mechanika",
+        "Optika",
+        "Elektromagnetismus"
+      ],
+      "risks": [
+        "units",
+        "formulas",
+        "calculation",
+        "graphs"
+      ]
+    },
+    {
+      "id": "chemistry",
+      "examples": [
+        "Chemie",
+        "Biochemie",
+        "Organická chemie",
+        "Anorganická chemie"
+      ],
+      "risks": [
+        "formulae",
+        "equations",
+        "charges",
+        "structures"
+      ]
+    },
+    {
+      "id": "biology",
+      "examples": [
+        "Biologie",
+        "Přírodopis",
+        "Ekologie",
+        "Genetika",
+        "Anatomie",
+        "Fyziologie",
+        "Botanika",
+        "Zoologie"
+      ],
+      "risks": [
+        "terminology",
+        "diagrams",
+        "processes",
+        "classification"
+      ]
+    },
+    {
+      "id": "geography",
+      "examples": [
+        "Zeměpis",
+        "Geografie"
+      ],
+      "risks": [
+        "blind-maps",
+        "coordinates",
+        "scale",
+        "time-zones",
+        "current-data"
+      ]
+    },
+    {
+      "id": "history",
+      "examples": [
+        "Dějepis",
+        "Historie"
+      ],
+      "risks": [
+        "chronology",
+        "dates",
+        "sources",
+        "quotes",
+        "interpretation"
+      ]
+    },
+    {
+      "id": "civics",
+      "examples": [
+        "ZSV",
+        "Občanská výchova",
+        "Právo",
+        "Ekonomie",
+        "Finanční gramotnost",
+        "Psychologie",
+        "Sociologie",
+        "Politologie",
+        "Filozofie"
+      ],
+      "risks": [
+        "current-law",
+        "office-holders",
+        "statistics",
+        "opinion-vs-fact"
+      ]
+    },
+    {
+      "id": "informatics",
+      "examples": [
+        "Informatika",
+        "ICT",
+        "Programování",
+        "Databáze",
+        "Robotika",
+        "Datová věda",
+        "Digitální technologie",
+        "Algoritmizace"
+      ],
+      "risks": [
+        "code-syntax",
+        "escaping",
+        "expected-output",
+        "versions"
+      ]
+    },
+    {
+      "id": "music",
+      "examples": [
+        "Hudební výchova",
+        "Hudební nauka"
+      ],
+      "risks": [
+        "accidentals",
+        "rhythm",
+        "meter",
+        "notation-image"
+      ]
+    },
+    {
+      "id": "art",
+      "examples": [
+        "Výtvarná výchova",
+        "Dějiny umění",
+        "Fotografie",
+        "Design"
+      ],
+      "risks": [
+        "image-fidelity",
+        "artwork-identification",
+        "visual-analysis"
+      ]
+    },
+    {
+      "id": "pe",
+      "examples": [
+        "Tělesná výchova",
+        "Sportovní příprava"
+      ],
+      "risks": [
+        "age-appropriateness",
+        "safety",
+        "health-boundaries"
+      ]
+    },
+    {
+      "id": "humanities",
+      "examples": [
+        "Literatura",
+        "Etika",
+        "Religionistika",
+        "Mediální výchova",
+        "Dramatická výchova",
+        "Filmová a audiovizuální výchova",
+        "Rétorika"
+      ],
+      "risks": [
+        "source-fidelity",
+        "quotes",
+        "interpretation",
+        "open-answers"
+      ]
+    }
   ],
-  "crossCutting": ["answer-key-coverage","unreadable-source-markers","scoring","tables","unicode","long-content-layout","visual-assets","scan-input","pdf-output","school-gateway"]
+  "crossCutting": [
+    "answer-key-coverage",
+    "unreadable-source-markers",
+    "scoring",
+    "tables",
+    "unicode",
+    "long-content-layout",
+    "visual-assets",
+    "scan-input",
+    "pdf-output",
+    "school-gateway",
+    "multimedia-transcript-leak-protection",
+    "deterministic-renderer-validation",
+    "specialist-engine-validation",
+    "office-native-object-fail-safe",
+    "raw-tex-mathml-safety",
+    "live-provider-multimedia-gate",
+    "cross-subject-specialist-diagrams",
+    "preserved-image-annotation",
+    "bounded-pseudocode-execution",
+    "reaction-equation-balancing"
+  ],
+  "specializations": [
+    {
+      "id": "earth-science",
+      "routing": "stem:earthscience",
+      "examples": [
+        "Geologie",
+        "Mineralogie",
+        "Petrologie",
+        "Vědy o Zemi"
+      ],
+      "risks": [
+        "maps",
+        "profiles",
+        "stratigraphy",
+        "sample-identification",
+        "units"
+      ]
+    },
+    {
+      "id": "integrated-cross-curricular",
+      "routing": "general-with-teacher-context",
+      "examples": [
+        "Přírodovědný seminář",
+        "Projektová výuka",
+        "Seminář",
+        "Člověk a svět práce",
+        "Kariérová výchova",
+        "Osobnostní a sociální výchova",
+        "Environmentální výchova",
+        "Multikulturní výchova",
+        "Výchova k myšlení v evropských a globálních souvislostech",
+        "Laboratorní praktikum",
+        "Konverzační seminář"
+      ],
+      "risks": [
+        "ambiguous-subject-name",
+        "mixed-modalities",
+        "mixed-answer-types"
+      ]
+    }
+  ],
+  "contentPrimitives": [
+    "multiple-choice",
+    "matching",
+    "gap-fill",
+    "open-response",
+    "essay",
+    "translation",
+    "reading-source",
+    "long-source-text",
+    "scoring",
+    "rubric",
+    "markdown-table",
+    "tab-table",
+    "spreadsheet-cells-and-formulas",
+    "code-and-special-characters",
+    "fractions",
+    "roots",
+    "powers",
+    "subscripts",
+    "equations",
+    "inequalities",
+    "systems",
+    "functions",
+    "sets",
+    "probability",
+    "statistics",
+    "matrices",
+    "vectors",
+    "integrals",
+    "sums",
+    "limits",
+    "physics-formulas",
+    "scientific-notation",
+    "unit-conversions",
+    "coordinate-graphs",
+    "experimental-data",
+    "circuits",
+    "chemical-formulae",
+    "reaction-equations",
+    "charges",
+    "stoichiometry",
+    "structural-formula-image",
+    "lewis-structure-image",
+    "biology-diagrams",
+    "anatomy-images",
+    "genetics-tables",
+    "classification",
+    "blind-maps",
+    "map-scale",
+    "coordinates",
+    "time-zones",
+    "climate-graphs",
+    "thematic-maps",
+    "timelines",
+    "historical-sources",
+    "source-scans",
+    "quotes",
+    "current-law-and-statistics-with-date-warning",
+    "economic-tables-and-graphs",
+    "source-code",
+    "algorithm-traces",
+    "database-tables",
+    "logic-diagrams",
+    "music-accidentals",
+    "rhythm-symbols",
+    "staff-notation-image",
+    "artwork-reproduction",
+    "photo-analysis",
+    "movement-safety",
+    "presentation-native-chart",
+    "presentation-smartart-diagram",
+    "audio-listening-source",
+    "video-observation-source",
+    "deterministic-data-chart",
+    "deterministic-coordinate-geometry",
+    "deterministic-multistaff-multivoice-music-notation",
+    "deterministic-validated-chemical-graph-smiles-lewis",
+    "deterministic-blank-map-preset-and-geojson",
+    "deterministic-electrical-circuit-schematic",
+    "tex-to-mathml-gymnasium-notation",
+    "school-cas-verification",
+    "office-drawingml-shapes-connectors",
+    "provider-live-audio-video-smoke-gate",
+    "deterministic-directed-flow-diagram",
+    "deterministic-history-geology-timeline",
+    "deterministic-punnett-pedigree-genetics",
+    "deterministic-physics-vector-lens",
+    "deterministic-bounded-algorithm-trace",
+    "deterministic-reaction-balance-stoichiometry",
+    "preserved-image-semantic-annotation",
+    "timeline-period-uncertainty",
+    "deterministic-free-body-diagram"
+  ],
+  "visualPrimitives": [
+    "map",
+    "graph",
+    "diagram",
+    "geometry",
+    "biology",
+    "chemistry",
+    "table",
+    "notation",
+    "timeline",
+    "circuit",
+    "molecule",
+    "anatomy",
+    "artwork",
+    "photograph",
+    "source",
+    "annotation",
+    "free-body-diagram",
+    "algorithm-trace"
+  ],
+  "sourceFormats": {
+    "direct": [
+      "text",
+      "image",
+      "pdf",
+      "docx",
+      "pptx",
+      "xlsx",
+      "txt",
+      "rtf",
+      "md",
+      "csv",
+      "tsv",
+      "html",
+      "json",
+      "audio",
+      "video",
+      "geojson"
+    ],
+    "visual-preservation": [
+      "image",
+      "docx-embedded-image",
+      "pptx-embedded-image",
+      "xlsx-embedded-image",
+      "pdf-with-supplement-screenshot"
+    ],
+    "known-non-pixel-perfect": [
+      "native-xlsx-chart",
+      "pdf-embedded-page-visual-without-supplement",
+      "native-pptx-chart",
+      "native-pptx-smartart"
+    ],
+    "partial-preservation": [
+      "native-pptx-chart-data-renderable-but-not-pixel-identical",
+      "native-pptx-smartart-text-transcript-not-pixel-render",
+      "native-xlsx-chart-data-renderable-but-not-pixel-identical",
+      "pdf-embedded-page-visual-requires-supplement-for-pixel-preservation",
+      "html-embedded-images-and-layout-not-preserved",
+      "native-docx-chart-data-renderable-but-not-pixel-identical",
+      "arbitrary-office-effects-3d-animation-embedded-ole-require-pdf-or-screenshot-for-pixel-fidelity",
+      "unsupported-office-native-object-is-explicit-review-not-silent-loss",
+      "tex-command-outside-gymnasium-parser-is-explicitly-flagged",
+      "chemical-graph-beyond-local-valence-table-is-explicitly-warned"
+    ],
+    "not-directly-supported": [
+      "doc",
+      "ppt",
+      "xls"
+    ],
+    "semantic-preservation": [
+      "native-docx-chart-data-to-edu-chart",
+      "native-pptx-chart-data-to-edu-chart",
+      "native-xlsx-chart-data-to-edu-chart",
+      "native-docx-smartart-text-transcript",
+      "native-pptx-smartart-text-transcript",
+      "native-docx-drawingml-to-edu-office",
+      "native-pptx-drawingml-to-edu-office",
+      "native-xlsx-drawingml-to-edu-office",
+      "geojson-to-edu-map",
+      "native-office-chart-data-to-edu-chart"
+    ]
+  },
+  "outputModes": [
+    "worksheet",
+    "test-parallel-version",
+    "support-version",
+    "core-version",
+    "extension-version",
+    "answer-key",
+    "teacher-note",
+    "pdf"
+  ]
 }

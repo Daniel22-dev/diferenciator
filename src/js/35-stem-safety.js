@@ -1,4 +1,3 @@
-/* ===================== STEM SAFETY / TYPOGRAPHY ===================== */
 const STEM_SUBJECT_ALIASES=Object.freeze({
   math:['matematika','matematicky','matematický','math','mathematics'],
   physics:['fyzika','fyzikalni','fyzikální','physics'],
@@ -11,7 +10,7 @@ const STEM_LATEX_SYMBOLS=Object.freeze({
 });
 const STEM_LATEX_WORDS=new Set(['sin','cos','tan','tg','cot','log','ln','lim']);
 const STEM_LATEX_WRAPPERS=new Set(['mathrm','text','mathbf','mathit','operatorname']);
-const STEM_ALLOWED_LATEX=new Set(['frac','sqrt','ce','left','right',...Object.keys(STEM_LATEX_SYMBOLS),...STEM_LATEX_WORDS,...STEM_LATEX_WRAPPERS]);
+const STEM_ALLOWED_LATEX=new Set(['frac','dfrac','tfrac','sqrt','ce','left','right','begin','end','overline','underline','vec','hat','bar','tilde','prod','iint','iiint','oint','min','max','det','gcd','subset','subseteq','supset','supseteq','cup','cap','forall','exists','notin','equiv','simeq','perp','parallel','mapsto','dots','ldots','cdots',...Object.keys(STEM_LATEX_SYMBOLS),...STEM_LATEX_WORDS,...STEM_LATEX_WRAPPERS]);
 
 function normalizeStemSubject(value){
   return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]+/g,' ').trim();
@@ -20,6 +19,10 @@ function stemSubjectKind(value){
   const s=normalizeStemSubject(value==null?(typeof getSubjectValue==='function'?getSubjectValue():''):value);
   if(!s)return '';
   for(const [kind,names] of Object.entries(STEM_SUBJECT_ALIASES))if(names.some(n=>s.includes(normalizeStemSubject(n))))return kind;
+  if(/matemat|algebr|geometri|statistik|pravdepodob|kombinator|trigonometr/.test(s))return 'math';
+  if(/fyzik|astronom|mechanik|optik|elektromagnet/.test(s))return 'physics';
+  if(/biolog|ekolog|environmental|genetik|anatom|fyziolog|botanik|zoolog/.test(s))return 'biology';
+  if(/geolog|mineralog|petrolog|geoved|vedy o zemi|earth science/.test(s))return 'earthscience';
   return '';
 }
 function stemGenerationPromptLines(subject){
@@ -28,6 +31,7 @@ function stemGenerationPromptLines(subject){
   if(kind==='math')return [common,'MATEMATIKA: každý uzavřený numerický výraz přepočítej nezávisle. U rovnic dosaď nalezené řešení zpět do původní rovnice. U geometrie ověř podmínky, jednotky a to, že zadaná data vedou k řešitelnému příkladu. Zlomky nezkresluj desetinným zaokrouhlením, pokud není výslovně požadováno.'];
   if(kind==='physics')return [common,'FYZIKA: před výsledkem ověř použitý fyzikální vztah, dosazení, převod jednotek a rozměrovou konzistenci. Uváděj jednotku výsledku; převody mezi SI a běžnými jednotkami musí numericky sedět. Pokud použiješ konstantu, musí být pro daný kontext správná.'];
   if(kind==='chemistry')return [common,'CHEMIE: zachovej chemické indexy, stechiometrické koeficienty, náboje a skupiny v závorkách. Každou chemickou rovnici v řešení zkontroluj na počet atomů na obou stranách a u iontových rovnic také na náboj. U stechiometrie, látkového množství a koncentrací přepočítej aritmetiku a jednotky. Nikdy nezaměň index ve vzorci za koeficient před vzorcem.'];
+  if(kind==='earthscience')return [common,'VĚDY O ZEMI: ověř terminologii, geologickou posloupnost, jednotky a vazbu mapy/profilu/vzorku na otázku; z nejasného obrazu nic neurčuj odhadem.'];
   return [common,'BIOLOGIE: používej přesnou současnou odbornou terminologii a nevymýšlej jednoznačnou odpověď tam, kde biologicky závisí na podmínkách. U anatomie, genetiky, fyziologie a ekologie zkontroluj vztah mezi otázkou a klíčem; u více možných správných odpovědí uveď přijatelné varianty nebo podmínku.'];
 }
 function stemQualityPromptLines(subject){
@@ -35,6 +39,7 @@ function stemQualityPromptLines(subject){
   if(kind==='math')return ['MATEMATICKÁ KONTROLA: přepočítej všechny číselné výsledky; u rovnic ověř řešení dosazením; u zlomků, procent, mocnin, odmocnin, funkcí a geometrie hledej i nenápadnou početní nebo definiční chybu.'];
   if(kind==='physics')return ['FYZIKÁLNÍ KONTROLA: ověř vztah, dosazení, jednotky, převody, rozměry a číselný výsledek každé výpočtové úlohy. Chybná jednotka nebo nesprávný převod je Opravit, ne Doporučení.'];
   if(kind==='chemistry')return ['CHEMICKÁ KONTROLA: ověř každý vzorec, index, koeficient, bilanci atomů a tam, kde je relevantní, i bilanci náboje. Přepočítej stechiometrii, molární hmotnosti, koncentrace a jednotky.'];
+  if(kind==='earthscience')return ['KONTROLA VĚD O ZEMI: ověř terminologii, posloupnost, jednotky a vazbu mapy/profilu/vzorku na klíč; z nejasného obrazu nic neurčuj odhadem.'];
   return ['BIOLOGICKÁ KONTROLA: ověř odbornou faktickou správnost, terminologii a vztah mezi strukturou a funkcí; zkontroluj, zda klíč nepředstírá jedinou odpověď u úlohy, která připouští více biologicky správných variant.'];
 }
 function stemAnswerKeyPromptLine(subject){const lines=stemQualityPromptLines(subject);return lines.length?' Před odevzdáním klíče '+lines[0].replace(/^[^:]+:\s*/,'').replace(/\.$/,'').toLowerCase()+'.':''}
@@ -45,6 +50,10 @@ function stemBraceGroup(src,start){
   return null;
 }
 function appendStemTextNode(parent,text){if(text)parent.appendChild(document.createTextNode(text))}
+let stemTexModulePromise=null;
+function loadStemTexModule(){return stemTexModulePromise||(stemTexModulePromise=import('./modules/tex-math.js').catch(error=>{stemTexModulePromise=null;throw error}))}
+function appendTeXMathPlaceholder(parent,tex,display=false){const wrap=document.createElement(display?'div':'span');wrap.className='stem-tex-math';wrap.dataset.texSource=String(tex||'').slice(0,20000);wrap.dataset.texDisplay=display?'1':'0';wrap.textContent=String(tex||'');parent.appendChild(wrap);loadStemTexModule().then(m=>{if(!wrap.isConnected&&typeof document!=='undefined'&&!document.contains(wrap))return;const bad=m.texUnsupportedCommands(tex);if(bad.length){wrap.dataset.texError='unsupported';wrap.title='Nepodporovaný TeX: '+bad.map(x=>'\\'+x).join(', ');return}wrap.replaceChildren(m.renderTeXMath(tex,{display}));wrap.dataset.texReady='1'}).catch(()=>{wrap.dataset.texError='load'});return wrap}
+function texDelimitedAt(src,i){if(src.startsWith('$$',i)){const j=src.indexOf('$$',i+2);return j>i+2?{tex:src.slice(i+2,j),end:j+2,display:true}:null}if(src[i]==='$'){const j=src.indexOf('$',i+1);return j>i+1?{tex:src.slice(i+1,j),end:j+1,display:false}:null}if(src.startsWith('\\[',i)){const j=src.indexOf('\\]',i+2);return j>i+2?{tex:src.slice(i+2,j),end:j+2,display:true}:null}if(src.startsWith('\\(',i)){const j=src.indexOf('\\)',i+2);return j>i+2?{tex:src.slice(i+2,j),end:j+2,display:false}:null}return null}
 function chemistryFormulaParts(token){
   const src=String(token||'');const m=src.match(/^(\d+)?(.+)$/);if(!m)return null;const coeff=m[1]||'',formula=m[2];
   let i=0,hasDigit=false,elementCount=0,depth=0;
@@ -67,6 +76,7 @@ function appendStemScript(parent,marker,content,kind){const el=document.createEl
 function appendStemInline(parent,text,kind=stemSubjectKind()){
   const src=String(text||'');let plain='';const flush=()=>{appendStemPlainChunk(parent,plain,kind);plain=''};
   for(let i=0;i<src.length;){
+    const tex=texDelimitedAt(src,i);if(tex){flush();appendTeXMathPlaceholder(parent,tex.tex,tex.display);i=tex.end;continue}
     if(src[i]==='$'){i++;continue}
     if((src[i]==='^'||src[i]==='_')){const marker=src[i],g=src[i+1]==='{'?stemBraceGroup(src,i+1):null;let content='',end=i+1;if(g){content=g.content;end=g.end}else if(i+1<src.length){content=src[i+1];end=i+2}if(content){flush();appendStemScript(parent,marker,content,kind);i=end;continue}}
     if(src[i]==='\\'){
@@ -218,5 +228,6 @@ function stemValidationIssues(parsed,subject){
   if(kind==='math')issues.push(...stemArithmeticIssues(key),...stemLinearEquationIssues(key));
   if(kind==='physics')issues.push(...stemArithmeticIssues(key),...stemLinearEquationIssues(key),...stemUnitConversionIssues(key));
   if(kind==='chemistry')issues.push(...stemArithmeticIssues(key),...stemLinearEquationIssues(key),...stemUnitConversionIssues(key),...stemChemicalIssues(key));
+  if(kind==='earthscience')issues.push(...stemArithmeticIssues(key),...stemUnitConversionIssues(key));
   return [...new Set(issues)].slice(0,12);
 }

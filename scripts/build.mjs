@@ -14,8 +14,8 @@ for(const f of [CORE_FILE,CORE_MANIFEST])if(!existsSync(join(CORE_DIR,f)))fail('
 const coreManifest=JSON.parse(readFileSync(join(CORE_DIR,CORE_MANIFEST),'utf8'));if(coreManifest.coreVersion!==CORE_VERSION||coreManifest.artifacts?.[CORE_FILE]?.sha256!==sha(join(CORE_DIR,CORE_FILE)))fail('GHRAB AI Core neprošel SHA-256 kontrolou');
 rmSync(DIST,{recursive:true,force:true});mkdirSync(DIST,{recursive:true});cpSync(SRC,DIST,{recursive:true});
 const tplPath=join(DIST,'index.template.html');let tpl=readFileSync(tplPath,'utf8');for(const token of Object.values(TOKENS))if(!tpl.includes(token))fail('šablona neobsahuje token');
-const css=readFileSync(join(DIST,'styles.css'),'utf8'),body=readFileSync(join(DIST,'body.html'),'utf8'),jsDir=join(DIST,'js');
-const jsFiles=readdirSync(jsDir).filter(f=>f.endsWith('.js')).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));const appJs=jsFiles.map(f=>readFileSync(join(jsDir,f),'utf8')).join('\n;\n');
+const css=readFileSync(join(DIST,'styles.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/\r?\n\s*/g,'').replace(/\s{2,}/g,' '),body=readFileSync(join(DIST,'body.html'),'utf8'),jsDir=join(DIST,'js');
+const jsFiles=readdirSync(jsDir).filter(f=>f.endsWith('.js')).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})),internalTestFile='50-interni-testy.js',appJsFiles=jsFiles.filter(f=>f!==internalTestFile);const appJs=appJsFiles.map(f=>readFileSync(join(jsDir,f),'utf8')).join('\n;\n');if(jsFiles.includes(internalTestFile))writeFileSync(join(DIST,'internal-tests.js'),readFileSync(join(jsDir,internalTestFile),'utf8'));
 if(/(?:window|globalThis)\.GHRAB_AI\s*=|registerAdapter\s*\(/.test(appJs))fail('aplikační kód obsahuje vlastní implementaci GHRAB_AI');
 const js=readFileSync(join(CORE_DIR,CORE_FILE),'utf8')+'\n;\n'+appJs;
 const out=tpl.split(TOKENS.css).join(css).split(TOKENS.body).join(body).split(TOKENS.js).join(js);if(out.includes('==SEM_BUILD_VLOZI_'))fail('ve výstupu zůstal build token');
@@ -26,8 +26,21 @@ if(hash){const re=/(build:\s*)(['"])__BUILD__\2/g;for(const f of htmlFiles(DIST)
 const html=readFileSync(join(DIST,'index.html'),'utf8'),sw=readFileSync(join(DIST,'sw.js'),'utf8');const rel=html.match(/version:\s*['"]([\d.]+)['"]/),swm=sw.match(/APP_VERSION\s*=\s*['"]([\d.]+)['"]/);if(!rel||!swm||rel[1]!==swm[1])fail('nesouhlasí verze RELEASE a service workeru');
 const operations=JSON.parse(readFileSync(join(DIST,'ai-operations.json'),'utf8'));if(operations.appId!==APP_ID||operations.appVersion!==rel[1]||operations.coreVersion!==CORE_VERSION||operations.operations.length!==7)fail('neplatný ai-operations.json');for(const op of operations.operations)if(!appJs.includes(`'${op.operation}'`)&&!appJs.includes(`"${op.operation}"`))fail('integrace neobsahuje operaci '+op.operation);
 const smt=join(DIST,'studio-manifest.template.json');if(existsSync(smt)){const text=readFileSync(smt,'utf8').replaceAll('__APP_VERSION__',rel[1]).replaceAll('__BUILD_TIME__',new Date().toISOString());const manifest=JSON.parse(text);if(manifest.aiCore?.coreVersion!==CORE_VERSION||manifest.aiCore?.serverReady!==true||manifest.aiCore?.conformancePassed!==true)fail('studio-manifest nemá P1 AI Core metadata');writeFileSync(join(DIST,'studio-manifest.json'),text);rmSync(smt)}
-writeFileSync(join(DIST,'.nojekyll'),'');log(`${APP_NAME}: verze ${rel[1]} · Core ${CORE_VERSION} SHA-256 OK · ${operations.operations.length} operací · ${jsFiles.length} modulů`);
+writeFileSync(join(DIST,'.nojekyll'),'');log(`${APP_NAME}: verze ${rel[1]} · Core ${CORE_VERSION} SHA-256 OK · ${operations.operations.length} operací · ${appJsFiles.length} kritických JS částí + lazy interní testy`);
 
 // P2: canonical cross-application platform post-processing.
 await import("./apply-ghrab-platform.mjs");
+for(const rel of [
+  'config/all-subject-test-matrix.json',
+  'config/performance-budget-baseline.json',
+  'config/security-headers.json',
+  'config/deployment.school-server.json',
+  'config/deployment.school-server.example.json',
+  'config/deployment.school-server-p0.json',
+  'runtime-config.school-server.js'
+]) rmSync(join(DIST,rel),{force:true});
+// App-owned JSON is shipped compactly. Canonical vendor artifacts under dist/ghrab stay byte-identical for hash conformance.
+const compactJson=[join(DIST,'ghrab-platform.consumer.json'),join(DIST,'ai-operations.json'),join(DIST,'studio-manifest.json'),join(DIST,'platform-build-info.json')];
+const configDir=join(DIST,'config');if(existsSync(configDir))for(const n of readdirSync(configDir))if(n.endsWith('.json'))compactJson.push(join(configDir,n));
+for(const f of compactJson)if(existsSync(f)){const data=JSON.parse(readFileSync(f,'utf8'));writeFileSync(f,JSON.stringify(data))}
 const swCheck=verifySwCoreAssets(DIST,'dist');log(`service-worker precache: ${swCheck.checked} assetů existuje`);
