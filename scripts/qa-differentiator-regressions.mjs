@@ -338,5 +338,20 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   if(problems.length)bad('T30: BODY visual-intent/scoring regression: '+problems.join('; ')); else ok('T30: BODY fixture chrání rekonstrukci task-image, deduplikaci vizuálů, bodování a opt-in extensions');
 }
 
+
+// T31: Pages deployment must use current Node 24 action majors and bounded automatic retry.
+{
+  const deploy=read('.github/workflows/deploy.yml');
+  const problems=[];
+  if(!deploy.includes('actions/configure-pages@v6'))problems.push('configure-pages není v6');
+  if(!deploy.includes('actions/upload-pages-artifact@v5'))problems.push('upload-pages-artifact není v5');
+  const deployUses=(deploy.match(/actions\/deploy-pages@v5/g)||[]).length;
+  if(deployUses!==3)problems.push('deploy-pages@v5 nemá přesně 3 omezené pokusy');
+  if(!deploy.includes('sleep 60')||!deploy.includes('sleep 180'))problems.push('chybí backoff mezi Pages retry pokusy');
+  if(!deploy.includes('Enforce successful Pages deployment')||!deploy.includes('failed after 3 bounded attempts'))problems.push('chybí finální fail-closed kontrola deploye');
+  if(problems.length)bad('T31: GitHub Pages resilient deploy: '+problems.join('; '));
+  else ok('T31: Pages používá aktuální action majors a 3 bounded retry pokusy s fail-closed koncem');
+}
+
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
 console.log('CELKEM: regresní brána zelená.');

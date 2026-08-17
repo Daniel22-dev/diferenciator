@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.32 — GitHub Pages resilient hotfix (2026-08-17)
+
+- pouze CI/deploy hotfix bez změny aplikační logiky: GitHub Pages actions byly aktualizovány na `configure-pages@v6`, `upload-pages-artifact@v5` a `deploy-pages@v5`;
+- deploy má tři omezené pokusy s backoffem 60 s a 180 s a po jejich vyčerpání explicitně failuje; cílem je odolnost proti přechodným GitHub Pages 5xx po úspěšném buildu a uploadu artefaktu;
+- přidána regresní pojistka T31; T29 nadále garantuje 0 live Gemini requests z CI.
+
 ## 1.3.32 — Visual Intent Routing (2026-08-17)
 
 - obrazové podklady dostaly didaktický intent `content_visual`, `task_image`, `hybrid`, `decorative` nebo `unknown`; klasifikace je součástí stávajícího multimodálního čtení a nepřidává samostatný API request;
