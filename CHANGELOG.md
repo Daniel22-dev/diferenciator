@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.32 — Output repair + visual UX hotfix (2026-08-17)
+
+- obrazové režimy mají přímo v aplikaci vysvětlení; u každého podkladu se zobrazuje význam právě zvolené možnosti,
+- nesrozumitelná tlačítka „Dříve / Později“ nahrazena samostatnou sekcí „Pořadí v materiálu“ s akcemi „Posunout o místo výš / níž“ a vysvětlením, že mění jen pořadí podkladů,
+- u nejisté role obrazu se již „Použít jen jako referenci“ netváří jako doporučení; hromadné doporučení takový podklad z bezpečnostních důvodů nepřepíše,
+- scoring gate rozpozná `Total points: N` i uvnitř instrukční věty, takže nevzniká false-positive blokace PDF,
+- při skutečném rozporu bodování se místo slepé blokace otevře lokální editor hlavních úloh; součet se přepočítá a zapíše bez dalšího AI requestu; stejný editor je dostupný tlačítkem „Upravit body“,
+- poznámka pro učitele používá deterministickou cílovou skupinu z vybraného ročníku/věku/CEFR a odstraňuje volnou větu `Target audience`, včetně překlepu `gymnasion`,
+- jednoduchý Markdown `*kurzíva*` se vykreslí jako kurzíva a samostatné `---` jako vizuální oddělovač místo literálních znaků,
+- Pages resilient deploy a zero-live-Gemini CI politika zůstávají zachovány.
+
 ## 1.3.32 — Structure/scoring UX hotfix (2026-08-17)
 
 - opraven rozjetý checkbox „Povolit novou rozšiřující úlohu…“; checkbox už nepřebírá 100% šířku běžných inputů,

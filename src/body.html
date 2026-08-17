@@ -129,6 +129,16 @@
         <span class="visual-source-badge" id="visualSourceBadge">0 podkladů</span>
       </div>
       <p class="visual-source-help">Aplikace nejdřív rozliší, zda je obraz <b>skutečný didaktický podklad</b> (mapa, graf, fotografie, anatomické schéma…) nebo jen <b>hotová úloha zachycená jako obrázek</b>. Skutečný obraz se obvykle zachová; screenshot úlohy se naopak přečte a vytvoří znovu jako editovatelná diferencovaná úloha. Tato klasifikace probíhá v rámci stejného načítacího AI dotazu — žádný request navíc.</p>
+      <details class="visual-source-guide">
+        <summary>Co znamenají možnosti použití a změna pořadí?</summary>
+        <div class="visual-source-guide-grid">
+          <p><b>Převést na novou diferencovanou úlohu</b><span>Pro screenshot nebo scan hotového cvičení. AI obsah přečte, úlohu vytvoří znovu a původní obrázek se do žákovského výstupu nevloží.</span></p>
+          <p><b>Použít jako původní obrazový podklad</b><span>Pro mapu, graf, fotografii, anatomické schéma nebo jiný obraz, který má žák opravdu vidět. Obraz zůstane, mění se úlohy kolem něj.</span></p>
+          <p><b>Použít jen jako referenci</b><span>AI z obrázku smí čerpat informace nebo kontext, ale nemusí z něj vytvořit stejnou úlohu a obrázek se do výsledku nevkládá.</span></p>
+          <p><b>Nepoužívat</b><span>Obrázek se při tvorbě nové verze ignoruje.</span></p>
+        </div>
+        <p class="visual-order-guide"><b>Pořadí podkladů:</b> tlačítka „Posunout o místo výš/níž“ použij jen tehdy, když aplikace vytáhla obrázky v jiném pořadí než v originálu. Nemění obtížnost ani kvalitu obrazu.</p>
+      </details>
       <div class="visual-source-actions">
         <input id="visualSupplementFile" type="file" multiple accept="image/*" class="hide" />
         <button class="btn ghost small" id="visualApplyRecommendedBtn" type="button">Použít doporučení pro všechny</button>
@@ -322,13 +332,14 @@
 
 <div class="overlay" id="manualScoringOverlay">
   <div class="modal scoring-modal">
-    <h2>Ruční bodování před PDF</h2>
-    <p class="modal-text">Doplň body k jednotlivým hlavním úlohám. Hodnoty se přidají jen do připravovaného výstupu a nevyvolají žádný AI dotaz.</p>
+    <h2 id="manualScoringTitle">Editor bodování</h2>
+    <p class="modal-text" id="manualScoringText">Uprav body u hlavních úloh. Vše probíhá lokálně a nevyvolá žádný AI dotaz.</p>
+    <div class="scoring-issue-summary hide" id="manualScoringIssueSummary"></div>
     <div class="manual-scoring-list" id="manualScoringList"></div>
-    <div class="manual-scoring-total">Celkem: <strong id="manualScoringTotal">0</strong> bodů</div><div class="field-feedback manual-scoring-error" id="manualScoringError" role="alert"></div>
+    <div class="manual-scoring-total">Součet hlavních úloh: <strong id="manualScoringTotal">0</strong> bodů <span id="manualScoringDeclared"></span></div><div class="field-feedback manual-scoring-error" id="manualScoringError" role="alert"></div>
     <div class="modal-actions">
       <button class="btn ghost small" id="manualScoringCancel">Zpět</button>
-      <button class="btn small" id="manualScoringContinue">Uložit body a pokračovat k PDF</button>
+      <button class="btn small" id="manualScoringContinue">Uložit body</button>
     </div>
   </div>
 </div>

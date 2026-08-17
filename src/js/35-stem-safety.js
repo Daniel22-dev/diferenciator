@@ -108,8 +108,8 @@ function appendStemInline(parent,text,kind=stemSubjectKind()){
   flush();
 }
 function appendStemRichText(parent,text,kind=stemSubjectKind()){
-  const src=String(text||''),re=/\*\*(.+?)\*\*/g;let last=0,m;
-  while((m=re.exec(src))){if(m.index>last)appendStemInline(parent,src.slice(last,m.index),kind);const b=document.createElement('b');appendStemInline(b,m[1],kind);parent.appendChild(b);last=re.lastIndex}if(last<src.length)appendStemInline(parent,src.slice(last),kind);
+  const src=String(text||''),re=/\*\*([^*\n]+?)\*\*|(^|[\s([{>])\*([^\s*\n](?:[^*\n]*?[^\s*\n])?)\*(?=$|[\s.,;:!?)}\]])/gm;let last=0,m;
+  while((m=re.exec(src))){if(m.index>last)appendStemInline(parent,src.slice(last,m.index),kind);if(m[1]!=null){const b=document.createElement('b');appendStemInline(b,m[1],kind);parent.appendChild(b)}else{if(m[2])appendStemInline(parent,m[2],kind);const em=document.createElement('em');appendStemInline(em,m[3],kind);parent.appendChild(em)}last=re.lastIndex}if(last<src.length)appendStemInline(parent,src.slice(last),kind);
 }
 function renderStemTextHtml(text,kind=stemSubjectKind()){
   const div=document.createElement('div');appendStemRichText(div,text,kind);return div.innerHTML;

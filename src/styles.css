@@ -1050,6 +1050,23 @@ body.dark .edu-table th{background:#1f2b3d}
 #printArea .edu-fbd-body,.print-preview .edu-fbd-body,#printArea .edu-annotate-point,.print-preview .edu-annotate-point{fill:#fff}#printArea .edu-annotate-label,.print-preview .edu-annotate-label{stroke:#fff}
 @media print{.edu-fbd-body,.edu-annotate-point{fill:#fff}.edu-annotate-label{stroke:#fff}.edu-trace,.edu-reaction,.edu-annotate{overflow:visible}.edu-trace-table,.edu-reaction-balance{font-size:8pt}}
 .visual-source-recommendation{margin:0 0 8px;padding:7px 9px;border-radius:8px;background:rgba(63,146,112,.09);border:1px solid rgba(63,146,112,.22);font-size:12.5px;line-height:1.4;color:var(--ink)}
+.visual-source-guide{margin:8px 0 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.58);padding:0 10px}
+.visual-source-guide summary{cursor:pointer;padding:9px 0;font-size:12.5px;font-weight:850;color:var(--ink)}
+.visual-source-guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;padding:0 0 8px}
+.visual-source-guide-grid p{margin:0;padding:8px 9px;border-radius:8px;background:rgba(63,146,112,.06);font-size:12px;line-height:1.4}
+.visual-source-guide-grid b,.visual-source-guide-grid span{display:block}.visual-source-guide-grid span{margin-top:3px;color:var(--ink-soft)}
+.visual-order-guide{margin:0 0 10px;font-size:12px;line-height:1.45;color:var(--ink-soft)}
+.visual-mode-help{flex-basis:100%;margin:-2px 0 0;font-size:11.8px;line-height:1.4;color:var(--ink-soft)}
+.visual-order-controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.visual-order-controls .visual-order-label{font-size:11.8px;font-weight:850;color:var(--ink-soft)}
+.visual-order-controls .visual-order-note{font-size:11.5px;color:var(--ink-soft)}
+.visual-source-recommendation.uncertain{background:rgba(217,184,107,.12);border-color:rgba(217,184,107,.38)}
+.scoring-issue-summary{margin:8px 0 10px;padding:9px 10px;border:1px solid #D9B86B;border-radius:9px;background:#FFF8E7;color:#72500D;font-size:12.5px;line-height:1.45}.scoring-issue-summary.hide{display:none}
+.teacher-audience{margin:0 0 8px;padding:7px 9px;border-radius:8px;background:rgba(58,106,168,.07);font-size:12px;line-height:1.4;color:var(--ink-soft)}
+.worksheet-separator{border:0;border-top:1px solid var(--line);margin:10px 0}
+body.dark .visual-source-guide{background:rgba(23,29,36,.72)}body.dark .scoring-issue-summary{background:#332B18;border-color:#6E5B28;color:#F1D78D}
+@media(max-width:700px){.visual-source-guide-grid{grid-template-columns:1fr}.visual-order-controls .btn{width:100%}}
+
 body.dark .visual-source-recommendation{background:rgba(70,156,122,.12);border-color:rgba(91,185,148,.28)}
 .compact-toggle{margin:0;align-items:flex-start}
 .advanced-settings .extension-toggle-field{justify-self:stretch}

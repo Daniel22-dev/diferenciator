@@ -333,7 +333,7 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   if(!existsSync(fixturePath))problems.push('chybí regresní fixture reálného BODY pracovního listu');
   if(!api.includes("if(i==='task_image'||i==='hybrid')return 'reconstruct'")||!api.includes('PŘEVÉST NA NOVOU EDITOVATELNOU/DIFERENCOVANOU ÚLOHU'))problems.push('TASK_IMAGE není fail-safe směrován na rekonstrukci');
   if(!api.includes('seen.has(id)')||!api.includes("seen.add(id);return '\\n\\n[["))problems.push('VISUAL_n nemá deduplikaci a blokové vložení');
-  if(!api.includes('function scoringIntegrityIssues')||!quality.includes('PDF zablokováno kvůli nekonzistentnímu bodování'))problems.push('chybí deterministická hierarchická kontrola bodování před PDF');
+  if(!api.includes('function scoringIntegrityIssues')||!quality.includes('openManualScoring(sheet,data,scoreIssues)'))problems.push('chybí deterministická hierarchická kontrola bodování a přímá cesta k opravě před PDF');
   if(!body.includes('id="advAllowExtensions"')||!ui.includes('NOVÉ ROZŠIŘUJÍCÍ ÚLOHY: NEPŘIDÁVEJ')||!ui.includes('allowExtensions:!!'))problems.push('nové rozšiřující úlohy nejsou defaultně opt-in');
   if(problems.length)bad('T30: BODY visual-intent/scoring regression: '+problems.join('; ')); else ok('T30: BODY fixture chrání rekonstrukci task-image, deduplikaci vizuálů, bodování a opt-in extensions');
 }
@@ -367,6 +367,19 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   const build=read('scripts/build.mjs'),start=read('src/js/60-pwa-start.js');if(!build.includes('internal-tests.js.gz')||!build.includes('gzipSync')||!start.includes("DecompressionStream('gzip')"))problems.push('interní testovací konzole není komprimovaná mimo kritický/produkční raw budget');
   if(problems.length)bad('T32: structure/scoring/UX hotfix: '+problems.join('; '));
   else ok('T32: strict parallel variant chrání počty položek/bodovatelnost, checkbox layout a akční image-quality UX');
+}
+
+// T33: output repair + visual UX follow-up.
+{
+  const api=read('src/js/30-api-gemini.js'),quality=read('src/js/40-vystup-pdf-kvalita.js'),body=read('src/body.html'),allSubject=read('src/js/36-all-subject-safety.js'),stem=read('src/js/35-stem-safety.js');
+  const problems=[];
+  if(!body.includes('Co znamenají možnosti použití a změna pořadí?')||api.includes('↑ Dříve')||api.includes('↓ Později')||!api.includes('Posunout o místo výš')||!api.includes('visualModeHelp'))problems.push('obrazové volby/pořadí nejsou vysvětlené nebo stále používají Dříve/Později');
+  if(!api.includes('U nejistých podkladů zvol použití ručně')||!api.includes('visualIntentReliable'))problems.push('nejistý obraz se stále tváří jako automatické doporučení');
+  if(!api.includes('total\\s+(?:points?|pts?)')||!quality.includes('editScoringForSheet')||!quality.includes('applyEmbeddedScoring')||!quality.includes("mk('Upravit body'"))problems.push('chybí inline Total points nebo lokální editor/přepočet bodování');
+  if(!quality.includes('cleanTeacherNoteText')||!quality.includes('teacherAudienceText')||!quality.includes('gymnasion'))problems.push('chybí deterministická cílová skupina / cleanup gymnasion');
+  if(!allSubject.includes('worksheet-separator')||!stem.includes("document.createElement('em')"))problems.push('chybí markdown cleanup pro --- nebo *kurzívu*');
+  if(problems.length)bad('T33: output-repair/visual UX hotfix: '+problems.join('; '));
+  else ok('T33: obrazové volby + pořadí jsou vysvětlené, scoring je lokálně opravitelný a teacher/Markdown cleanup je přítomen');
 }
 
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
