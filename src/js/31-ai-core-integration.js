@@ -1,4 +1,4 @@
-const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.31'});
+const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.32'});
 const DPL_WORKSHEET_SCHEMA=Object.freeze({
   type:'object',
   properties:{

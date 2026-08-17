@@ -1,6 +1,6 @@
 {
   "schema": "ghrab-differentiator-all-subject-matrix-v1",
-  "version": "1.3.31",
+  "version": "1.3.32",
   "domains": [
     {
       "id": "language",
@@ -237,7 +237,7 @@
     "specialist-engine-validation",
     "office-native-object-fail-safe",
     "raw-tex-mathml-safety",
-    "live-provider-multimedia-gate",
+    "multimedia-provider-contract-without-live-ci",
     "cross-subject-specialist-diagrams",
     "preserved-image-annotation",
     "bounded-pseudocode-execution",

@@ -408,6 +408,11 @@ globalThis.TestSystem={
     const scoreInputs=[...document.querySelectorAll('#manualScoringList input[data-score-index]')];if(scoreInputs[0])scoreInputs[0].value='5';if(scoreInputs[1])scoreInputs[1].value='3';if($('#manualScoringContinue'))$('#manualScoringContinue').click();
     this.assert($('#printOverlay')&&$('#printOverlay').classList.contains('show')&&document.querySelectorAll('#printPreview .pa-points').length===2&&/Celkem:\s*8 b\./.test($('#printPreview').textContent),'Ruční body v PDF','Body a součet se propsaly do náhledu bez AI requestu','Ruční body se do PDF nepropsaly');
     if($('#printOverlay'))$('#printOverlay').classList.remove('show');
+    const nested=manualScoringItems('**3. Physical Actions and Expressive Body Language**\n1. shake _____\n2. bite _____\n3. comb _____');
+    this.assert(nested.items.length===1,'Ruční body jen pro hlavní úlohy','Číslované podbody se už nepovažují za samostatné hlavní úlohy.','Ruční bodování stále zaměňuje podbody za hlavní úlohy.');
+    const brokenScoring='**1. Internal Organs (5 b.)**\nText\n\n**2. Idioms (5 b.)**\nText\n\n**3. Physical Actions (5 b.)**\n1. shake ___ (5 b.)\n2. bite ___ (5 b.)\n\n**4. Analysis (5 b.)**\nText\n\nCelkem: 30 b.';
+    const scoreIssues=scoringIntegrityIssues(brokenScoring);
+    this.assert(scoreIssues.length>=2&&scoreIssues.some(x=>/podbody/.test(x))&&scoreIssues.some(x=>/Celkový součet/.test(x)),'Hierarchická kontrola bodování','Rozpor mezi body sekce, podbody a celkovým součtem je deterministicky zachycen.','Nekonzistentní bodování může projít do PDF.');
   },
   runLayoutTest(){
     const overflow=document.documentElement.scrollWidth-window.innerWidth;

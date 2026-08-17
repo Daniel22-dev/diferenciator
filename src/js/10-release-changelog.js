@@ -1,10 +1,11 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.31',
-  date: '2026-08-15',
+  version: '1.3.32',
+  date: '2026-08-17',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    '1.3.32: Visual Intent Routing — TASK_IMAGE se rekonstruuje místo zachování, VISUAL_n se deduplikuje a vkládá blokově, bodování má hierarchickou PDF bránu a nové rozšiřující úlohy jsou opt-in.',
     '1.3.31: GARP audit fixes — fail-closed tracer a chemie, bezpečný tisk po hydrataci, korektní anotace 16:9, úplná offline mapa a skutečná výkonová rezerva bez zvýšení budgetů.',
     '1.3.30: Deep subject engines — EDU_TRACE, EDU_REACTION, EDU_ANNOTATE, období/nejistota v timeline a validované free-body diagramy.',
     '1.3.29: Cross-subject engines — flow, timeline, Mendelovská genetika/rodokmeny a fyzikální vektory/spojná čočka; předmětově specifický routing.',

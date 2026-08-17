@@ -264,9 +264,10 @@ function getAdvancedOptions(){return {
   structureMode:($('#advStructureMode')?$('#advStructureMode').value:'auto'),
   supportType:($('#advSupportType')?$('#advSupportType').value.trim():''),
   scoringMode:scoringMode(),
+  allowExtensions:!!($('#advAllowExtensions')&&$('#advAllowExtensions').checked),
   teacherInstruction:($('#advTeacherInstruction')?$('#advTeacherInstruction').value.trim():'')
 }}
-function resetAdvancedSettings(){['advTargetGroup','advWorkTime','advLearningGoal','advSupportType','advTeacherInstruction'].forEach(id=>{const el=$(id);if(el)el.value=''});const variant=$('#advVariantMode');if(variant)variant.value='auto';const mode=$('#advStructureMode');if(mode)mode.value='auto';const scoring=$('#advScoringMode');if(scoring)scoring.value='none';const force=$('#cefrForce');if(force)force.checked=false;const det=$('#advancedSettings');if(det)det.open=false;updateTargetGroupHint();syncScoringModeFromSource(false);syncVariantTierRules()}
+function resetAdvancedSettings(){['advTargetGroup','advWorkTime','advLearningGoal','advSupportType','advTeacherInstruction'].forEach(id=>{const el=$(id);if(el)el.value=''});const variant=$('#advVariantMode');if(variant)variant.value='auto';const mode=$('#advStructureMode');if(mode)mode.value='auto';const scoring=$('#advScoringMode');if(scoring)scoring.value='none';const ext=$('#advAllowExtensions');if(ext)ext.checked=false;const force=$('#cefrForce');if(force)force.checked=false;const det=$('#advancedSettings');if(det)det.open=false;updateTargetGroupHint();syncScoringModeFromSource(false);syncVariantTierRules()}
 function variantModePromptLine(key,batch=1){
   const a=getAdvancedOptions();
   const mode=a.variantMode||'auto';
@@ -294,6 +295,8 @@ function advancedPromptLines(key='core'){
   else if(a.scoringMode==='original')out.push('BODOVÁNÍ — PŘEVZÍT Z ORIGINÁLU: explicitní body, váhy a celkový součet jsou závazná součást vzoru. Zachovej bodové hodnoty srovnatelných úloh a celkový počet bodů přesně. Pokud diferenciace změní vnitřní členění úlohy, přerozděl body pouze uvnitř této úlohy tak, aby její hodnota i celkový součet zůstaly stejné. Žádné nové body navíc nevymýšlej.');
   else if(a.scoringMode==='manual')out.push('BODOVÁNÍ — DOPLNÍ UČITEL: ve vygenerovaném pracovním listu neuváděj žádné bodové hodnoty ani celkový součet, i kdyby je originál obsahoval. Učitel je doplní lokálně v aplikaci před PDF.');
   else out.push('BODOVÁNÍ — BEZ BODŮ: ve výsledném pracovním listu neuváděj žádné body, váhy ani celkový bodový součet, i kdyby je originál obsahoval.');
+  if(a.allowExtensions)out.push('NOVÉ ROZŠIŘUJÍCÍ ÚLOHY: učitel výslovně povolil přidat novou samostatnou úlohu nad rámec originálu, ale musí přímo navazovat na stejné učivo/cíl, být jasně řešitelná a mít odpověď v klíči.');
+  else out.push('NOVÉ ROZŠIŘUJÍCÍ ÚLOHY: NEPŘIDÁVEJ žádnou novou samostatně číslovanou hlavní úlohu, která nemá protějšek v originálu. Diferencuj existující úlohy změnou opory, formulace, dílčích kroků nebo hloubky odpovědi; můžeš upravit podúkol uvnitř stávající úlohy, ale nevytvářej nový tematický blok navíc.');
   if(a.teacherInstruction)out.push('ZÁVAZNÝ VLASTNÍ POKYN UČITELE: '+a.teacherInstruction+' Tento pokyn má přednost před automatickými preferencemi, pokud není v rozporu se zvolenou úrovní, výslovně zvoleným režimem změny, bezpečností nebo věcnou správností.');
   return out;
 }
@@ -343,6 +346,7 @@ function applyAppFormState(s){
   if($('#advStructureMode'))$('#advStructureMode').value=a.structureMode||'auto';
   if($('#advSupportType'))$('#advSupportType').value=a.supportType||'';
   if($('#advScoringMode'))$('#advScoringMode').value=SCORING_MODES.includes(a.scoringMode)?a.scoringMode:(a.scoringMode==='teacher'?'manual':'none');
+  if($('#advAllowExtensions'))$('#advAllowExtensions').checked=!!a.allowExtensions;
   if($('#advTeacherInstruction'))$('#advTeacherInstruction').value=a.teacherInstruction||'';
   updateTargetGroupHint();syncScoringModeFromSource(false);syncVariantTierRules();syncCefrHintFromSubject();
 }
@@ -351,7 +355,7 @@ const MAX_PROJECT_FILE_BYTES=32*1024*1024;
 const MAX_PROJECT_SHEETS=12;
 function safeProjectText(value,max=MAX_TEXT_CHARS){return (typeof value==='string'||typeof value==='number')?String(value).slice(0,max):''}
 const MAX_PROJECT_VISUALS=8,MAX_PROJECT_VISUAL_DATA_CHARS=18*1024*1024,MAX_PROJECT_MEDIA_DATA_CHARS=18*1024*1024;
-function normalizeProjectVisualAsset(value){if(!value||typeof value!=='object'||Array.isArray(value))return null;const id=String(value.id||'').toUpperCase();if(!/^VISUAL_\d+$/.test(id))return null;const mime=String(value.mime_type||'');if(!/^image\/(?:png|jpe?g|webp|gif)$/i.test(mime))return null;const data=String(value.data||'').replace(/\s+/g,'');if(!data||data.length>MAX_PROJECT_VISUAL_DATA_CHARS||!/^[A-Za-z0-9+/=]+$/.test(data))return null;return {id,name:safeProjectText(value.name,300),mime_type:mime,data,role:VISUAL_ROLES.includes(value.role)?value.role:'unknown',type:VISUAL_TYPES.includes(value.type)?value.type:'other',description:safeProjectText(value.description,500),mode:'preserve',source:safeProjectText(value.source,80)||'project',optimized:!!value.optimized}}
+function normalizeProjectVisualAsset(value){if(!value||typeof value!=='object'||Array.isArray(value))return null;const id=String(value.id||'').toUpperCase();if(!/^VISUAL_\d+$/.test(id))return null;const mime=String(value.mime_type||'');if(!/^image\/(?:png|jpe?g|webp|gif)$/i.test(mime))return null;const data=String(value.data||'').replace(/\s+/g,'');if(!data||data.length>MAX_PROJECT_VISUAL_DATA_CHARS||!/^[A-Za-z0-9+/=]+$/.test(data))return null;return {id,name:safeProjectText(value.name,300),mime_type:mime,data,role:VISUAL_ROLES.includes(value.role)?value.role:'unknown',type:VISUAL_TYPES.includes(value.type)?value.type:'other',intent:typeof normalizeVisualIntent==='function'?normalizeVisualIntent(value.intent):'unknown',confidence:typeof normalizeVisualConfidence==='function'?normalizeVisualConfidence(value.confidence):0,description:safeProjectText(value.description,500),mode:typeof normalizeVisualMode==='function'?normalizeVisualMode(value.mode):'reference',source:safeProjectText(value.source,80)||'project',optimized:!!value.optimized}}
 function normalizeProjectMediaSource(value){if(!value||typeof value!=='object'||Array.isArray(value))return null;const kind=String(value.kind||'');if(!/^(?:audio|video)$/.test(kind))return null;const mime=String(value.mime_type||'');if(!new RegExp('^'+kind+'\\/','i').test(mime))return null;const data=String(value.data||'').replace(/\s+/g,'');if(!data||data.length>MAX_PROJECT_MEDIA_DATA_CHARS||!/^[A-Za-z0-9+/=]+$/.test(data))return null;return {kind,name:safeProjectText(value.name,300)||kind,mime_type:mime,data,bytes:Number(value.bytes)||0}}
 function normalizeProjectForm(form){
   form=(form&&typeof form==='object'&&!Array.isArray(form))?form:{};
@@ -362,7 +366,7 @@ function normalizeProjectForm(form){
     pasteText:safeProjectText(form.pasteText),baseText:safeProjectText(form.baseText),subject:safeProjectText(form.subject,300),
     cefr:!!form.cefr,cefrForce:!!form.cefrForce,selectedTier:tier,
     meta:{subject:safeProjectText(meta.subject,300),topic:safeProjectText(meta.topic,500),className:safeProjectText(meta.className,200),date:safeProjectText(meta.date,100)},
-    advanced:{targetGroup:normalizeTargetGroupValue(advanced.targetGroup),workTime:safeProjectText(advanced.workTime,200),learningGoal:safeProjectText(advanced.learningGoal,1000),variantMode:['auto','same_content_diff_difficulty','same_format_new_content','same_content_same_format','same_goal_flexible'].includes(advanced.variantMode)?advanced.variantMode:'auto',structureMode:['auto','strict','flexible'].includes(advanced.structureMode)?advanced.structureMode:'auto',supportType:safeProjectText(advanced.supportType,500),scoringMode:SCORING_MODES.includes(advanced.scoringMode)?advanced.scoringMode:(advanced.scoringMode==='teacher'?'manual':'none'),teacherInstruction:safeProjectText(advanced.teacherInstruction,2000)}
+    advanced:{targetGroup:normalizeTargetGroupValue(advanced.targetGroup),workTime:safeProjectText(advanced.workTime,200),learningGoal:safeProjectText(advanced.learningGoal,1000),variantMode:['auto','same_content_diff_difficulty','same_format_new_content','same_content_same_format','same_goal_flexible'].includes(advanced.variantMode)?advanced.variantMode:'auto',structureMode:['auto','strict','flexible'].includes(advanced.structureMode)?advanced.structureMode:'auto',supportType:safeProjectText(advanced.supportType,500),scoringMode:SCORING_MODES.includes(advanced.scoringMode)?advanced.scoringMode:(advanced.scoringMode==='teacher'?'manual':'none'),allowExtensions:!!advanced.allowExtensions,teacherInstruction:safeProjectText(advanced.teacherInstruction,2000)}
   };
 }
 function normalizeProjectSheet(item){
@@ -412,7 +416,7 @@ function applyProject(data){
   applyAppFormState(data.form);
   const results=$('#results');if(results)results.innerHTML='';
   const sheets=data.sheets;
-  const restoredVisuals=(sheets[0]&&sheets[0].visualAssets||[]).map(cloneVisualAsset).filter(Boolean);sourceVisualAssets=restoredVisuals.map(a=>({...a,mode:'preserve',analysis_data:'',analysis_mime_type:'',analysis_mode:'',quality:null,modeTouched:true}));sourceDocumentVisualNotes=[];sourceScanReport=null;visualAssetSeq=sourceVisualAssets.reduce((m,a)=>Math.max(m,Number(String(a.id||'').match(/\d+/)?.[0]||0)),0);renderSourceVisualPanel();
+  const restoredVisuals=(sheets[0]&&sheets[0].visualAssets||[]).map(cloneVisualAsset).filter(Boolean);sourceVisualAssets=restoredVisuals.map(a=>({...a,mode:normalizeVisualMode(a.mode),analysis_data:'',analysis_mime_type:'',analysis_mode:'',quality:null,modeTouched:true}));sourceDocumentVisualNotes=[];sourceScanReport=null;visualAssetSeq=sourceVisualAssets.reduce((m,a)=>Math.max(m,Number(String(a.id||'').match(/\d+/)?.[0]||0)),0);renderSourceVisualPanel();
   sheets.forEach(item=>results.appendChild(restoreProjectSheet(item)));
   hide($('#inputPanel'));show($('#configPanel'));
   if(sheets.length){show($('#resultsPanel'));setResultSummary(sheets.length)}else hide($('#resultsPanel'));

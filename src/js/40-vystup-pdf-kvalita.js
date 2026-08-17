@@ -106,10 +106,11 @@ function normalizeParsedVisuals(parsed,assets){
   return {...parsed,parts,worksheet:worksheet||parts.tasks||'',answerKey:parts.answerKey||parsed.answerKey||'',_visualAssetIds:keep.map(a=>String(a.id||'').toUpperCase()).filter(Boolean)};
 }
 function sheetScoringMode(sheet){return sheet&&SCORING_MODES.includes(sheet._scoringMode)?sheet._scoringMode:scoringMode()}
+function withDeterministicOutputValidation(validation,parsed){const base=validation||{ok:true,issues:[]},tasks=String(parsed&&parsed.parts&&parsed.parts.tasks||parsed&&parsed.worksheet||''),extra=typeof scoringIntegrityIssues==='function'?scoringIntegrityIssues(tasks).map(x=>'BODOVÁNÍ: '+x):[];const issues=[...new Set([...(base.issues||[]),...extra])];return {ok:issues.length===0,issues}}
 let pendingManualScoring=null;
 function manualScoringItems(text){
   const blocks=splitPrintBlocks(text),items=[];
-  blocks.forEach((block,index)=>{if(!block.isTask)return;const first=String(block.text||'').split(/\r?\n/).find(x=>String(x).trim())||('Úloha '+(items.length+1));items.push({index,label:first.replace(/^\*{1,2}|\*{1,2}$/g,'').trim()})});
+  blocks.forEach((block,index)=>{if(!block.isTask)return;const first=String(block.text||'').split(/\r?\n/).find(x=>String(x).trim())||('Úloha '+(items.length+1));if(typeof isScoredMainTaskStartLine==='function'&&!isScoredMainTaskStartLine(first))return;items.push({index,label:first.replace(/^\*{1,2}|\*{1,2}$/g,'').trim()})});
   return {blocks,items};
 }
 function manualScoreTotal(scores){return Object.values(scores||{}).reduce((sum,v)=>{const n=Number(v);return Number.isFinite(n)&&n>=0?sum+n:sum},0)}
@@ -151,6 +152,8 @@ function pdfDataForSheet(sheet,title,text,isKey=false){
 }
 const PrintPdf={
   request(sheet,title,text){
+    const scoreSource=String(sheet&&sheet._parts&&sheet._parts.tasks||sheet&&sheet._text||text||''),scoreIssues=typeof scoringIntegrityIssues==='function'?scoringIntegrityIssues(scoreSource):[];
+    if(scoreIssues.length){setSheetStatus(sheet,'PDF zablokováno · oprav bodování','warn');showMessage('PDF zablokováno kvůli nekonzistentnímu bodování',scoreIssues.join(' ')+' Uprav body v pracovním listu, zvol „Bez bodování“, nebo použij ruční bodování hlavních úloh.');return}
     const hasStructureIssues=!!(sheet&&sheet._validation&&!sheet._validation.ok&&!sheet._pdfWarningSkipped);
     const needsQuality=!!(sheet&&!sheet._quality&&(!sheet._qualityStage||sheet._qualityStage==='none'));
     const data=pdfDataForSheet(sheet,title,text,false);
@@ -486,7 +489,7 @@ async function generateIntoSheet(sheet,key,base,idx,total){
     }catch(_){/* původní výstup zůstane zachovaný a zobrazí se varování */}
   }
   if(!String(parsed&&parsed.worksheet||'').trim())throw makeAppError('Model nevrátil použitelný pracovní list. Původní výstup zůstává zachovaný.','INCOMPLETE_RESPONSE');
-  const generatedScoringMode=scoringMode();parsed=normalizeParsedScoring(parsed,generatedScoringMode);parsed=ensureMediaSourceMarker(normalizeParsedVisuals(parsed,sourceAssets));validation=validateWorksheetResponse(parsed);const mediaSafety=mediaStudentSafetyIssues(parsed,base);if(mediaSafety.length)throw makeAppError('Multimediální bezpečnost výstupu selhala: '+mediaSafety.join(' '),'MEDIA_TRANSCRIPT_LEAK');
+  const generatedScoringMode=scoringMode();parsed=normalizeParsedScoring(parsed,generatedScoringMode);parsed=ensureMediaSourceMarker(normalizeParsedVisuals(parsed,sourceAssets));validation=withDeterministicOutputValidation(validateWorksheetResponse(parsed),parsed);const mediaSafety=mediaStudentSafetyIssues(parsed,base);if(mediaSafety.length)throw makeAppError('Multimediální bezpečnost výstupu selhala: '+mediaSafety.join(' '),'MEDIA_TRANSCRIPT_LEAK');
   sheet._tierKey=key;sheet._scoringMode=generatedScoringMode;sheet._manualScores={};sheet._visualAssets=sourceAssets.map(cloneVisualAsset).filter(Boolean);sheet._mediaSource=cloneMediaSource(sourceMediaAsset,true);sheet._text=parsed.worksheet;sheet._key=parsed.answerKey;sheet._quality='';sheet._qualityStage='none';sheet._qualityApplied=[];sheet._finalAuditUsed=false;sheet._parts=parsed.parts||{title:'',instructions:'',tasks:parsed.worksheet,answerKey:parsed.answerKey,teacherNote:''};sheet._structured=!!parsed.structured;sheet._validation=validation;sheet._pdfWarningSkipped=false;
   renderSheetBody(sheet);
   renderTeacherNote(sheet);
@@ -635,7 +638,7 @@ async function applySelectedQualitySuggestions(){
       try{const fixed=await repairWorksheetJson(raw,validation,$('#baseText').value.trim(),sheet._tierKey),fp=normalizeParsedVisuals(parseWorksheetResponse(fixed),sheet._visualAssets||[]),fv=validateWorksheetResponse(fp);if(fp&&String(fp.worksheet||'').trim()&&(fv.ok||fv.issues.length<validation.issues.length)){parsed=fp;validation=fv}}catch(_){}
     }
     if(!String(parsed&&parsed.worksheet||'').trim())throw makeAppError('Model nevrátil použitelnou upravenou verzi. Původní výstup zůstal zachovaný.','INCOMPLETE_RESPONSE');
-    parsed=normalizeParsedScoring(parsed,sheetScoringMode(sheet));parsed=ensureMediaSourceMarker(normalizeParsedVisuals(parsed,sheet._visualAssets||[]));validation=validateWorksheetResponse(parsed);const mediaSafety=mediaStudentSafetyIssues(parsed,$('#baseText').value.trim());if(mediaSafety.length)throw makeAppError('Úprava by odhalila zdrojový přepis v žákovské části: '+mediaSafety.join(' '),'MEDIA_TRANSCRIPT_LEAK');sheet._manualScores={};
+    parsed=normalizeParsedScoring(parsed,sheetScoringMode(sheet));parsed=ensureMediaSourceMarker(normalizeParsedVisuals(parsed,sheet._visualAssets||[]));validation=withDeterministicOutputValidation(validateWorksheetResponse(parsed),parsed);const mediaSafety=mediaStudentSafetyIssues(parsed,$('#baseText').value.trim());if(mediaSafety.length)throw makeAppError('Úprava by odhalila zdrojový přepis v žákovské části: '+mediaSafety.join(' '),'MEDIA_TRANSCRIPT_LEAK');sheet._manualScores={};
     sheet._text=parsed.worksheet;sheet._key=parsed.answerKey||'';sheet._qualityApplied=[...already,...indexes];sheet._qualityStage=wasFinal?'final-revised':'revised';sheet._finalAuditUsed=wasFinal?true:!!sheet._finalAuditUsed;sheet._parts=parsed.parts||{title:'',instructions:'',tasks:parsed.worksheet,answerKey:parsed.answerKey||'',teacherNote:''};sheet._structured=!!parsed.structured;sheet._validation=validation;sheet._pdfWarningSkipped=false;
     renderSheetBody(sheet);renderTeacherNote(sheet);showStructureWarning(sheet,validation);const kb=sheet.querySelector('.keybox');if(kb){kb.innerHTML='';kb.classList.remove('show');delete kb.dataset.filled}const qb=sheet.querySelector('.qualitybox');if(qb){qb.innerHTML='';qb.classList.remove('show')}attachSheetTools(sheet);
     if(wasFinal){setSheetStatus(sheet,'finální opravy zapracovány · ověř učitelem','ok');showMessage('Finální opravy zapracovány','Další automatickou kontrolu už aplikace nenabízí, aby nevznikla smyčka dotazů. Projdi výsledek jako učitel a můžeš přejít k řešení nebo PDF.');}

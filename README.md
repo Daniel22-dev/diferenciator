@@ -1,14 +1,14 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.31  
+**Aktuální verze:** 1.3.32  
 
-1.3.31 uzavírá nezávislý GARP audit 1.3.30: tracer bezpečně rozlišuje celočíselné dělení `//` od komentářů, chemický parser odmítá neexistující prvky a nejednoznačné rovnice, tisk čeká na hydrataci odborných vizuálů a blokuje jejich chyby, anotace respektují skutečný poměr stran a mapové presety jsou povinně zahrnuté v offline cache. Kritický bundle má novou rezervu bez zvýšení zmrazených performance budgetů.
+1.3.32 zavádí Visual Intent Routing: obrazové podklady se nejdřív rozliší podle didaktické role. Screenshot/naskenovaná úloha (`TASK_IMAGE`) se výchozím způsobem rekonstruuje do čisté diferencované úlohy místo vložení původního bitmapového zadání; skutečný obrazový podklad (`CONTENT_VISUAL`) se naopak zachová. Výstupní pipeline deduplikuje `VISUAL_n`, vkládá zachované obrazy blokově, kontroluje hierarchii bodování před PDF exportem a nové samostatné rozšiřující úlohy jsou opt-in.
 **Platforma:** GHRAB Platform 1.1.0 · etapa P5
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.31
+- **Verze:** 1.3.32
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž

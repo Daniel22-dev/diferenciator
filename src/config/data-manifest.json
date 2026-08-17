@@ -1,7 +1,7 @@
 {
   "schema": "ghrab-data-manifest-v1",
   "appId": "differentiator",
-  "appVersion": "1.3.31",
+  "appVersion": "1.3.32",
   "manifestVersion": 3,
   "dataCategories": [
     "settings",

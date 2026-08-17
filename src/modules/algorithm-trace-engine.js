@@ -1,4 +1,4 @@
-/* Diferenciator 1.3.31 - bounded school pseudocode tracer. No eval, no Function, no network. */
+/* Diferenciator 1.3.32 - bounded school pseudocode tracer. No eval, no Function, no network. */
 const DEFAULT_MAX_STEPS=600,HARD_MAX_STEPS=2000,MAX_ARRAY=200,MAX_PROGRAM_LINES=160;
 const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k),finite=v=>Number.isFinite(Number(v)),clone=v=>Array.isArray(v)?v.map(clone):v,txt=(v,n=160)=>String(v??'').trim().slice(0,n);
 function fail(message,line=0){const e=new Error(message);e.line=line;throw e}

@@ -1,6 +1,6 @@
 {
   "name": "ghrab-diferenciator",
-  "version": "1.3.31",
+  "version": "1.3.32",
   "private": true,
   "description": "Diferenciátor pracovních listů a testů — samostatná PWA pro GitHub Pages",
   "type": "module",

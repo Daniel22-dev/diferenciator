@@ -1,4 +1,4 @@
-/* Diferenciator 1.3.31 - deterministic cross-subject diagram engines. No eval, no network. */
+/* Diferenciator 1.3.32 - deterministic cross-subject diagram engines. No eval, no network. */
 const finite=v=>Number.isFinite(Number(v)),num=(v,d=0)=>finite(v)?Number(v):d,txt=(v,n=120)=>String(v??'').trim().slice(0,n),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 function uniqueId(value,fallback,used){let id=txt(value||fallback,40)||fallback,base=id,k=2;while(used.has(id))id=base+'-'+k++;used.add(id);return id}

@@ -2,7 +2,7 @@
   "schema": "ghrab-release-acceptance-v1",
   "stage": "P5",
   "appId": "differentiator",
-  "appVersion": "1.3.31",
+  "appVersion": "1.3.32",
   "releaseStatus": "pre-production-accepted",
   "primaryRuntime": {
     "mode": "standalone-github-pages",
@@ -46,7 +46,7 @@
   },
   "garpReview": {
     "sourceAudit": "AUDIT-DIFERENCIATOR-1.3.30-2026-08-15.txt",
-    "reviewedFor": "1.3.31",
+    "reviewedFor": "1.3.32",
     "blockingFindingsClosed": [
       "P0-1",
       "P0-2",

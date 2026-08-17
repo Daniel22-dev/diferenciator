@@ -1,4 +1,4 @@
-/* Diferenciator 1.3.31 - deterministic classroom renderers. No eval, no external network. */
+/* Diferenciator 1.3.32 - deterministic classroom renderers. No eval, no external network. */
 const NS='http://www.w3.org/2000/svg';
 const num=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));

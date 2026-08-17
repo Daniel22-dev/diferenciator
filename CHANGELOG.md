@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.32 — Visual Intent Routing (2026-08-17)
+
+- obrazové podklady dostaly didaktický intent `content_visual`, `task_image`, `hybrid`, `decorative` nebo `unknown`; klasifikace je součástí stávajícího multimodálního čtení a nepřidává samostatný API request;
+- `TASK_IMAGE` a `HYBRID` se výchozím způsobem převádějí na novou editovatelnou/diferencovanou úlohu a původní bitmapa se do žákovského výstupu nevkládá; skutečný `CONTENT_VISUAL` se naopak zachovává jako zdrojový obraz;
+- UI zobrazuje rozpoznanou roli, jistotu a doporučenou akci a nabízí hromadné „Použít doporučení pro všechny“; učitel může doporučení ručně přepsat;
+- raw `VISUAL_n` marker je před výsledkem deterministicky deduplikován a zachovaný obraz se smí objevit nejvýše jednou jako samostatný blokový prvek, nikoli uvnitř věty;
+- manuální bodování rozlišuje hlavní nadpisy úloh od očíslovaných podbodů; PDF brána kontroluje součet podbodů proti hlavní úloze a deklarovaný celkový součet; nekonzistentní bodování export zablokuje;
+- nová samostatná rozšiřující úloha nad rámec originálu je ve výchozím stavu zakázaná a vyžaduje explicitní volbu učitele;
+- přidán regresní fixture podle reálného BODY pracovního listu, který reprodukoval zachované/duplikované screenshoty a chybný součet 90 bodů; T30 tento případ hlídá;
+- CI politika z 1.3.31 zůstává zachována: push/PR/deploy spotřebují 0 Gemini requests a T29 blokuje návrat live provider smoke do CI;
+- `npm test` PASS, 146/146 interních testů PASS, specialisté 56/56, platforma 109/109, `qa:quality` 31/31, XSS regresní gate PASS.
+
 ## 1.3.31 — GARP audit fixes (2026-08-15)
 
 - CI quota hotfix (2026-08-16): z aktuálního vývojového CI byl úplně odstraněn live Gemini audio/video provider smoke, repository secret i související package skripty. Push, PR, P5 gate a deploy nyní spotřebují 0 Gemini API requests; T29 tuto politiku blokujícím testem hlídá. Předchozí ffmpeg CI hotfix je tímto překonán a `ffmpeg` už release workflow nepotřebují. Verze aplikace zůstává 1.3.31.

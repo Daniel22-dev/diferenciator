@@ -171,8 +171,8 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
 {
   const body=read('src/body.html'),api=read('src/js/30-api-gemini.js'),quality=read('src/js/40-vystup-pdf-kvalita.js'),projects=read('src/js/20-zaklad-ui-projekty.js'),core=read('src/js/31-ai-core-integration.js'),ops=JSON.parse(read('src/ai-operations.json')),pkg=JSON.parse(read('package.json'));
   const problems=[];
-  if(!body.includes('id="visualSourcePanel"')||!body.includes('id="visualCropOverlay"')||!api.includes("[['preserve','Zachovat původní obraz ve výstupu'],['reference','Použít jen jako předlohu'],['ignore','Nevkládat / ignorovat']]"))problems.push('chybí učitelská volba zachovat/reference/ignorovat nebo lokální výřez');
-  if(!api.includes('<<<VISUAL_MANIFEST>>>')||!api.includes('function splitVisualManifest')||!api.includes('function applyVisualManifest'))problems.push('chybí klasifikace obrazově klíčových podkladů');
+  if(!body.includes('id="visualSourcePanel"')||!body.includes('id="visualCropOverlay"')||!body.includes('id="visualApplyRecommendedBtn"')||!api.includes("['reconstruct','Převést na novou diferencovanou úlohu']"))problems.push('chybí učitelská volba převést/zachovat/reference/ignorovat nebo hromadné doporučení');
+  if(!api.includes('<<<VISUAL_MANIFEST>>>')||!api.includes('function splitVisualManifest')||!api.includes('function applyVisualManifest')||!api.includes('VISUAL_INTENTS')||!api.includes('task_image'))problems.push('chybí klasifikace didaktické role obrazových podkladů');
   if(!api.includes('function generationVisualParts')||!api.includes("mode==='preserve'")||!api.includes('vlož do tasks marker [['))problems.push('generování nepřenáší obraz a marker zachování');
   if(!api.includes('function renderTextWithVisuals')||!api.includes('function ensureVisualMarkers')||!api.includes('print-visual'))problems.push('výstup/PDF neumí nahradit marker původním obrazem');
   if(!quality.includes('_visualAssets')||!quality.includes('generationVisualParts()')||!quality.includes('sheetVisualAiParts(sheet)')||!quality.includes('visualAssets'))problems.push('sheet/quality/answer/PDF tok nenese vizuální assety');
@@ -182,7 +182,7 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
     if(!new RegExp("'"+name+"':[\\s\\S]{0,400}inputTypes:\\[[^\\]]*'image'[^\\]]*\\]").test(core))problems.push(name+' nepovoluje image vstup v Core konfiguraci');
   }
   if(pkg.scripts?.['qa:visuals']!=='node scripts/qa-visual-assets-browser.mjs')problems.push('chybí blokující klikací visual QA skript');
-  if(problems.length)bad('T16: obrazově klíčové podklady: '+problems.join('; ')); else ok('T16: mapa/graf/schéma se zachovávají jako skutečné assety až do výsledku/PDF');
+  if(problems.length)bad('T16: obrazově klíčové podklady: '+problems.join('; ')); else ok('T16: skutečné obrazové podklady se zachovávají, zatímco úlohy v obrázku mají samostatný rekonstrukční režim');
 }
 
 // T17: Phase 2 STEM notation and correctness safeguards must stay wired end-to-end.
@@ -322,6 +322,20 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   const pkg=read('package.json');
   if(offenders.length||/qa:provider:live|qa-provider-multimedia-live/.test(pkg))bad('T29: CI nesmí automaticky spotřebovávat Gemini requests'+(offenders.length?': '+offenders.join(', '):''));
   else ok('T29: push/PR/deploy CI neobsahuje live Gemini provider smoke ani provider secret');
+}
+
+
+// T30: real BODY worksheet regression — task screenshots must be reconstructed, duplicate visuals deduped, scoring hierarchy gated and extensions opt-in.
+{
+  const api=read('src/js/30-api-gemini.js'),quality=read('src/js/40-vystup-pdf-kvalita.js'),ui=read('src/js/20-zaklad-ui-projekty.js'),body=read('src/body.html');
+  const fixturePath=join(ROOT,'test-fixtures','visual-intent-body-regression.json');
+  const problems=[];
+  if(!existsSync(fixturePath))problems.push('chybí regresní fixture reálného BODY pracovního listu');
+  if(!api.includes("if(i==='task_image'||i==='hybrid')return 'reconstruct'")||!api.includes('PŘEVÉST NA NOVOU EDITOVATELNOU/DIFERENCOVANOU ÚLOHU'))problems.push('TASK_IMAGE není fail-safe směrován na rekonstrukci');
+  if(!api.includes('seen.has(id)')||!api.includes("seen.add(id);return '\\n\\n[["))problems.push('VISUAL_n nemá deduplikaci a blokové vložení');
+  if(!api.includes('function scoringIntegrityIssues')||!quality.includes('PDF zablokováno kvůli nekonzistentnímu bodování'))problems.push('chybí deterministická hierarchická kontrola bodování před PDF');
+  if(!body.includes('id="advAllowExtensions"')||!ui.includes('NOVÉ ROZŠIŘUJÍCÍ ÚLOHY: NEPŘIDÁVEJ')||!ui.includes('allowExtensions:!!'))problems.push('nové rozšiřující úlohy nejsou defaultně opt-in');
+  if(problems.length)bad('T30: BODY visual-intent/scoring regression: '+problems.join('; ')); else ok('T30: BODY fixture chrání rekonstrukci task-image, deduplikaci vizuálů, bodování a opt-in extensions');
 }
 
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}

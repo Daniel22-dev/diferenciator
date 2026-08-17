@@ -42,7 +42,7 @@ function subjectGenerationPromptLines(subject){
   return [common];
 }
 function educationalVisualPromptLines(subject){
-  const kind=subjectDomainKind(subject),stem=typeof stemSubjectKind==='function'?stemSubjectKind(subject):'',base='ODBORNÉ VIZUÁLY 1.3.31: nový přesný vizuál zapisuj jako samostatný [[EDU_TYP|{JSON}]]. Data markeru musí souhlasit se zadáním i klíčem. Zachovaný [[VISUAL_n]] nenahrazuj aproximací.';
+  const kind=subjectDomainKind(subject),stem=typeof stemSubjectKind==='function'?stemSubjectKind(subject):'',base='ODBORNÉ VIZUÁLY 1.3.32: nový přesný vizuál zapisuj jako samostatný [[EDU_TYP|{JSON}]]. Data markeru musí souhlasit se zadáním i klíčem. Zachovaný [[VISUAL_n]] nenahrazuj aproximací.';
   const chart='EDU_CHART: {"type":"bar|line|scatter|pie","title":"...","labels":["A","B"],"series":[{"name":"řada","values":[1,2]}]}.';
   const flow='EDU_FLOW: {"title":"...","direction":"lr|tb","nodes":[{"id":"a","label":"...","shape":"process|decision|start|end|entity|note"}],"edges":[{"from":"a","to":"b","label":"..."}]}. Vazby musí být odborně skutečné.';
   const timeline='EDU_TIMELINE: {"title":"...","events":[{"year":1918,"label":"..."},{"startYear":1939,"endYear":1945,"label":"..."},{"year":-500,"uncertainty":50,"approximate":true,"label":"..."}]}. Záporný rok = př. n. l.; dataci nevymýšlej.';
