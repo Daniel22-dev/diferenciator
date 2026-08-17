@@ -2,6 +2,7 @@
 import {cpSync,rmSync,mkdirSync,readFileSync,writeFileSync,readdirSync,statSync,existsSync} from 'node:fs';
 import {execSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
+import {gzipSync} from 'node:zlib';
 import {join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {verifySwCoreAssets} from './sw-assets.mjs';
@@ -15,7 +16,7 @@ const coreManifest=JSON.parse(readFileSync(join(CORE_DIR,CORE_MANIFEST),'utf8'))
 rmSync(DIST,{recursive:true,force:true});mkdirSync(DIST,{recursive:true});cpSync(SRC,DIST,{recursive:true});
 const tplPath=join(DIST,'index.template.html');let tpl=readFileSync(tplPath,'utf8');for(const token of Object.values(TOKENS))if(!tpl.includes(token))fail('šablona neobsahuje token');
 const css=readFileSync(join(DIST,'styles.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/\r?\n\s*/g,'').replace(/\s{2,}/g,' '),body=readFileSync(join(DIST,'body.html'),'utf8'),jsDir=join(DIST,'js');
-const jsFiles=readdirSync(jsDir).filter(f=>f.endsWith('.js')).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})),internalTestFile='50-interni-testy.js',appJsFiles=jsFiles.filter(f=>f!==internalTestFile);const appJs=appJsFiles.map(f=>readFileSync(join(jsDir,f),'utf8')).join('\n;\n');if(jsFiles.includes(internalTestFile))writeFileSync(join(DIST,'internal-tests.js'),readFileSync(join(jsDir,internalTestFile),'utf8'));
+const jsFiles=readdirSync(jsDir).filter(f=>f.endsWith('.js')).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})),internalTestFile='50-interni-testy.js',appJsFiles=jsFiles.filter(f=>f!==internalTestFile);const appJs=appJsFiles.map(f=>readFileSync(join(jsDir,f),'utf8')).join('\n;\n');if(jsFiles.includes(internalTestFile)){const tests=readFileSync(join(jsDir,internalTestFile));writeFileSync(join(DIST,'internal-tests.js.gz'),gzipSync(tests,{level:9}))}
 if(/(?:window|globalThis)\.GHRAB_AI\s*=|registerAdapter\s*\(/.test(appJs))fail('aplikační kód obsahuje vlastní implementaci GHRAB_AI');
 const js=readFileSync(join(CORE_DIR,CORE_FILE),'utf8')+'\n;\n'+appJs;
 const out=tpl.split(TOKENS.css).join(css).split(TOKENS.body).join(body).split(TOKENS.js).join(js);if(out.includes('==SEM_BUILD_VLOZI_'))fail('ve výstupu zůstal build token');

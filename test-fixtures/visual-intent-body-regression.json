@@ -2,9 +2,9 @@
   "id": "body-task-image-regression-2026-08-17",
   "source": "User-provided Vocab - body.docx and observed generated PDF",
   "visualManifest": [
-    "VISUAL_1|role=critical|type=anatomy|intent=task_image|confidence=0.98|description=matching exercise with internal organ terms and definitions",
-    "VISUAL_2|role=critical|type=other|intent=task_image|confidence=0.98|description=body idioms matching exercise",
-    "VISUAL_3|role=critical|type=other|intent=task_image|confidence=0.98|description=exercises 47.3 and 47.4 with body-action collocations and sentence completion"
+    "VISUAL_1|role=critical|type=anatomy|intent=task_image|confidence=0.98|task_item_counts=7|explicit_examples=0|description=matching exercise with internal organ terms and definitions",
+    "VISUAL_2|role=critical|type=other|intent=task_image|confidence=0.98|task_item_counts=6|explicit_examples=0|description=body idioms matching exercise",
+    "VISUAL_3|role=critical|type=other|intent=task_image|confidence=0.98|task_item_counts=6,9|explicit_examples=0|description=exercises 47.3 and 47.4 with body-action collocations and sentence completion"
   ],
   "duplicateVisualFailure": "**1. Internal Organs & Biological Functions**\n[[VISUAL_1]]\nMatch the organ terms.\n[[VISUAL_1]]",
   "scoringFailure": "**1. Internal Organs & Biological Functions (5 b.)**\nText\n\n**2. Idioms Related to the Body (5 b.)**\nText\n\n**3. Physical Actions and Expressive Body Language (5 b.)**\n1. shake _____ (5 b.)\n2. bite _____ (5 b.)\n3. comb _____ (5 b.)\n4. fold _____ (5 b.)\n5. blow _____ (5 b.)\n6. nod _____ (5 b.)\n2. breathe quickly after _____ (5 b.)\n3. laugh when _____ (5 b.)\n4. bite their nails _____ (5 b.)\n5. blow their nose _____ (5 b.)\n6. shake their head _____ (5 b.)\n7. nod their head _____ (5 b.)\n8. cry _____ (5 b.)\n9. yawn when _____ (5 b.)\n\n**4. Critical Analysis (5 b.)**\nText\n\nCelkem: 90 b.",
@@ -13,6 +13,15 @@
     "preservedTaskImages": 0,
     "maxOccurrencesPerPreservedVisual": 1,
     "scoringMustFail": true,
-    "extensionsAllowedByDefault": false
-  }
+    "extensionsAllowedByDefault": false,
+    "sourceTaskItemCounts": [
+      7,
+      6,
+      6,
+      9
+    ],
+    "explicitExamples": 0,
+    "unexpectedUnscoredExampleMustFail": true
+  },
+  "structureDriftFailure": "**1. Internal Organs (7 pts)**\n1. liver\n2. lungs\n3. stomach\n4. kidneys\n5. intestines\n6. heart\n7. brain\n\n**2. Body Idioms (6 pts)**\n1. one\n2. two\n3. three\n4. four\n5. five\n6. six\n\n**3. Verbs and Body Parts (6 pts)**\n1. one\n2. two\n3. three\n4. four\n5. five\n6. six\n\n**4. Body Actions and Meanings (8 pts)**\n1. People smile when ... (Example - not scored)\n2. item\n3. item\n4. item\n5. item\n6. item\n7. item\n8. item\n9. item\n\n**5. Extension Task (5 pts)**\nText\n\nTotal: 32 pts"
 }

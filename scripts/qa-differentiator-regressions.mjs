@@ -353,5 +353,21 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   else ok('T31: Pages používá aktuální action majors a 3 bounded retry pokusy s fail-closed koncem');
 }
 
+
+// T32: structure/scoring UX hotfix — strict parallel variants preserve source item counts and image-quality UX is actionable.
+{
+  const api=read('src/js/30-api-gemini.js'),quality=read('src/js/40-vystup-pdf-kvalita.js'),ui=read('src/js/20-zaklad-ui-projekty.js'),body=read('src/body.html'),css=read('src/styles.css');
+  const problems=[];
+  if(!api.includes('task_item_counts')||!api.includes('explicit_examples')||!api.includes('function structurePreservationIssues'))problems.push('chybí zdrojový strukturální kontrakt obrazových úloh');
+  if(!api.includes('Předvyplněnou odpověď nelze automaticky považovat za vzor')&&!api.includes('Předvyplněnou nebo ručně dopsanou odpověď'))problems.push('chybí ochrana proti svévolnému Example/not scored');
+  if(!quality.includes('PDF zablokováno kvůli změně struktury originálu')||!quality.includes('function scoringCompletenessIssues'))problems.push('PDF nemá fail-closed gate pro strukturální drift a úplnost bodování');
+  if(!body.includes('visualEnhanceRecommendedBtn')||!api.includes('Čitelnost pro AI může být horší u:'))problems.push('hláška kvality obrazu není konkrétní a akční');
+  if(!css.includes('.advanced-settings .extension-toggle input[type="checkbox"]{width:18px')||!body.includes('extension-toggle-field'))problems.push('checkbox rozšiřující úlohy není layoutově izolován od width:100%');
+  if(!ui.includes('počet bodovatelných položek')||!ui.includes('bodovou hodnotu přímo do nadpisu KAŽDÉ hlavní úlohy'))problems.push('prompt negarantuje zachování bodovatelnosti a transparentní AI scoring');
+  const build=read('scripts/build.mjs'),start=read('src/js/60-pwa-start.js');if(!build.includes('internal-tests.js.gz')||!build.includes('gzipSync')||!start.includes("DecompressionStream('gzip')"))problems.push('interní testovací konzole není komprimovaná mimo kritický/produkční raw budget');
+  if(problems.length)bad('T32: structure/scoring/UX hotfix: '+problems.join('; '));
+  else ok('T32: strict parallel variant chrání počty položek/bodovatelnost, checkbox layout a akční image-quality UX');
+}
+
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
 console.log('CELKEM: regresní brána zelená.');

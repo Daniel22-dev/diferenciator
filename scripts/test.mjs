@@ -7,7 +7,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { createRequire } from "node:module";
 const require=createRequire(import.meta.url);
 
-const ROOT=join(dirname(fileURLToPath(import.meta.url)),".."),BASE=join(ROOT,"dist");
+const ROOT=join(dirname(fileURLToPath(import.meta.url)),".."),BASE=join(ROOT,"dist"),INTERNAL_TEST_SOURCE=join(ROOT,'src','js','50-interni-testy.js');
 const REPO="diferenciator",APP_ID="differentiator",CACHE_PREFIX="ghrab-differentiator-v";
 const APP_VERSION=JSON.parse(readFileSync(join(ROOT,"package.json"),"utf-8")).version;
 let failures=0;const ok=m=>console.log("  ✓ "+m),bad=m=>{console.error("  ✗ "+m);failures++};
@@ -23,7 +23,7 @@ function testHtml(raw){
     .replace(/<script[^>]*src="\.\/ghrab\/ghrab-platform\.js"[^>]*><\/script>/i,()=>`<script data-ghrab-platform-loader data-ghrab-test-inline>${platform}<\/script>`)
     .replace('type="application/ghrab-protected" data-ghrab-protected','type="text/javascript" data-ghrab-test-executable')
     .replace(/<script type="module" data-ghrab-access-bootstrap>[\s\S]*?<\/script>/,'')
-    .replace('</body>',()=>{const tests=readFileSync(join(BASE,'internal-tests.js'),'utf-8').replace(/<\/script/gi,'<\\/script');return `<script data-ghrab-internal-tests>${tests};TestSystem.init();<\/script></body>`});
+    .replace('</body>',()=>{const tests=readFileSync(INTERNAL_TEST_SOURCE,'utf-8').replace(/<\/script/gi,'<\\/script');return `<script data-ghrab-internal-tests>${tests};TestSystem.init();<\/script></body>`});
 }
 function findChromium(){const candidates=[process.env.CHROMIUM_PATH,process.env.CHROME_PATH,"/usr/bin/chromium","/usr/bin/google-chrome","/usr/bin/google-chrome-stable"].filter(Boolean);try{candidates.push(require("playwright").chromium.executablePath())}catch{}for(const p of candidates)if(p&&existsSync(p))return p;throw new Error("Chromium není dostupné. Spusť `npx playwright install chromium` nebo nastav CHROMIUM_PATH/CHROME_PATH.")}
 async function waitJson(url){for(let i=0;i<150;i++){try{const r=await fetch(url);if(r.ok)return await r.json()}catch{}await sleep(100)}throw new Error("Chromium remote debugging se nespustil")}

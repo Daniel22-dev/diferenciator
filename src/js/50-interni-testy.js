@@ -413,6 +413,14 @@ globalThis.TestSystem={
     const brokenScoring='**1. Internal Organs (5 b.)**\nText\n\n**2. Idioms (5 b.)**\nText\n\n**3. Physical Actions (5 b.)**\n1. shake ___ (5 b.)\n2. bite ___ (5 b.)\n\n**4. Analysis (5 b.)**\nText\n\nCelkem: 30 b.';
     const scoreIssues=scoringIntegrityIssues(brokenScoring);
     this.assert(scoreIssues.length>=2&&scoreIssues.some(x=>/podbody/.test(x))&&scoreIssues.some(x=>/Celkový součet/.test(x)),'Hierarchická kontrola bodování','Rozpor mezi body sekce, podbody a celkovým součtem je deterministicky zachycen.','Nekonzistentní bodování může projít do PDF.');
+    const bodyContract={enforce:true,itemCounts:[7,6,6,9],expectedMainTasks:4,explicitExamples:0,allowExtensions:true,variantMode:'same_format_new_content'};
+    const bodyDrift='**1. Internal Organs (7 pts)**\n1. a\n2. b\n3. c\n4. d\n5. e\n6. f\n7. g\n\n**2. Body Idioms (6 pts)**\n1. a\n2. b\n3. c\n4. d\n5. e\n6. f\n\n**3. Verbs and Body Parts (6 pts)**\n1. a\n2. b\n3. c\n4. d\n5. e\n6. f\n\n**4. Body Actions and Meanings (8 pts)**\n1. Example - not scored\n2. a\n3. b\n4. c\n5. d\n6. e\n7. f\n8. g\n9. h\n\n**5. Extension Task (5 pts)**\nText';
+    const driftIssues=structurePreservationIssues(bodyDrift,bodyContract);
+    this.assert(driftIssues.some(x=>/nehodnocený příklad/.test(x)),'BODY 32→33 structure drift','Předvyplněná položka se nesmí svévolně změnit na nehodnocený příklad; extension je při opt-in povolena.','Strukturální gate neodhalil ztrátu bodovatelné položky.');
+    const bodyOk=bodyDrift.replace('1. Example - not scored','1. a full scored item').replace('**4. Body Actions and Meanings (8 pts)**','**4. Body Actions and Meanings (9 pts)**');
+    this.assert(structurePreservationIssues(bodyOk,bodyContract).length===0,'BODY zachování 7/6/6/9','Správná paralelní struktura 7/6/6/9 s povolenou extension projde.','Strukturální gate odmítl správně zachovanou paralelní variantu.');
+    const completeScore='**1. A (7 pts)**\nText\n\n**2. B (6 pts)**\nText\n\nTotal points: 13.';
+    this.assert(scoringCompletenessIssues(completeScore,'ai').length===0&&declaredScoreTotals(completeScore)[0]===13,'Transparentní AI scoring','„Total points: N“ je rozpoznáno a body u všech hlavních úloh projdou.','Kontrola úplnosti bodování nerozpoznala běžný anglický celkový součet.');
   },
   runLayoutTest(){
     const overflow=document.documentElement.scrollWidth-window.innerWidth;

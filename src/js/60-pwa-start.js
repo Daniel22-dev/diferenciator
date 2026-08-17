@@ -38,12 +38,12 @@ let internalTestsPromise=null;
 function loadInternalTests(){
   if(globalThis.TestSystem)return Promise.resolve(globalThis.TestSystem);
   if(internalTestsPromise)return internalTestsPromise;
-  internalTestsPromise=new Promise((resolve,reject)=>{
-    const script=document.createElement('script');script.src='./internal-tests.js';script.async=true;
-    script.addEventListener('load',()=>globalThis.TestSystem?resolve(globalThis.TestSystem):reject(new Error('Interní testovací modul se načetl bez TestSystem.')),{once:true});
-    script.addEventListener('error',()=>reject(new Error('Interní testovací modul se nepodařilo načíst.')),{once:true});
-    document.head.appendChild(script);
-  }).catch(error=>{internalTestsPromise=null;throw error});
+  internalTestsPromise=(async()=>{
+    if(typeof DecompressionStream!=='function')throw new Error('Pro interní testy je potřeba moderní prohlížeč s DecompressionStream.');
+    const response=await fetch('./internal-tests.js.gz',{cache:'no-store'});if(!response.ok||!response.body)throw new Error('Interní testovací modul se nepodařilo načíst.');
+    const code=await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).text();const script=document.createElement('script');script.textContent=code;document.head.appendChild(script);
+    if(!globalThis.TestSystem)throw new Error('Interní testovací modul se načetl bez TestSystem.');return globalThis.TestSystem;
+  })().catch(error=>{internalTestsPromise=null;throw error});
   return internalTestsPromise;
 }
 function initInternalTestsLoader(){
