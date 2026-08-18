@@ -1,10 +1,7 @@
-name: Legacy P4 entrypoint (delegates to P5 R2)
+name: Legacy P4 entrypoint (manual compatibility)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main, master]
-  pull_request:
 
 permissions:
   contents: read
@@ -33,5 +30,5 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends poppler-utils
           pdftotext -v
-      - name: Run current P5 R2 gate
-        run: npm run qa:p5:ci
+      - name: Run legacy P4 compatibility gate
+        run: npm run qa:p4:ci

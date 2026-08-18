@@ -1,10 +1,7 @@
-name: Legacy quality entrypoint (delegates to P5 R2)
+name: Legacy quality entrypoint (manual compatibility)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main, master]
-  pull_request:
 
 permissions:
   contents: read
@@ -27,11 +24,5 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           node -e "console.log('CHROMIUM_PATH=' + require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
-      - name: Install PDF text audit dependency
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends poppler-utils
-          pdftotext -v
-      - name: Run current P5 R2 gate
-        run: npm run qa:p5:ci
+      - name: Run legacy P3 compatibility gate
+        run: npm run qa:p3:ci

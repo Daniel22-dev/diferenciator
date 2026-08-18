@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.32 — CI workflow dedup hotfix (2026-08-18)
+
+- Legacy P3 a Legacy P4 se už automaticky nespouštějí na každý push ani pull request; zůstávají dostupné pouze ručně přes `workflow_dispatch`,
+- `P5 R2 pre-production release gate` je jediný automatický workflow, který spouští celý `qa:p5:ci`,
+- GitHub Pages deploy už celý P5 gate neopakuje: čeká na úspěšné dokončení P5 pro push do `main`, checkoutne přesný `head_sha`, provede pouze nový build + platform conformance a nasadí stejným třípokusovým fail-closed mechanismem,
+- přidána T38 regresní pojistka proti návratu duplicitních automatických P3/P4/P5 běhů.
+
 ## 1.3.32 — CI Chromium target hardening (2026-08-18)
 
 - browser QA runnery nyní sdíleně čekají na použitelný `page` WebSocket target místo okamžitého dereferencování `/json`,
