@@ -412,5 +412,18 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
 }
 
 
+// T36: multimedia browser QA must wait for a real Chromium page target instead of assuming /json is immediately populated.
+{
+  const browser=read('scripts/qa-multimedia-browser.mjs');
+  const problems=[];
+  if(!browser.includes('async function waitPageTarget(port)'))problems.push('chybí čekání na page target');
+  if(!browser.includes("x.type==='page'&&x.webSocketDebuggerUrl"))problems.push('čekání neověřuje použitelný websocket target');
+  if(browser.includes("pages.find(x=>x.type==='page').webSocketDebuggerUrl"))problems.push('zůstal race-prone okamžitý přístup k page targetu');
+  if(!browser.includes("throw new Error('Chromium page target timeout')"))problems.push('chybí explicitní timeout diagnostika');
+  if(problems.length)bad('T36: multimedia Chromium target race hotfix: '+problems.join('; '));
+  else ok('T36: multimedia browser QA čeká na skutečný Chromium page target a nemá okamžitý /json race');
+}
+
+
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
 console.log('CELKEM: regresní brána zelená.');

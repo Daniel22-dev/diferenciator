@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.32 — CI multimedia target race hotfix (2026-08-18)
+
+- `qa:multimedia:browser` už po startu Chromia nepředpokládá, že `/json` okamžitě obsahuje `page` target; čeká až 20 s na skutečný target s `webSocketDebuggerUrl`,
+- tím se odstraňuje CI race z GitHub Actions, který končil `TypeError: Cannot read properties of undefined (reading 'webSocketDebuggerUrl')`, přestože předchozí release kontroly byly zelené,
+- přidána regresní kontrola T36, která blokuje návrat k okamžitému dereferencování prázdného seznamu targetů; změna nezasahuje do aplikačního workflow ani AI požadavků.
+
 ## 1.3.32 — Math/PDF practical QA hotfix (2026-08-18)
 
 - multimodální přepis nově vrací `SOURCE_STRUCTURE` pro celý zdroj, takže **pure PDF** i mixed-source materiál mají v režimu Strict známý počet hlavních úloh a bodovatelných položek; tento kontrakt má přednost před dílčími `VISUAL_n` počty a při chybějícím globálním reportu zůstává bezpečný fallback,
