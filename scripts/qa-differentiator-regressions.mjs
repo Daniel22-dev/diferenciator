@@ -396,5 +396,21 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   else ok('T34: DOCX pořadí, Flexible, Total points a význam Normální verze jsou sjednocené');
 }
 
+
+// T35: practical math/PDF QA hotfix — whole-source PDF structure and bracket-equation STEM checks.
+{
+  const api=read('src/js/30-api-gemini.js'),stem=read('src/js/35-stem-safety.js'),tests=read('src/js/50-interni-testy.js');
+  const problems=[];
+  if(!api.includes("SOURCE_STRUCTURE|task_item_counts=12")||!api.includes("out.id='SOURCE_STRUCTURE'")||!api.includes('sourceStructures')||!api.includes('sourceStructureReport'))problems.push('pure-PDF whole-source structure report chybí');
+  const contract=(api.match(/function sourceStructureContract[\s\S]{0,1800}/)||[''])[0];
+  if(!contract.includes('globalCounts')||!contract.includes('sourceStructureReport'))problems.push('sourceStructureContract nepoužívá SOURCE_STRUCTURE');
+  if(!api.includes('function mathEquationItemCount')||!api.includes('looksLikeStandaloneMathEquation')||!tests.includes('Dvousloupcová matematická tabulka'))problems.push('strict validátor neumí matematické tabulky');
+  if(!stem.includes("replace(/:/g,'/')")||!stem.includes("replace(/^\\d{1,3}\\s*[.)]\\s*/")||!stem.includes("new RegExp(escapedVariable,'g')"))problems.push('STEM parser nemá dvojtečku / numbered-key / bezpečnou substituci proměnné');
+  if(!tests.includes('Rovnice se závorkami — STEM')||!tests.includes('PDF SOURCE_STRUCTURE kontrakt'))problems.push('chybí praktické regresní testy PDF Rovnice se závorkami');
+  if(problems.length)bad('T35: practical math/PDF QA hotfix: '+problems.join('; '));
+  else ok('T35: pure-PDF struktura, 12 rovnic v tabulce a STEM závorky/dvojtečka jsou chráněné regresí');
+}
+
+
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
 console.log('CELKEM: regresní brána zelená.');

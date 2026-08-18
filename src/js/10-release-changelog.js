@@ -5,6 +5,7 @@ const RELEASE = Object.freeze({
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    '1.3.32: Math/PDF practical QA hotfix — pure PDF dostává celostránkový strukturální kontrakt, strict validátor umí dvousloupcové rovnice a STEM kontrola opravuje dělení dvojtečkou i závorkové rovnice.',
     '1.3.32: Practical QA hotfix — DOCX plovoucí obrázky se řadí podle svislé pozice, explicitní Flexible má přednost, Total points se odstraní v režimu bez AI bodů a Normální má jednotný referenční význam.',
     '1.3.31: GARP audit fixes — fail-closed tracer a chemie, bezpečný tisk po hydrataci, korektní anotace 16:9, úplná offline mapa a skutečná výkonová rezerva bez zvýšení budgetů.',
     '1.3.30: Deep subject engines — EDU_TRACE, EDU_REACTION, EDU_ANNOTATE, období/nejistota v timeline a validované free-body diagramy.',

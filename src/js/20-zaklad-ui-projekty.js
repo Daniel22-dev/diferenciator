@@ -23,7 +23,7 @@ const TIERS = {
     instr:"Vytvoř JEDNODUŠŠÍ verzi pro slabší žáky. Přidej oporu: u úloh nabídni slovní banku nebo výběr z možností, doplň krátkou nápovědu, zjednoduš a zkrať formulace, u otevřených otázek nech předvyplněný začátek odpovědi. Stejné téma i počet hlavních úloh, jen snazší cesta k řešení.",
     cefr:"",cefrLbl:""},
   core:{name:"Normální",color:"core",icon:"📘",
-    instr:"Vytvoř NORMÁLNÍ verzi: zachovej stejný typ úloh, stejný formát odpovědí, stejný počet položek, stejné pořadí a stejnou celkovou strukturu jako originál. Obtížnost má zůstat stejná. Změň konkrétní obsah úloh (např. jiná čísla, jiné věty, jiné otázky, jiný krátký text nebo jiná data), aby nešlo o doslovnou parafrázi, ale o plnohodnotnou novou variantu se stejnou náročností. Žádnou oporu nepřidávej ani neubírej a nevymýšlej nový typ cvičení.",
+    instr:"Vytvoř NORMÁLNÍ referenční verzi: zachovej původní obsah, konkrétní příklady, čísla, věty, otázky a data, stejně jako typ úloh, formát odpovědí, počet položek, pořadí, strukturu a obtížnost. Žádnou oporu nepřidávej ani neubírej. Měň jen to, co je nezbytné pro čisté, čitelné a použitelné zpracování originálu. Nový paralelní obsah vytvářej pouze tehdy, když učitel výslovně zvolí režim „Stejný formát, jiný obsah“.",
     cefr:"",cefrLbl:""},
   extend:{name:"Obtížnější",color:"extend",icon:"🚀",
     instr:"Vytvoř OBTÍŽNĚJŠÍ verzi pro nadané žáky. Uber oporu, otevřené otázky místo výběru, náročnější formulace a na závěr přidej jednu úlohu navíc, která vyžaduje aplikaci, srovnání nebo vlastní úsudek.",

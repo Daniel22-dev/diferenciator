@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.32 — Math/PDF practical QA hotfix (2026-08-18)
+
+- multimodální přepis nově vrací `SOURCE_STRUCTURE` pro celý zdroj, takže **pure PDF** i mixed-source materiál mají v režimu Strict známý počet hlavních úloh a bodovatelných položek; tento kontrakt má přednost před dílčími `VISUAL_n` počty a při chybějícím globálním reportu zůstává bezpečný fallback,
+- strukturální validátor u matematiky umí jako fallback spočítat rovnice v přirozeném dvousloupcovém Markdown layoutu, takže jedna úloha se 12 rovnicemi už není vyhodnocena jako `0` položek,
+- STEM aritmetika rozumí českému zápisu dělení dvojtečkou (`10:5`),
+- kontrola lineárních rovnic už při dosazení neabsorbuje znaménko ani koeficient proměnné; správně ověřuje např. `3(6 - x)=33` a `-(4+x)=3x`,
+- kontrola lineárních rovnic odstraňuje běžné číslování klíče (`1.`, `2)`), takže deterministická kontrola skutečně běží i nad běžným očíslovaným answer key,
+- kompletní release gate navíc odhalil zbylý starý text v `TIERS.core.instr`; samostatně generovaná **Normální verze** nyní opravdu používá stejnou referenční sémantiku jako Normální verze v celé sadě,
+- přidána T35 a interní regresní sada všech 12 rovnic z praktického PDF **Rovnice se závorkami**, včetně 12 záměrně chybných řešení; žádný nový samostatný AI request.
+
 ## 1.3.32 — Practical QA hotfix (2026-08-18)
 
 - DOCX import u více plovoucích obrázků ukotvených v jednom odstavci používá jejich skutečnou svislou pozici (`wp:positionV/wp:posOffset`), takže pracovní list `Internal organs → 47.3/47.4 → Body idioms` už není předán AI v chybném pořadí vložení,

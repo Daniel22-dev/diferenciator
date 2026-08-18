@@ -152,7 +152,7 @@ function stemExpandSimpleMathNotation(expr){
   s=s.replace(/√\s*\(?\s*(-?\d+(?:[.,]\d+)?)\s*\)?/g,'(($1)^(1/2))');
   return s;
 }
-function stemNormalizeArithmetic(expr){return stemExpandSimpleMathNotation(expr).replace(/,/g,'.').replace(/[−–—]/g,'-').replace(/[×·]/g,'*').replace(/÷/g,'/').replace(/²/g,'^2').replace(/³/g,'^3').replace(/\s+/g,'').replace(/%/g,'/100').replace(/(\d|\))\(/g,'$1*(')}
+function stemNormalizeArithmetic(expr){return stemExpandSimpleMathNotation(expr).replace(/,/g,'.').replace(/[−–—]/g,'-').replace(/[×·]/g,'*').replace(/÷/g,'/').replace(/:/g,'/').replace(/²/g,'^2').replace(/³/g,'^3').replace(/\s+/g,'').replace(/%/g,'/100').replace(/(\d|\))\(/g,'$1*(')}
 function stemEvalArithmetic(expr){
   const s=stemNormalizeArithmetic(expr);if(!s||/[^0-9.+\-*/^()]/.test(s))return null;let i=0;
   const peek=()=>s[i],eat=c=>peek()===c?(i++,true):false;
@@ -169,9 +169,12 @@ function stemArithmeticIssues(text){
 function stemLinearEquationIssues(text){
   const issues=[];
   for(const raw of String(text||'').split(/\r?\n/)){
-    const line=raw.replace(/\*\*/g,'').trim(),m=line.match(/^(.+?)=([^=]+?)(?:\s*(?:→|=>|⇒|;)\s*|\s{2,})([a-zA-Z])\s*=\s*(-?\d+(?:[.,]\d+)?)\s*$/);if(!m)continue;
+    const line=raw.replace(/\*\*/g,'').trim().replace(/^\d{1,3}\s*[.)]\s*/,'').trim(),m=line.match(/^(.+?)=([^=]+?)(?:\s*(?:→|=>|⇒|;)\s*|\s{2,})([a-zA-Z])\s*=\s*(-?\d+(?:[.,]\d+)?)\s*$/);if(!m)continue;
     const variable=m[3],value=Number(m[4].replace(',','.'));if(!Number.isFinite(value))continue;
-    const subst=expr=>String(expr).replace(new RegExp('([+-]?\\d*(?:[.,]\\d+)?)\\s*'+variable,'g'),(_,coef)=>{let c=String(coef||'').replace(',','.');if(c===''||c==='+')c='1';if(c==='-')c='-1';return '('+c+'*('+value+'))'});
+    const escapedVariable=variable.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    // Replace only the variable token. Keeping its surrounding sign/coefficient intact avoids
+    // turning "6 - x" or "-(4 + x)" into a different expression before evaluation.
+    const subst=expr=>String(expr).replace(new RegExp(escapedVariable,'g'),'('+value+')');
     const a=stemEvalArithmetic(subst(m[1])),b=stemEvalArithmetic(subst(m[2]));if(a==null||b==null)continue;const tol=Math.max(1e-9,Math.abs(a)*1e-8,Math.abs(b)*1e-8);if(Math.abs(a-b)>tol)issues.push('STEM kontrola: uvedené řešení „'+variable+' = '+m[4]+'“ po dosazení nesplňuje rovnici „'+m[1].trim()+' = '+m[2].trim()+'“.');
   }
   return issues;

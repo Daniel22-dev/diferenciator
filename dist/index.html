@@ -1445,6 +1445,7 @@ const RELEASE = Object.freeze({
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    '1.3.32: Math/PDF practical QA hotfix — pure PDF dostává celostránkový strukturální kontrakt, strict validátor umí dvousloupcové rovnice a STEM kontrola opravuje dělení dvojtečkou i závorkové rovnice.',
     '1.3.32: Practical QA hotfix — DOCX plovoucí obrázky se řadí podle svislé pozice, explicitní Flexible má přednost, Total points se odstraní v režimu bez AI bodů a Normální má jednotný referenční význam.',
     '1.3.31: GARP audit fixes — fail-closed tracer a chemie, bezpečný tisk po hydrataci, korektní anotace 16:9, úplná offline mapa a skutečná výkonová rezerva bez zvýšení budgetů.',
     '1.3.30: Deep subject engines — EDU_TRACE, EDU_REACTION, EDU_ANNOTATE, období/nejistota v timeline a validované free-body diagramy.',
@@ -1498,7 +1499,7 @@ const TIERS = {
     instr:"Vytvoř JEDNODUŠŠÍ verzi pro slabší žáky. Přidej oporu: u úloh nabídni slovní banku nebo výběr z možností, doplň krátkou nápovědu, zjednoduš a zkrať formulace, u otevřených otázek nech předvyplněný začátek odpovědi. Stejné téma i počet hlavních úloh, jen snazší cesta k řešení.",
     cefr:"",cefrLbl:""},
   core:{name:"Normální",color:"core",icon:"📘",
-    instr:"Vytvoř NORMÁLNÍ verzi: zachovej stejný typ úloh, stejný formát odpovědí, stejný počet položek, stejné pořadí a stejnou celkovou strukturu jako originál. Obtížnost má zůstat stejná. Změň konkrétní obsah úloh (např. jiná čísla, jiné věty, jiné otázky, jiný krátký text nebo jiná data), aby nešlo o doslovnou parafrázi, ale o plnohodnotnou novou variantu se stejnou náročností. Žádnou oporu nepřidávej ani neubírej a nevymýšlej nový typ cvičení.",
+    instr:"Vytvoř NORMÁLNÍ referenční verzi: zachovej původní obsah, konkrétní příklady, čísla, věty, otázky a data, stejně jako typ úloh, formát odpovědí, počet položek, pořadí, strukturu a obtížnost. Žádnou oporu nepřidávej ani neubírej. Měň jen to, co je nezbytné pro čisté, čitelné a použitelné zpracování originálu. Nový paralelní obsah vytvářej pouze tehdy, když učitel výslovně zvolí režim „Stejný formát, jiný obsah“.",
     cefr:"",cefrLbl:""},
   extend:{name:"Obtížnější",color:"extend",icon:"🚀",
     instr:"Vytvoř OBTÍŽNĚJŠÍ verzi pro nadané žáky. Uber oporu, otevřené otázky místo výběru, náročnější formulace a na závěr přidej jednu úlohu navíc, která vyžaduje aplikaci, srovnání nebo vlastní úsudek.",
@@ -2343,6 +2344,7 @@ const VISUAL_INTENTS=Object.freeze(['content_visual','task_image','hybrid','deco
 let sourceVisualAssets=[];
 let sourceDocumentVisualNotes=[];
 let sourceScanReport=null;
+let sourceStructureReport=null;
 let visualAssetSeq=0;
 let cropState=null;
 function nextVisualId(){visualAssetSeq+=1;return 'VISUAL_'+visualAssetSeq}
@@ -2369,17 +2371,18 @@ function cloneSourceVisualAsset(asset){const out=cloneVisualAsset(asset);if(!out
 function setSourceVisualAssetsFromItems(items,source='upload'){
   visualAssetSeq=0;
   sourceVisualAssets=(items||[]).filter(it=>isImageMime(it&&it.mime_type)).map(it=>({id:nextVisualId(),name:String(it.name||'obrázek'),mime_type:it.mime_type,data:String(it.data||''),bytes:Number(it.bytes)||0,role:'unknown',type:'other',intent:'unknown',confidence:0,description:'',task_item_counts:[],explicit_examples:null,mode:'reference',source,optimized:!!it.compressed,width:Number(it.width)||0,height:Number(it.height)||0,analysis_data:'',analysis_mime_type:'',analysis_mode:'',quality:null,modeTouched:false}));
-  sourceDocumentVisualNotes=[];sourceScanReport=null;
+  sourceDocumentVisualNotes=[];sourceScanReport=null;sourceStructureReport=null;
   renderSourceVisualPanel();
   for(const asset of sourceVisualAssets)analyzeVisualQuality(asset).then(()=>renderSourceVisualPanel()).catch(()=>{});
 }
-function resetSourceVisualAssets(){sourceVisualAssets=[];sourceDocumentVisualNotes=[];sourceScanReport=null;visualAssetSeq=0;renderSourceVisualPanel()}
+function resetSourceVisualAssets(){sourceVisualAssets=[];sourceDocumentVisualNotes=[];sourceScanReport=null;sourceStructureReport=null;visualAssetSeq=0;renderSourceVisualPanel()}
 function parseVisualManifestLine(line){
   const raw=String(line||'').trim();if(!raw)return null;
   const parts=raw.split('|').map(x=>x.trim()).filter(Boolean),head=parts.shift()||'',out={};
   if(/^VISUAL_\d+$/i.test(head))out.id=head.toUpperCase();
   else if(/^PDF_VISUAL$/i.test(head))out.id='PDF_VISUAL';
   else if(/^SCAN_REPORT$/i.test(head))out.id='SCAN_REPORT';
+  else if(/^SOURCE_STRUCTURE$/i.test(head))out.id='SOURCE_STRUCTURE';
   else return null;
   for(const part of parts){const m=part.match(/^([a-z_]+)\s*=\s*(.*)$/i);if(m)out[m[1].toLowerCase()]=m[2].trim()}
   return out;
@@ -2387,13 +2390,13 @@ function parseVisualManifestLine(line){
 function splitVisualManifest(raw){
   const src=String(raw||'');
   const m=src.match(/<<<VISUAL_MANIFEST>>>([\s\S]*?)<<<END_VISUAL_MANIFEST>>>/i);
-  if(!m)return {text:src.trim(),entries:[],documentEntries:[],scanReports:[]};
-  const entries=[],documentEntries=[],scanReports=[];
-  for(const line of m[1].split(/\r?\n/)){const item=parseVisualManifestLine(line);if(!item)continue;if(item.id==='PDF_VISUAL')documentEntries.push(item);else if(item.id==='SCAN_REPORT')scanReports.push(item);else entries.push(item)}
+  if(!m)return {text:src.trim(),entries:[],documentEntries:[],scanReports:[],sourceStructures:[]};
+  const entries=[],documentEntries=[],scanReports=[],sourceStructures=[];
+  for(const line of m[1].split(/\r?\n/)){const item=parseVisualManifestLine(line);if(!item)continue;if(item.id==='PDF_VISUAL')documentEntries.push(item);else if(item.id==='SCAN_REPORT')scanReports.push(item);else if(item.id==='SOURCE_STRUCTURE')sourceStructures.push(item);else entries.push(item)}
   const text=(src.slice(0,m.index)+src.slice((m.index||0)+m[0].length)).trim();
-  return {text,entries,documentEntries,scanReports};
+  return {text,entries,documentEntries,scanReports,sourceStructures};
 }
-function applyVisualManifest(entries,documentEntries,scanReports=[]){
+function applyVisualManifest(entries,documentEntries,scanReports=[],sourceStructures=[]){
   const byId=new Map((entries||[]).map(x=>[String(x.id||'').toUpperCase(),x]));
   sourceVisualAssets=sourceVisualAssets.map(asset=>{
     const meta=byId.get(String(asset.id).toUpperCase());if(!meta)return asset;
@@ -2404,11 +2407,12 @@ function applyVisualManifest(entries,documentEntries,scanReports=[]){
   });
   sourceDocumentVisualNotes=(documentEntries||[]).map(x=>({page:String(x.page||''),role:VISUAL_ROLES.includes(String(x.role||'').toLowerCase())?String(x.role).toLowerCase():'unknown',type:VISUAL_TYPES.includes(String(x.type||'').toLowerCase())?String(x.type).toLowerCase():'other',intent:normalizeVisualIntent(x.intent||x.visual_intent),confidence:normalizeVisualConfidence(x.confidence),description:String(x.description||x.desc||'').slice(0,500)}));
   const report=(scanReports||[])[0]||null;sourceScanReport=report?{status:/^(good|fair|poor)$/i.test(String(report.status||''))?String(report.status).toLowerCase():'fair',pages:Math.max(0,Number.parseInt(report.pages,10)||0),issues:String(report.issues||report.description||'').slice(0,700)}:null;
+  const structure=(sourceStructures||[])[0]||null;sourceStructureReport=structure?{itemCounts:normalizeVisualItemCounts(structure.task_item_counts||structure.item_counts),explicitExamples:normalizeExplicitExamples(structure.explicit_examples),description:String(structure.description||structure.desc||'').slice(0,500)}:null;
   renderSourceVisualPanel();
 }
 function visualManifestPrompt(actualCount,isPdf=false){
   const rows=actualCount?'Pro KAŽDÝ přiložený obrázek '+Array.from({length:actualCount},(_,i)=>'VISUAL_'+(i+1)).join(', ')+' přidej právě jeden řádek. ':'';
-  return 'Po samotném přepisu přidej technický blok pro aplikaci. Tento blok se žákům nezobrazí.\n<<<VISUAL_MANIFEST>>>\n'+rows+'Formát řádku obrázku: VISUAL_1|role=critical|type=map|intent=content_visual|confidence=0.95|task_item_counts=7|explicit_examples=0|description=stručný popis. U task_image a hybrid VŽDY vyplň task_item_counts jako počty očíslovaných/odpovědních položek jednotlivých hlavních úloh uvnitř obrázku; pokud jsou uvnitř dvě úlohy po 6 a 9 položkách, napiš task_item_counts=6,9. explicit_examples je počet položek, které jsou v originálu VÝSLOVNĚ označené jako příklad/vzor a nejsou určeny k hodnocení. Pouhá ručně dopsaná nebo předvyplněná odpověď NENÍ sama o sobě explicitní příklad. U content_visual/decorative může být task_item_counts prázdné a explicit_examples prázdné. role použij jen critical / supporting / page_scan / decorative; role říká, jak důležitý obrázek pro úlohu je, NE zda se mají zachovat jeho pixely. type použij jen map / graph / diagram / geometry / biology / chemistry / table / notation / timeline / circuit / molecule / anatomy / artwork / photograph / source / other. intent je POVINNÝ a použij jen content_visual / task_image / hybrid / decorative / unknown. content_visual = samotný obraz je didaktický obsah, který žák musí vidět (mapa, graf, fotografie, anatomické schéma, umělecké dílo, geometrický nákres). task_image = obrázek je hlavně screenshot/sken hotové textové úlohy, seznamu otázek, matching exercise, doplňovačky, tabulky s odpověďmi nebo stránky učebnice; takový obraz se má přečíst a rekonstruovat jako nová editovatelná diferencovaná úloha, ne znovu vlepit do výsledku. hybrid = jeden bitmapový obraz obsahuje jak skutečný obrazový podklad, tak textovou úlohu; celý screenshot se nemá automaticky zachovat, učitel může později vyříznout jen obrazovou část. decorative = logo/ozdoba bez didaktické funkce. unknown použij jen když to opravdu nelze rozhodnout. confidence je číslo 0–1 vyjadřující jistotu klasifikace intent. critical znamená pouze, že bez informace z obrázku úloha nedává smysl; TASK_IMAGE tedy může být současně critical. '+(isPdf?'Pokud PDF obsahuje obrazově klíčový prvek, který není samostatným obrázkem, přidej navíc řádek PDF_VISUAL|page=číslo|role=critical|type=map|intent=content_visual|confidence=0.95|description=stručný popis. ':'')+'VŽDY přidej právě jeden řádek SCAN_REPORT|status=good|pages=1|issues=none. status použij good, fair nebo poor podle čitelnosti zdroje; pages je počet zpracovaných stran/obrázků, pokud ho lze určit; do issues stručně napiš stín, rozmazání, ořez, šikmou perspektivu, nečitelnou část nebo none. Nehádej nečitelný obsah. Nevymýšlej obrazové prvky, které ve zdroji nejsou.\n<<<END_VISUAL_MANIFEST>>>';
+  return 'Po samotném přepisu přidej technický blok pro aplikaci. Tento blok se žákům nezobrazí.\n<<<VISUAL_MANIFEST>>>\n'+rows+'VŽDY přidej právě jeden řádek SOURCE_STRUCTURE|task_item_counts=12|explicit_examples=0|description=stručný popis struktury. task_item_counts v SOURCE_STRUCTURE znamená počty skutečně řešitelných/bodovatelných položek v KAŽDÉ hlavní úloze CELÉHO materiálu v jejich vizuálním pořadí, bez ohledu na to, zda jsou v textové vrstvě, PDF nebo obrázku. Jedna hlavní úloha s 12 rovnicemi = task_item_counts=12; čtyři hlavní úlohy po 7,6,9,6 položkách = task_item_counts=7,6,9,6. Nezapočítávej nadpis, instrukce ani dekorace. explicit_examples v SOURCE_STRUCTURE je CELKOVÝ počet položek výslovně označených jako nehodnocený příklad/vzor; předvyplněná či ručně dopsaná odpověď sama o sobě příklad není. Pokud počet nelze bezpečně určit, nech task_item_counts prázdné místo hádání. Formát řádku obrázku: VISUAL_1|role=critical|type=map|intent=content_visual|confidence=0.95|task_item_counts=7|explicit_examples=0|description=stručný popis. U task_image a hybrid VŽDY vyplň task_item_counts jako počty očíslovaných/odpovědních položek jednotlivých hlavních úloh uvnitř obrázku; pokud jsou uvnitř dvě úlohy po 6 a 9 položkách, napiš task_item_counts=6,9. explicit_examples je počet položek, které jsou v originálu VÝSLOVNĚ označené jako příklad/vzor a nejsou určeny k hodnocení. Pouhá ručně dopsaná nebo předvyplněná odpověď NENÍ sama o sobě explicitní příklad. U content_visual/decorative může být task_item_counts prázdné a explicit_examples prázdné. role použij jen critical / supporting / page_scan / decorative; role říká, jak důležitý obrázek pro úlohu je, NE zda se mají zachovat jeho pixely. type použij jen map / graph / diagram / geometry / biology / chemistry / table / notation / timeline / circuit / molecule / anatomy / artwork / photograph / source / other. intent je POVINNÝ a použij jen content_visual / task_image / hybrid / decorative / unknown. content_visual = samotný obraz je didaktický obsah, který žák musí vidět (mapa, graf, fotografie, anatomické schéma, umělecké dílo, geometrický nákres). task_image = obrázek je hlavně screenshot/sken hotové textové úlohy, seznamu otázek, matching exercise, doplňovačky, tabulky s odpověďmi nebo stránky učebnice; takový obraz se má přečíst a rekonstruovat jako nová editovatelná diferencovaná úloha, ne znovu vlepit do výsledku. hybrid = jeden bitmapový obraz obsahuje jak skutečný obrazový podklad, tak textovou úlohu; celý screenshot se nemá automaticky zachovat, učitel může později vyříznout jen obrazovou část. decorative = logo/ozdoba bez didaktické funkce. unknown použij jen když to opravdu nelze rozhodnout. confidence je číslo 0–1 vyjadřující jistotu klasifikace intent. critical znamená pouze, že bez informace z obrázku úloha nedává smysl; TASK_IMAGE tedy může být současně critical. '+(isPdf?'Pokud PDF obsahuje obrazově klíčový prvek, který není samostatným obrázkem, přidej navíc řádek PDF_VISUAL|page=číslo|role=critical|type=map|intent=content_visual|confidence=0.95|description=stručný popis. ':'')+'VŽDY přidej právě jeden řádek SCAN_REPORT|status=good|pages=1|issues=none. status použij good, fair nebo poor podle čitelnosti zdroje; pages je počet zpracovaných stran/obrázků, pokud ho lze určit; do issues stručně napiš stín, rozmazání, ořez, šikmou perspektivu, nečitelnou část nebo none. Nehádej nečitelný obsah. Nevymýšlej obrazové prvky, které ve zdroji nejsou.\n<<<END_VISUAL_MANIFEST>>>';
 }
 function sourceVisualPromptLines(){
   const active=sourceVisualAssets.filter(a=>a.mode!=='ignore');if(!active.length&&!sourceDocumentVisualNotes.length)return [];
@@ -2440,13 +2444,30 @@ function sourceStructureContract(key='core'){
   // choice must not be silently overridden by same_format_new_content/same_content_same_format.
   const strict=(typeof resolvedStructureMode==='function'?resolvedStructureMode(key):'auto')==='strict';
   const reconstructed=sourceVisualAssets.filter(x=>x.mode==='reconstruct'&&(normalizeVisualIntent(x.intent)==='task_image'||normalizeVisualIntent(x.intent)==='hybrid'));
-  const itemCounts=reconstructed.flatMap(x=>normalizeVisualItemCounts(x.task_item_counts));
+  const globalCounts=normalizeVisualItemCounts(sourceStructureReport&&sourceStructureReport.itemCounts);
+  const itemCounts=globalCounts.length?globalCounts:reconstructed.flatMap(x=>normalizeVisualItemCounts(x.task_item_counts));
+  const globalExamples=sourceStructureReport?normalizeExplicitExamples(sourceStructureReport.explicitExamples):null;
   const exampleValues=reconstructed.map(x=>normalizeExplicitExamples(x.explicit_examples));
   const examplesKnown=exampleValues.length>0&&exampleValues.every(x=>x!==null);
-  return {enforce:!!strict,itemCounts,expectedMainTasks:itemCounts.length,explicitExamples:examplesKnown?exampleValues.reduce((a,b)=>a+b,0):null,allowExtensions:!!a.allowExtensions,variantMode:String(a.variantMode||'auto')};
+  return {enforce:!!strict,itemCounts,expectedMainTasks:itemCounts.length,explicitExamples:globalExamples!==null?globalExamples:(examplesKnown?exampleValues.reduce((a,b)=>a+b,0):null),allowExtensions:!!a.allowExtensions,variantMode:String(a.variantMode||'auto')};
 }
 function generatedMainTaskBlocks(text){return typeof splitScoringBlocks==='function'?splitScoringBlocks(text).filter(b=>b.isTask):[]}
-function generatedMainTaskItemCounts(text){return generatedMainTaskBlocks(text).map(block=>{const lines=String(block.text||'').split(/\r?\n/);lines.shift();const nums=[];for(const line of lines){const m=String(line||'').trim().replace(/^\*{1,2}/,'').match(/^(\d{1,3})\s*(?:[.)-]|:)\s+\S/);if(m)nums.push(Number(m[1]))}return new Set(nums).size})}
+function looksLikeStandaloneMathEquation(value){
+  let s=String(value||'').trim().replace(/^\*{1,2}|\*{1,2}$/g,'').trim();
+  s=s.replace(/^\d{1,3}\s*[.)-]\s*/, '').trim();
+  if(!s.includes('=')||!/[a-zA-Z]/.test(s))return false;
+  if(/[?!]/.test(s)||/\b(?:solve|vyřeš|vypočítej|rovnic|equation|doplň|urči)\b/i.test(s))return false;
+  return !/[^0-9a-zA-Z\s=+\-−–—*/:·×÷().,\[\]{}^\\]/.test(s);
+}
+function mathEquationItemCount(lines){
+  let table=0,standalone=0;
+  for(const raw of lines){const line=String(raw||'').trim();if(!line)continue;
+    if(line.includes('|')){const cells=line.replace(/^\|/,'').replace(/\|$/,'').split('|').map(x=>x.trim());if(cells.length>1&&!cells.every(x=>/^:?-{3,}:?$/.test(x)))for(const cell of cells)if(looksLikeStandaloneMathEquation(cell))table++;continue;}
+    if(looksLikeStandaloneMathEquation(line))standalone++;
+  }
+  return table||standalone;
+}
+function generatedMainTaskItemCounts(text){return generatedMainTaskBlocks(text).map(block=>{const lines=String(block.text||'').split(/\r?\n/);lines.shift();const nums=[];for(const line of lines){const m=String(line||'').trim().replace(/^\*{1,2}/,'').match(/^(\d{1,3})\s*(?:[.)-]|:)\s*\S/);if(m)nums.push(Number(m[1]))}const numbered=new Set(nums).size;if(numbered)return numbered;return typeof stemSubjectKind==='function'&&stemSubjectKind(typeof getSubjectValue==='function'?getSubjectValue():'')==='math'?mathEquationItemCount(lines):0})}
 function structurePreservationIssues(text,contract){
   const c=contract&&typeof contract==='object'?contract:null;if(!c||!c.enforce||!Array.isArray(c.itemCounts)||!c.itemCounts.length)return [];
   const issues=[],blocks=generatedMainTaskBlocks(text),actual=generatedMainTaskItemCounts(text),expected=c.itemCounts;
@@ -2748,7 +2769,7 @@ const visualSupplementFile=$('#visualSupplementFile'),visualSupplementBtn=$('#vi
 if(visualSupplementBtn&&visualSupplementFile){visualSupplementBtn.addEventListener('click',()=>visualSupplementFile.click());visualSupplementFile.addEventListener('change',async e=>{try{await appendSupplementalVisualFiles(e.target.files||[])}catch(err){showMessage('Podklad se nepodařilo přidat',friendlyApiMessage(err))}finally{visualSupplementFile.value=''}})}
 
 async function handleFiles(fileList){
-  const previous={uploaded,filename:$('#filename').textContent,info:$('#uploadInfo').textContent,chip:$('#filechip').classList.contains('show'),thumb:$('#thumb').classList.contains('show'),thumbSrc:$('#thumbImg').src,visualAssets:sourceVisualAssets.map(cloneSourceVisualAsset),visualNotes:sourceDocumentVisualNotes.map(x=>({...x})),scanReport:sourceScanReport?{...sourceScanReport}:null,visualSeq:visualAssetSeq,mediaSource:cloneMediaSource(sourceMediaAsset,true)};
+  const previous={uploaded,filename:$('#filename').textContent,info:$('#uploadInfo').textContent,chip:$('#filechip').classList.contains('show'),thumb:$('#thumb').classList.contains('show'),thumbSrc:$('#thumbImg').src,visualAssets:sourceVisualAssets.map(cloneSourceVisualAsset),visualNotes:sourceDocumentVisualNotes.map(x=>({...x})),scanReport:sourceScanReport?{...sourceScanReport}:null,structureReport:sourceStructureReport?{...sourceStructureReport,itemCounts:[...(sourceStructureReport.itemCounts||[])]}:null,visualSeq:visualAssetSeq,mediaSource:cloneMediaSource(sourceMediaAsset,true)};
   clearErr($('#inputErr'));setUploadInfo('');$('#thumb').classList.remove('show');
   const files=[...fileList];
   if(!files.length)return;
@@ -2773,7 +2794,7 @@ async function handleFiles(fileList){
     $('#filechip').classList.add('show');
     $('#pasteText').value='';
   }catch(err){
-    uploaded=previous.uploaded;sourceMediaAsset=cloneMediaSource(previous.mediaSource,true);sourceVisualAssets=previous.visualAssets.map(cloneSourceVisualAsset).filter(Boolean);sourceDocumentVisualNotes=previous.visualNotes.map(x=>({...x}));sourceScanReport=previous.scanReport?{...previous.scanReport}:null;visualAssetSeq=previous.visualSeq;renderSourceVisualPanel();if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';$('#filename').textContent=previous.filename;$('#filechip').classList.toggle('show',previous.chip);$('#thumb').classList.toggle('show',previous.thumb);if(previous.thumbSrc)$('#thumbImg').src=previous.thumbSrc;if(previous.info)setUploadInfo(previous.info);else if(previous.uploaded)setUploadInfo('Původní soubor zůstal vybraný.');
+    uploaded=previous.uploaded;sourceMediaAsset=cloneMediaSource(previous.mediaSource,true);sourceVisualAssets=previous.visualAssets.map(cloneSourceVisualAsset).filter(Boolean);sourceDocumentVisualNotes=previous.visualNotes.map(x=>({...x}));sourceScanReport=previous.scanReport?{...previous.scanReport}:null;sourceStructureReport=previous.structureReport?{...previous.structureReport,itemCounts:[...(previous.structureReport.itemCounts||[])]}:null;visualAssetSeq=previous.visualSeq;renderSourceVisualPanel();if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';$('#filename').textContent=previous.filename;$('#filechip').classList.toggle('show',previous.chip);$('#thumb').classList.toggle('show',previous.thumb);if(previous.thumbSrc)$('#thumbImg').src=previous.thumbSrc;if(previous.info)setUploadInfo(previous.info);else if(previous.uploaded)setUploadInfo('Původní soubor zůstal vybraný.');
     errBox($('#inputErr'),friendlyApiMessage(err)||err.message)
   }
 }
@@ -2881,7 +2902,7 @@ $('#extractBtn').addEventListener('click',async()=>{
     const visualSplit=splitVisualManifest(String(out||pasted||(uploaded&&uploaded.text)||''));
     const extracted=String(visualSplit.text||pasted||(uploaded&&uploaded.text)||'').trim();
     if(!extracted)throw makeAppError('Ze vstupu se nepodařilo získat žádný čitelný text.','EMPTY_EXTRACT');
-    applyVisualManifest(visualSplit.entries,visualSplit.documentEntries,visualSplit.scanReports);
+    applyVisualManifest(visualSplit.entries,visualSplit.documentEntries,visualSplit.scanReports,visualSplit.sourceStructures);
     $('#baseText').value=extracted;
     syncScoringModeFromSource(true);
     if($('#cefr').checked && subjectAllowsCefr()){
@@ -3414,7 +3435,7 @@ function stemExpandSimpleMathNotation(expr){
   s=s.replace(/√\s*\(?\s*(-?\d+(?:[.,]\d+)?)\s*\)?/g,'(($1)^(1/2))');
   return s;
 }
-function stemNormalizeArithmetic(expr){return stemExpandSimpleMathNotation(expr).replace(/,/g,'.').replace(/[−–—]/g,'-').replace(/[×·]/g,'*').replace(/÷/g,'/').replace(/²/g,'^2').replace(/³/g,'^3').replace(/\s+/g,'').replace(/%/g,'/100').replace(/(\d|\))\(/g,'$1*(')}
+function stemNormalizeArithmetic(expr){return stemExpandSimpleMathNotation(expr).replace(/,/g,'.').replace(/[−–—]/g,'-').replace(/[×·]/g,'*').replace(/÷/g,'/').replace(/:/g,'/').replace(/²/g,'^2').replace(/³/g,'^3').replace(/\s+/g,'').replace(/%/g,'/100').replace(/(\d|\))\(/g,'$1*(')}
 function stemEvalArithmetic(expr){
   const s=stemNormalizeArithmetic(expr);if(!s||/[^0-9.+\-*/^()]/.test(s))return null;let i=0;
   const peek=()=>s[i],eat=c=>peek()===c?(i++,true):false;
@@ -3431,9 +3452,12 @@ function stemArithmeticIssues(text){
 function stemLinearEquationIssues(text){
   const issues=[];
   for(const raw of String(text||'').split(/\r?\n/)){
-    const line=raw.replace(/\*\*/g,'').trim(),m=line.match(/^(.+?)=([^=]+?)(?:\s*(?:→|=>|⇒|;)\s*|\s{2,})([a-zA-Z])\s*=\s*(-?\d+(?:[.,]\d+)?)\s*$/);if(!m)continue;
+    const line=raw.replace(/\*\*/g,'').trim().replace(/^\d{1,3}\s*[.)]\s*/,'').trim(),m=line.match(/^(.+?)=([^=]+?)(?:\s*(?:→|=>|⇒|;)\s*|\s{2,})([a-zA-Z])\s*=\s*(-?\d+(?:[.,]\d+)?)\s*$/);if(!m)continue;
     const variable=m[3],value=Number(m[4].replace(',','.'));if(!Number.isFinite(value))continue;
-    const subst=expr=>String(expr).replace(new RegExp('([+-]?\\d*(?:[.,]\\d+)?)\\s*'+variable,'g'),(_,coef)=>{let c=String(coef||'').replace(',','.');if(c===''||c==='+')c='1';if(c==='-')c='-1';return '('+c+'*('+value+'))'});
+    const escapedVariable=variable.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    // Replace only the variable token. Keeping its surrounding sign/coefficient intact avoids
+    // turning "6 - x" or "-(4 + x)" into a different expression before evaluation.
+    const subst=expr=>String(expr).replace(new RegExp(escapedVariable,'g'),'('+value+')');
     const a=stemEvalArithmetic(subst(m[1])),b=stemEvalArithmetic(subst(m[2]));if(a==null||b==null)continue;const tol=Math.max(1e-9,Math.abs(a)*1e-8,Math.abs(b)*1e-8);if(Math.abs(a-b)>tol)issues.push('STEM kontrola: uvedené řešení „'+variable+' = '+m[4]+'“ po dosazení nesplňuje rovnici „'+m[1].trim()+' = '+m[2].trim()+'“.');
   }
   return issues;
