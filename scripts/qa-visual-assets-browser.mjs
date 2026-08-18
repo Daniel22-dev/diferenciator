@@ -3,6 +3,7 @@ import {readFileSync,existsSync,rmSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {spawn} from 'node:child_process';
 import {setTimeout as sleep} from 'node:timers/promises';
+import {waitChromiumPageTarget} from './lib/chromium-debug.mjs';
 const SCHOOL=process.argv.includes('--school');
 const BUILD=resolve(SCHOOL?'dist-school-server':(process.env.BUILD_DIR||'dist'));
 if(!existsSync(join(BUILD,'index.html')))throw new Error('Chybí dist/index.html');
@@ -12,7 +13,7 @@ function inlineHtml(){const runtime=readFileSync(join(BUILD,'runtime-config.js')
 class Cdp{constructor(url){this.ws=new WebSocket(url);this.seq=0;this.pending=new Map();this.ready=new Promise((r,j)=>{this.ws.onopen=r;this.ws.onerror=j});this.ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&this.pending.has(m.id)){const p=this.pending.get(m.id);this.pending.delete(m.id);m.error?p.reject(new Error(JSON.stringify(m.error))):p.resolve(m.result)}}}async call(method,params={}){await this.ready;return new Promise((resolve,reject)=>{const id=++this.seq;this.pending.set(id,{resolve,reject});this.ws.send(JSON.stringify({id,method,params}))})}async eval(expression){const r=await this.call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true,userGesture:true});if(r.exceptionDetails)throw new Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result?.value}close(){try{this.ws.close()}catch{}}}
 const port=10600+(process.pid%300),profile=`/tmp/dpl-visual-${process.pid}`,chrome=spawn(chromiumPath(),['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--disable-background-networking','--no-first-run',`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore',detached:true});let c;
 try{
-  await waitJson(`http://127.0.0.1:${port}/json/version`);const pages=await waitJson(`http://127.0.0.1:${port}/json`);c=new Cdp(pages.find(x=>x.type==='page').webSocketDebuggerUrl);await c.call('Runtime.enable');await c.call('Page.enable');const tree=await c.call('Page.getFrameTree');await c.call('Page.setDocumentContent',{frameId:tree.frameTree.frame.id,html:inlineHtml()});
+  await waitJson(`http://127.0.0.1:${port}/json/version`);const page=await waitChromiumPageTarget(port);c=new Cdp(page.webSocketDebuggerUrl);await c.call('Runtime.enable');await c.call('Page.enable');const tree=await c.call('Page.getFrameTree');await c.call('Page.setDocumentContent',{frameId:tree.frameTree.frame.id,html:inlineHtml()});
   let ready=false;for(let i=0;i<160;i++){ready=await c.eval(`typeof generateIntoSheet==='function'&&typeof sourceVisualPromptLines==='function'&&typeof applyVisualCrop==='function'`);if(ready)break;await sleep(50)}if(!ready)throw new Error('Visual pipeline se nespustila');
   const result=await c.eval(`(async()=>{
     document.querySelectorAll('.overlay.show').forEach(e=>e.classList.remove('show'));

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.32 — CI Chromium target hardening (2026-08-18)
+
+- browser QA runnery nyní sdíleně čekají na použitelný `page` WebSocket target místo okamžitého dereferencování `/json`,
+- oprava pokrývá i `qa:renderers`, kde se opakoval stejný `webSocketDebuggerUrl` startup race,
+- přidána T37 regresní pojistka, která prohledává všechny hlavní Chromium QA runnery a blokuje návrat stejného vzoru.
+
 ## 1.3.32 — CI multimedia target race hotfix (2026-08-18)
 
 - `qa:multimedia:browser` už po startu Chromia nepředpokládá, že `/json` okamžitě obsahuje `page` target; čeká až 20 s na skutečný target s `webSocketDebuggerUrl`,

@@ -3,6 +3,7 @@ import {readFileSync,existsSync,rmSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {spawn} from 'node:child_process';
 import {setTimeout as sleep} from 'node:timers/promises';
+import {waitChromiumPageTarget} from './lib/chromium-debug.mjs';
 
 const ROOT=resolve('.'),BUILD=resolve(process.argv.includes('--school')?'dist-school-server':(process.env.BUILD_DIR||'dist'));
 if(!existsSync(join(BUILD,'index.html')))throw new Error(`Chybí ${BUILD}/index.html`);
@@ -23,7 +24,7 @@ class Cdp{constructor(url){this.ws=new WebSocket(url);this.seq=0;this.pending=ne
 async function click(client,selector){await client.eval(`document.querySelector(${JSON.stringify(selector)})?.scrollIntoView({block:'center',inline:'center'})`);await sleep(50);const box=await client.eval(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)return null;const r=e.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height}})()`);if(!box||box.w<1||box.h<1)throw new Error(`Prvek není klikatelný: ${selector}`);await client.call('Input.dispatchMouseEvent',{type:'mouseMoved',x:box.x,y:box.y});await client.call('Input.dispatchMouseEvent',{type:'mousePressed',x:box.x,y:box.y,button:'left',clickCount:1});await client.call('Input.dispatchMouseEvent',{type:'mouseReleased',x:box.x,y:box.y,button:'left',clickCount:1});await sleep(40)}
 const port=10100+(process.pid%400),profile=`/tmp/dpl-profile-browser-${process.pid}`,chrome=spawn(chromiumPath(),['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--disable-background-networking','--no-first-run',`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore',detached:true});let client;
 try{
-  await waitJson(`http://127.0.0.1:${port}/json/version`);const pages=await waitJson(`http://127.0.0.1:${port}/json`);client=new Cdp(pages.find(x=>x.type==='page').webSocketDebuggerUrl);await client.call('Runtime.enable');await client.call('Page.enable');const tree=await client.call('Page.getFrameTree');await client.call('Page.setDocumentContent',{frameId:tree.frameTree.frame.id,html:inlineHtml()});
+  await waitJson(`http://127.0.0.1:${port}/json/version`);const page=await waitChromiumPageTarget(port);client=new Cdp(page.webSocketDebuggerUrl);await client.call('Runtime.enable');await client.call('Page.enable');const tree=await client.call('Page.getFrameTree');await client.call('Page.setDocumentContent',{frameId:tree.frameTree.frame.id,html:inlineHtml()});
   let ready=false;for(let i=0;i<160;i++){ready=await client.eval(`typeof setModelProfile==='function'&&typeof callGemini==='function'&&!!window.GHRAB_AI&&!!document.querySelector('[data-model-profile="quality"]')`);if(ready)break;await sleep(50)}if(!ready)throw new Error('Profilové UI se nespustilo');
   await client.eval(`document.querySelectorAll('.overlay.show').forEach(e=>e.classList.remove('show'));window.__profileTrusted=[];document.querySelectorAll('[data-model-profile]').forEach(b=>b.addEventListener('click',e=>window.__profileTrusted.push({profile:b.dataset.modelProfile,trusted:e.isTrusted})));`);
   const mode=await client.eval(`window.__GHRAB_RUNTIME_CONFIG__.ai.defaultMode`);

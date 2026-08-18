@@ -4,6 +4,7 @@ import { readFile, writeFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
+import {waitChromiumPageTarget} from './lib/chromium-debug.mjs';
 
 const root = path.resolve('.');
 const dist = path.join(root, 'dist');
@@ -160,8 +161,8 @@ const chrome = spawn(chromiumPath(), [
 let client;
 try {
   await waitJson(`http://127.0.0.1:${port}/json/version`);
-  const pages = await waitJson(`http://127.0.0.1:${port}/json`);
-  client = new Cdp(pages.find((item) => item.type === 'page').webSocketDebuggerUrl);
+  const pageTarget = await waitChromiumPageTarget(port);
+  client = new Cdp(pageTarget.webSocketDebuggerUrl);
   await client.call('Runtime.enable'); await client.call('Page.enable');
   const tree = await client.call('Page.getFrameTree');
   const reports = [];

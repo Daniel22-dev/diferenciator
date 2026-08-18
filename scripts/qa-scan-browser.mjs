@@ -3,6 +3,7 @@ import {readFileSync,existsSync,rmSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {spawn} from 'node:child_process';
 import {setTimeout as sleep} from 'node:timers/promises';
+import {waitChromiumPageTarget} from './lib/chromium-debug.mjs';
 
 const SCHOOL=process.argv.includes('--school');
 const BUILD=resolve(SCHOOL?'dist-school-server':(process.env.BUILD_DIR||'dist'));
@@ -34,8 +35,8 @@ const chrome=spawn(chromiumPath(),['--headless=new','--no-sandbox','--disable-gp
 let c;
 try{
   await waitJson(`http://127.0.0.1:${port}/json/version`);
-  const pages=await waitJson(`http://127.0.0.1:${port}/json`);
-  c=new Cdp(pages.find(x=>x.type==='page').webSocketDebuggerUrl);
+  const page=await waitChromiumPageTarget(port);
+  c=new Cdp(page.webSocketDebuggerUrl);
   await c.call('Runtime.enable');await c.call('Page.enable');
   const tree=await c.call('Page.getFrameTree');
   await c.call('Page.setDocumentContent',{frameId:tree.frameTree.frame.id,html:inlineHtml()});

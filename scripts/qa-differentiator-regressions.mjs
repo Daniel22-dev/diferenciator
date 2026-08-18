@@ -425,5 +425,28 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
 }
 
 
+// T37: every Chromium QA runner must wait for a usable page WebSocket target; do not repeat the /json startup race in sibling scripts.
+{
+  const helper=read('scripts/lib/chromium-debug.mjs');
+  const qaFiles=walk(join(ROOT,'scripts')).filter(p=>/\.mjs$/i.test(p)&&!p.endsWith('qa-differentiator-regressions.mjs'));
+  const offenders=[];
+  const unsafe=/\.find\([^\n;]*type\s*={2,3}\s*['"]page['"][^\n;]*\)\.webSocketDebuggerUrl/g;
+  for(const file of qaFiles){
+    const source=readFileSync(file,'utf8');
+    if(unsafe.test(source))offenders.push(relative(ROOT,file));
+    unsafe.lastIndex=0;
+  }
+  const problems=[];
+  if(!helper.includes('export async function waitChromiumPageTarget'))problems.push('chybí sdílené čekání na Chromium page target');
+  if(!helper.includes("target?.type === 'page'")||!helper.includes('target.webSocketDebuggerUrl'))problems.push('helper neověřuje page websocket target');
+  if(offenders.length)problems.push('race-prone dereference zůstává v: '+offenders.join(', '));
+  for(const rel of ['scripts/qa-renderers-browser.mjs','scripts/qa-scan-browser.mjs','scripts/qa-stem-browser.mjs','scripts/qa-all-subjects-browser.mjs','scripts/qa-office-rich-browser.mjs','scripts/qa-visual-assets-browser.mjs','scripts/qa-ai-profiles-browser.mjs','scripts/qa-p3-browser.mjs','scripts/qa-p5-runtime.mjs']){
+    const source=read(rel);if(!source.includes('waitChromiumPageTarget'))problems.push(rel+' nepoužívá bezpečné čekání');
+  }
+  if(problems.length)bad('T37: Chromium page-target race hardening: '+problems.join('; '));
+  else ok('T37: všechny hlavní Chromium QA runnery čekají na použitelný page WebSocket target');
+}
+
+
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
 console.log('CELKEM: regresní brána zelená.');
