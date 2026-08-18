@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.32 — Practical QA hotfix (2026-08-18)
+
+- DOCX import u více plovoucích obrázků ukotvených v jednom odstavci používá jejich skutečnou svislou pozici (`wp:positionV/wp:posOffset`), takže pracovní list `Internal organs → 47.3/47.4 → Body idioms` už není předán AI v chybném pořadí vložení,
+- explicitní volba **Flexible** je autoritativní; režimy „Stejný formát, jiný obsah“ ani „Stejný obsah i formát“ ji už deterministickým validátorem nepřepíšou zpět na strict,
+- režimy **Ruční bodování** a **Bez bodování** odstraňují také anglický řádek `Total points: N`, nejen bodové suffixy u úloh,
+- automatická **Normální verze** má stejný význam při samostatném generování i v celé sadě: zachovává původní obsah, strukturu a obtížnost jako referenční standard; nový paralelní obsah se vytváří jen explicitním režimem „Stejný formát, jiný obsah“,
+- přidány interní regresní kontroly a T34 pro všechny čtyři praktické nálezy; žádný nový AI request.
+
 ## 1.3.32 — Output repair + visual UX hotfix (2026-08-17)
 
 - obrazové režimy mají přímo v aplikaci vysvětlení; u každého podkladu se zobrazuje význam právě zvolené možnosti,

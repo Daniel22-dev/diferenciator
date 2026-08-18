@@ -382,5 +382,19 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   else ok('T33: obrazové volby + pořadí jsou vysvětlené, scoring je lokálně opravitelný a teacher/Markdown cleanup je přítomen');
 }
 
+
+// T34: practical BODY/DOCX QA hotfix — visible Word image order, authoritative Flexible, clean no-scoring output and one Normal meaning.
+{
+  const api=read('src/js/30-api-gemini.js'),ui=read('src/js/20-zaklad-ui-projekty.js'),body=read('src/body.html'),tests=read('src/js/50-interni-testy.js');
+  const problems=[];
+  if(!api.includes('wp:positionV')||!api.includes('wp:posOffset')||!api.includes('anchorsOnly')||!tests.includes('DOCX plovoucí obrázky podle pozice'))problems.push('DOCX plovoucí obrázky nejsou řazeny podle vizuální svislé pozice');
+  const contract=(api.match(/function sourceStructureContract[\s\S]{0,1400}/)||[''])[0];
+  if(/same_format_new_content'\|\|a\.variantMode==='same_content_same_format/.test(contract)||!contract.includes("resolvedStructureMode(key):'auto')==='strict'" )||!tests.includes('Explicitní Flexible má přednost'))problems.push('explicitní Flexible stále nemusí být autoritativní');
+  if(!api.includes('total\\s+(?:points?|pts?)')||!tests.includes('Odstranění anglického celkového součtu'))problems.push('stripGeneratedScoring nehlídá Total points: N');
+  if(/U Normální verze vytvoř paralelní variantu/.test(ui)||!ui.includes('referenční standard')||!body.includes('Paralelní variantu s novým obsahem vytvoří volba')||!tests.includes('Samostatná Normální verze'))problems.push('Normální verze má stále rozdílný význam samostatně a v sadě');
+  if(problems.length)bad('T34: practical QA hotfix: '+problems.join('; '));
+  else ok('T34: DOCX pořadí, Flexible, Total points a význam Normální verze jsou sjednocené');
+}
+
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
 console.log('CELKEM: regresní brána zelená.');

@@ -236,7 +236,7 @@ function updateAdvancedGuidance(){
       same_content_same_format:'Obsah i formát zůstanou; upraví se jen opora, formulace a hloubka odpovědi podle zvolené úrovně.',
       same_goal_flexible:'Povinný zůstává hlavní výukový cíl a ověřované dovednosti. Konkrétní úlohy i struktura se mohou změnit.'
     };
-    variantHelp.textContent=mode==='auto'?(key==='core'?'Pro Normální vytvoří paralelní variantu se stejnou obtížností a strukturou, ale s novým konkrétním obsahem.':'Pro '+(tier||'Jednodušší/Obtížnější')+' drží původní obsah a strukturu a mění hlavně míru opory, formulace a hloubku odpovědi.'):(messages[mode]||'');
+    variantHelp.textContent=mode==='auto'?(key==='core'?'Pro Normální zachová původní obsah, strukturu a obtížnost jako referenční standard. Pro paralelní variantu s novým obsahem zvol „Stejný formát, jiný obsah“.':'Pro '+(tier||'Jednodušší/Obtížnější')+' drží původní obsah a strukturu a mění hlavně míru opory, formulace a hloubku odpovědi.'):(messages[mode]||'');
   }
   const structureHelp=$('#advStructureHelp');if(structureHelp){
     const resolved=resolvedStructureMode(key||'core');
@@ -275,11 +275,8 @@ function variantModePromptLine(key,batch=1){
   if(mode==='same_format_new_content')return 'Režim nové verze: stejný formát, jiný obsah. Vytvoř paralelní variantu: zachovej formát, počet hlavních úloh, počet položek uvnitř každé úlohy, typy úloh, pořadí, počet bodovatelných položek a srovnatelnou obtížnost podle zvolené úrovně, ale změň konkrétní obsah, věty, příklady, data nebo kontext tak, aby nevznikla kopie původního testu. Předvyplněná či ručně dopsaná odpověď v originálu není automaticky nehodnocený příklad; jako příklad ji ber jen tehdy, když je v originálu výslovně označena jako příklad/vzor.';
   if(mode==='same_content_same_format')return 'Režim nové verze: stejný obsah i formát. Zachovej obsah, formát, pořadí, počet položek a typ odpovědí; proveď jen nezbytné úpravy formulací, míry opory, nápovědy, členění a nároků na odpověď podle zvolené úrovně.';
   if(mode==='same_goal_flexible')return 'Režim nové verze: stejný výukový cíl, volnější varianta. Zachovej hlavní výukový cíl, téma a ověřované dovednosti, ale můžeš změnit konkrétní obsah i strukturu, pokud výsledná verze zůstane pedagogicky srovnatelná a použitelná pro zvolenou úroveň.';
-  if(batch>1){
-    if(key==='core')return 'Režim nové verze: automaticky. U Normální verze zachovej původní obsah a strukturu a ponech i stejnou obtížnost; jde o referenční variantu sady.';
-    return 'Režim nové verze: automaticky. Při tvorbě celé sady zachovej původní obsah a strukturu co nejvíce a měň hlavně míru opory, složitost formulací, počet mezikroků a hloubku odpovědi podle zvolené úrovně.';
-  }
-  if(key==='core')return 'Režim nové verze: automaticky. U Normální verze vytvoř paralelní variantu se stejnou obtížností: zachovej typ úloh, formát odpovědí, počet položek, pořadí a strukturu, ale změň konkrétní obsah, aby vznikla nová varianta, ne kopie původního materiálu.';
+  if(key==='core')return 'Režim nové verze: automaticky. U Normální verze zachovej původní obsah, strukturu a obtížnost jako referenční standard. Pokud učitel chce paralelní variantu s novým obsahem, musí výslovně zvolit „Stejný formát, jiný obsah“.';
+  if(batch>1)return 'Režim nové verze: automaticky. Při tvorbě celé sady zachovej původní obsah a strukturu co nejvíce a měň hlavně míru opory, složitost formulací, počet mezikroků a hloubku odpovědi podle zvolené úrovně.';
   return 'Režim nové verze: automaticky. U Jednodušší/Obtížnější verze zachovej původní obsah a strukturu co nejvíce a měň hlavně míru opory, složitost formulací, počet mezikroků a hloubku odpovědi podle zvolené úrovně.';
 }
 function advancedPromptLines(key='core'){

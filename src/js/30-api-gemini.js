@@ -378,7 +378,10 @@ function sourceVisualPromptLines(){
 }
 function sourceStructureContract(key='core'){
   const a=typeof getAdvancedOptions==='function'?getAdvancedOptions():{variantMode:'auto',allowExtensions:false};
-  const strict=(typeof resolvedStructureMode==='function'?resolvedStructureMode(key):'auto')==='strict'||a.variantMode==='same_format_new_content'||a.variantMode==='same_content_same_format';
+  // The explicit structure selector is authoritative. In auto mode resolvedStructureMode()
+  // still derives strict/flexible from the selected variant mode, but an explicit Flexible
+  // choice must not be silently overridden by same_format_new_content/same_content_same_format.
+  const strict=(typeof resolvedStructureMode==='function'?resolvedStructureMode(key):'auto')==='strict';
   const reconstructed=sourceVisualAssets.filter(x=>x.mode==='reconstruct'&&(normalizeVisualIntent(x.intent)==='task_image'||normalizeVisualIntent(x.intent)==='hybrid'));
   const itemCounts=reconstructed.flatMap(x=>normalizeVisualItemCounts(x.task_item_counts));
   const exampleValues=reconstructed.map(x=>normalizeExplicitExamples(x.explicit_examples));
@@ -570,12 +573,46 @@ function docxReferencedMediaPaths(documentXml,relsXml){
     const tag=m[0],id=(tag.match(/\bId=["']([^"']+)["']/i)||[])[1],target=(tag.match(/\bTarget=["']([^"']+)["']/i)||[])[1],type=(tag.match(/\bType=["']([^"']+)["']/i)||[])[1];
     if(id&&target&&/\/image$/i.test(type||''))rels.set(id,target);
   }
-  const out=[],seen=new Set();
-  for(const m of String(documentXml||'').matchAll(/<a:blip\b[^>]*\br:embed=["']([^"']+)["'][^>]*>/gi)){
-    const target=rels.get(m[1]);if(!target)continue;
-    const normalized=('word/'+target.replace(/^\.\//,'')).replace(/\/\.\//g,'/');
-    if(/^word\/media\//i.test(normalized)&&!seen.has(normalized)){seen.add(normalized);out.push(normalized)}
+  const normalizeTarget=id=>{
+    const target=rels.get(id);if(!target)return '';
+    const normalized=('word/'+target.replace(/^\.\//,'')).replace(/\/\.\.\//g,'/');
+    return /^word\/media\//i.test(normalized)?normalized:'';
+  };
+  const refs=[];let paragraphIndex=0;
+  const paragraphRe=/<w:p\b[\s\S]*?<\/w:p>/gi;
+  for(const paragraphMatch of String(documentXml||'').matchAll(paragraphRe)){
+    const paragraph=paragraphMatch[0],local=[];let sourceOrder=0;
+    const drawingRe=/<wp:(anchor|inline)\b[\s\S]*?<\/wp:\1>/gi;
+    for(const drawingMatch of paragraph.matchAll(drawingRe)){
+      const block=drawingMatch[0],kind=String(drawingMatch[1]||'').toLowerCase();
+      const vTag=(block.match(/<wp:positionV\b([^>]*)>([\s\S]*?)<\/wp:positionV>/i)||[]),hTag=(block.match(/<wp:positionH\b([^>]*)>([\s\S]*?)<\/wp:positionH>/i)||[]);
+      const vRef=((vTag[1]||'').match(/\brelativeFrom=["']([^"']+)["']/i)||[])[1]||'';
+      const vRaw=((vTag[2]||'').match(/<wp:posOffset>\s*(-?\d+)\s*<\/wp:posOffset>/i)||[])[1];
+      const hRaw=((hTag[2]||'').match(/<wp:posOffset>\s*(-?\d+)\s*<\/wp:posOffset>/i)||[])[1];
+      const y=vRaw!==undefined?Number(vRaw):null,x=hRaw!==undefined?Number(hRaw):null;
+      for(const blip of block.matchAll(/<a:blip\b[^>]*\br:embed=["']([^"']+)["'][^>]*>/gi)){
+        const path=normalizeTarget(blip[1]);if(path)local.push({path,kind,vRef,y:Number.isFinite(y)?y:null,x:Number.isFinite(x)?x:null,sourceOrder:sourceOrder++});
+      }
+    }
+    // Floating pictures anchored to one Word paragraph are often stored in insertion order,
+    // not in their visible top-to-bottom order. If their vertical offsets share one coordinate
+    // system, order them visually; otherwise preserve XML order. Inline/mixed content stays
+    // untouched because its XML order is already semantically meaningful.
+    const anchorsOnly=local.length>1&&local.every(r=>r.kind==='anchor'&&r.y!==null&&r.vRef&&r.vRef===local[0].vRef);
+    if(anchorsOnly)local.sort((a,b)=>a.y-b.y||((a.x??Number.POSITIVE_INFINITY)-(b.x??Number.POSITIVE_INFINITY))||a.sourceOrder-b.sourceOrder);
+    refs.push(...local.map(r=>({path:r.path,paragraphIndex,sourceOrder:r.sourceOrder})));
+    paragraphIndex++;
   }
+  // Fallback for unusual/minimal DOCX XML where drawings are not wrapped in the paragraph
+  // pattern above. This keeps the previous safe document-order behavior.
+  if(!refs.length){
+    let sourceOrder=0;
+    for(const m of String(documentXml||'').matchAll(/<a:blip\b[^>]*\br:embed=["']([^"']+)["'][^>]*>/gi)){
+      const path=normalizeTarget(m[1]);if(path)refs.push({path,paragraphIndex:0,sourceOrder:sourceOrder++});
+    }
+  }
+  const out=[],seen=new Set();
+  for(const ref of refs)if(!seen.has(ref.path)){seen.add(ref.path);out.push(ref.path)}
   return out;
 }
 async function readDocxRich(file){
@@ -872,7 +909,7 @@ function buildPrintBody(text,manualScores,visualAssets,mediaSource){
   return blocks.map((b,i)=>'<div class="pa-ex" data-print-block="'+i+'">'+renderPrintBlock(b,i,manualScores,visualAssets||[],mediaSource)+'</div>').join('');
 }
 function stripGeneratedScoring(text){
-  const total=/^(?:celkem|total|součet|soucet|maximum|max\.?)\s*[:=]?\s*\d+(?:[.,]\d+)?\s*(?:bod(?:ů|u|y)?|b\.?|points?|pts?)\s*$/i;
+  const total=/^(?:(?:celkem|total|součet|soucet|maximum|max\.?)\s*[:=]?\s*\d+(?:[.,]\d+)?\s*(?:bod(?:ů|u|y)?|b\.?|points?|pts?)|(?:total\s+(?:points?|pts?)|celkem\s+bod(?:ů|u|y)?|součet\s+bod(?:ů|u|y)?|soucet\s+bod(?:ů|u|y)?|maximum\s+(?:points?|pts?)|max\.?\s+(?:points?|pts?))\s*[:=]?\s*\d+(?:[.,]\d+)?)\s*$/i;
   const suffix=/\s*(?:\(|\[)\s*\d+(?:[.,]\d+)?\s*(?:bod(?:ů|u|y)?|b\.?|points?|pts?)\s*(?:\)|\])\s*$/i;
   return String(text||'').split(/\r?\n/).map(line=>{
     const raw=String(line||''),lead=raw.match(/^\s*/)?.[0]||'',trimmed=raw.trim(),open=trimmed.startsWith('**')?'**':trimmed.startsWith('*')?'*':'',close=trimmed.endsWith('**')?'**':trimmed.endsWith('*')?'*':'';
