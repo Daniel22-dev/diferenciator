@@ -93,6 +93,7 @@ function toggleEdit(sheet,btn){
 function normalizeParsedScoring(parsed,mode){
   if(!parsed||!['manual','none'].includes(mode))return parsed;
   const parts={...(parsed.parts||{})};
+  parts.instructions=stripGeneratedScoring(parts.instructions||'');
   parts.tasks=stripGeneratedScoring(parts.tasks||parsed.worksheet||'');
   const worksheet=[parts.title,parts.instructions,parts.tasks].map(x=>String(x||'').trim()).filter(Boolean).join('\n\n');
   return {...parsed,parts,worksheet:worksheet||parts.tasks||stripGeneratedScoring(parsed.worksheet||'')};
@@ -373,6 +374,7 @@ const PromptBuilder={
       ...(typeof stemGenerationPromptLines==='function'?stemGenerationPromptLines(subject):[]),
       ...(typeof subjectGenerationPromptLines==='function'?subjectGenerationPromptLines(subject):[]),
       ...(typeof educationalVisualPromptLines==='function'?educationalVisualPromptLines(subject):[]),
+      ...(typeof sourceStructurePromptLines==='function'?sourceStructurePromptLines():[]),
       ...sourceVisualPromptLines(),
       ...sourceMediaPromptLines()
     ];

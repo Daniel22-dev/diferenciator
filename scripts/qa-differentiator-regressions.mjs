@@ -467,5 +467,32 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
 }
 
 
+// T39: vertical written-arithmetic PDF hotfix — preserve compact grid, count EDU_ARITH items and reject duplicate horizontal+vertical drift.
+{
+  const api=read('src/js/30-api-gemini.js'),all=read('src/js/36-all-subject-safety.js'),renderers=read('src/modules/educational-renderers.js'),css=read('src/styles.css'),tests=read('src/js/50-interni-testy.js'),qa=read('scripts/qa-renderers-browser.mjs');
+  const problems=[];
+  if(!api.includes('vertical_arithmetic_grid')||!api.includes('function sourceStructurePromptLines')||!api.includes('function arithmeticMarkerMeta'))problems.push('chybí strukturální kontrakt/prompt pro mřížku písemné aritmetiky');
+  if(!all.includes('EDU_ARITH')||!all.includes("info.kind==='arith'"))problems.push('EDU_ARITH není povolený a validovaný marker');
+  if(!renderers.includes('function renderArithmetic')||!renderers.includes("kind==='arith'"))problems.push('chybí deterministický renderer svislé aritmetiky');
+  if(!css.includes('.edu-arith-grid')||!css.includes('.edu-arith-rule'))problems.push('chybí layout mřížky a výsledková čára');
+  if(!tests.includes('Písemné odčítání — EDU_ARITH')||!tests.includes('blokace rozbitého layoutu'))problems.push('chybí praktická interní regrese pro 24 příkladů');
+  if(!qa.includes("arith:{operation:'subtract'")||!qa.includes('result.arith.items===8'))problems.push('browser renderer QA nekontroluje EDU_ARITH');
+  if(problems.length)bad('T39: vertical arithmetic PDF hotfix: '+problems.join('; '));
+  else ok('T39: písemná aritmetika drží kompaktní mřížku, EDU_ARITH se počítá do Strict kontraktu a duplicitní layout se blokuje');
+}
+
+
+// T40: no-scoring prose leak — AI-added scoring in instructions/task prose must be removed in manual/none modes.
+{
+  const api=read('src/js/30-api-gemini.js'),out=read('src/js/40-vystup-pdf-kvalita.js'),tests=read('src/js/50-interni-testy.js');
+  const problems=[];
+  if(!api.includes('const scoreSentence=')||!api.includes('const scoreParen=')||!api.includes('const inlineTotal='))problems.push('stripGeneratedScoring neodstraňuje slovní/inline bodování');
+  if(!out.includes("parts.instructions=stripGeneratedScoring(parts.instructions||'')"))problems.push('normalizeParsedScoring nečistí instrukce');
+  if(!tests.includes('Bez bodování — prose scoring leak')||!tests.includes('Hodnocení: 1 bod za každý správný výsledek'))problems.push('chybí regrese podle reálného screenshotu');
+  if(problems.length)bad('T40: no-scoring prose leak: '+problems.join('; '));
+  else ok('T40: režimy Bez/Ruční bodování čistí AI bodování z instrukcí i názvu úlohy a nechávají časový limit');
+}
+
+
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
 console.log('CELKEM: regresní brána zelená.');

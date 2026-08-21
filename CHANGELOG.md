@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.32 — Vertical arithmetic PDF hotfix (2026-08-18)
+
+- pure PDF rozpoznání může označit pravidelnou mřížku písemného sčítání/odčítání/násobení/dělení jako `layout=vertical_arithmetic_grid` včetně počtu sloupců a řádků,
+- taková mřížka se normalizuje jako jedna hlavní úloha s odpovídajícím počtem položek, takže 24 příkladů ve 4 × 6 se nerozpadne na falešných 24 hlavních úloh,
+- nový deterministický marker `EDU_ARITH` vykresluje příklady skutečně písemně pod sebe v kompaktní mřížce a nezdvojuje tentýž příklad ještě horizontálním zápisem,
+- Strict strukturální gate počítá položky uvnitř `EDU_ARITH`, kontroluje počet sloupců a rozbitý jedno-sloupcový/horizontálně+svisle duplicitní výstup odmítne,
+- přidána T39 a praktické interní testy pro pracovní list „Písemné odčítání“ 4 × 6; browser renderer QA ověřuje nový aritmetický renderer.
+- opraven také viditelný únik AI bodování v režimu „Bez bodování“ / „Ruční“: čistí se nově nejen `tasks`, ale i instrukce a složené fráze typu „Hodnocení: 1 bod… (celkem 24 bodů)“,
+- přidána T40 regrese podle reálného problematického výstupu; časový limit a věcná instrukce zůstávají zachované.
+
 ## 1.3.32 — CI workflow dedup hotfix (2026-08-18)
 
 - Legacy P3 a Legacy P4 se už automaticky nespouštějí na každý push ani pull request; zůstávají dostupné pouze ručně přes `workflow_dispatch`,

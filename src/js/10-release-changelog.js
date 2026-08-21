@@ -5,6 +5,7 @@ const RELEASE = Object.freeze({
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    '1.3.32: Vertical arithmetic PDF hotfix — mřížky písemných příkladů se zachovají jako kompaktní 4×N layout přes EDU_ARITH, Strict blokuje duplicitní drift a režim Bez/Ruční bodování čistí i AI bodovací věty z instrukcí.',
     '1.3.32: CI workflow dedup hotfix — Legacy P3/P4 jsou jen ruční, P5 R2 je jediný automatický plný release gate a deploy po jeho úspěchu pouze znovu sestaví a nasadí artefakt.',
     '1.3.32: Math/PDF practical QA hotfix — pure PDF dostává celostránkový strukturální kontrakt, strict validátor umí dvousloupcové rovnice a STEM kontrola opravuje dělení dvojtečkou i závorkové rovnice.',
     '1.3.32: Practical QA hotfix — DOCX plovoucí obrázky se řadí podle svislé pozice, explicitní Flexible má přednost, Total points se odstraní v režimu bez AI bodů a Normální má jednotný referenční význam.',
