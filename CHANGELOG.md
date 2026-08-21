@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.32 - performance-budget hotfix (2026-08-21)
+
+- Compact vertical-arithmetic implementation; frozen performance budgets unchanged.
+
 ## 1.3.32 — Vertical arithmetic PDF hotfix (2026-08-18)
 
 - pure PDF rozpoznání může označit pravidelnou mřížku písemného sčítání/odčítání/násobení/dělení jako `layout=vertical_arithmetic_grid` včetně počtu sloupců a řádků,
