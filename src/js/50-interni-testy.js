@@ -165,8 +165,8 @@ globalThis.TestSystem={
     const coreRadio=document.querySelector('#tiers input[data-tier="core"]');
     this.assert(coreRadio&&coreRadio.disabled&&!actualSelectedTierKey()&&selectedSetTierKeys().join(',')==='support,extend','Logika jiné obtížnosti','Normální se zneplatní a sada nabízí jen Jednodušší + Obtížnější','Normální zůstala aktivní v režimu, který vyžaduje jinou obtížnost');
     if($('#advTeacherInstruction'))$('#advTeacherInstruction').value='Zachovej všech sedm původních položek.';
-    const teacherPrompt=makePromptForTier('support',this.demoBase);
-    this.assert(/ZÁVAZNÝ VLASTNÍ POKYN UČITELE/.test(teacherPrompt)&&/sedm původních položek/.test(teacherPrompt),'Vlastní pokyn učitele','Pokyn je v promptu jako závazné doplnění','Vlastní pokyn se do promptu nepropsal správně');
+    const teacherData={},teacherPrompt=makePromptForTier('support',this.demoBase,1,teacherData);
+    this.assert(/ZÁVAZNÝ VLASTNÍ POKYN UČITELE/.test(teacherPrompt)&&/sedm původních položek/.test(teacherData.c),'Vlastní pokyn učitele','Pokyn je v teacher-context a instrukce jej omezuje bezpečnostními pravidly','Vlastní pokyn se do teacher-context nepropsal správně');
     if($('#advTeacherInstruction'))$('#advTeacherInstruction').value='';
     if($('#advVariantMode')){$('#advVariantMode').value='auto';syncVariantTierRules();}
     setSelectedTierKey('core');

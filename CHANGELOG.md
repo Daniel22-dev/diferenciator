@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.35 — GARP finální hardening po 2. kole Claude (2026-08-26)
+
+- E1 potvrzen a opraven: `worksheet-generation` už nedělí smíšený prompt zpětně pomocí markerů v textu. PromptBuilder předává důvěryhodné instrukce, `source` a `teacher-context` jako samostatné části; produkční AI volání je neskládá zpět podle markerů a importovaný materiál nemůže změnit svůj štítek vložením textu `UČITELSKÝ KONTEXT (JSON):`.
+- E2 potvrzen jako preventivní defense-in-depth a opraven: `dplData()` používá pevný whitelist povolených labelů; neznámý label bezpečně degraduje na `source`.
+- přidány regresní pojistky T46–T47 pro content-independent worksheet partition a whitelist datových labelů.
+- nejde o třetí auditní kolo; jde o druhou a poslední opravnou reakci ChatGPT po druhé kontrole Claude podle pravidla GARP.
+- produkční nasazení zůstává podmíněno zelenými GitHub Actions `qa:runtime/reflow` a povinným axe během s `AXE_REQUIRED=1`.
+
 ## 1.3.34 — GARP kolo 2 po kontrole Claude (2026-08-26)
 
 - D1 potvrzen a opraven: `qa:secrets` nově kontroluje i kořenové `.env` a `.env.*` soubory, aniž by vypisoval nalezenou hodnotu.

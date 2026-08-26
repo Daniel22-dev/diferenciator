@@ -362,7 +362,7 @@ const UiState={
 };
 function setSheetStatus(sheet,text,state){UiState.setSheetStatus(sheet,text,state)}
 const PromptBuilder={
-  makeTierPrompt(key,base,batch=1){
+  makeTierPrompt(key,base,batch=1,p){
     const t=TIERS[key], opt=getOptionState();
     const tierInstruction=(key==='core'&&batch>1)?'Vytvoř NORMÁLNÍ referenční verzi celé sady: zachovej původní obsah, příklady, data, počet položek, pořadí, formát odpovědí, strukturu i obtížnost. Nepřidávej ani neubírej oporu; měň jen to, co je nezbytné pro čisté a použitelné zpracování.':t.instr;
     const subject=stemSubjectKind()||subjectDomainKind();
@@ -388,22 +388,21 @@ const PromptBuilder={
       '  "teacher_note": "volitelná krátká poznámka pro učitele; nevkládej sem nic, co má být v žákovské verzi"',
       '}'
     ].join('\n');
-    return [
+    const instructions=[
       'Jsi zkušený učitel ('+subject+'). Z následujícího zadání vytvoř jeho odstupňovanou verzi.',
       tierInstruction+(opt.useCefr?' '+t.cefr:''),
       add.length?'DOPLŇUJÍCÍ NASTAVENÍ:\n- '+add.join('\n- '):'',
       'JAZYK A ODBORNOST: Zachovej přesně jazyk nebo kombinaci jazyků původního zadání u každé úlohy. Nepřekládej žádný cizojazyčný ani odborný text do češtiny. Diferencuj obtížnost, oporu a formulaci, ne předmětovou pravdivost. Zachovej odbornou terminologii, symboly, vzorce, jednotky, značky, data, tabulky a standardní zápis daného předmětu. Pokud je některá část česky nebo přidáváš českou instrukci, čeština musí být bezchybná: gramaticky, stylisticky i lexikálně, bez hovorových neobratností, bez kalků, bez pravopisných a interpunkčních chyb. Tučně (**takto**) zvýrazni jen názvy jednotlivých úloh; hlavní nadpis patří samostatně do worksheet_title.',
       'HLAVNÍ NADPIS: pokud originál obsahuje skutečný název tématu/testu, zachovej jej nebo ho jen lehce zpřesni. Nadpis má být krátký, výrazný a přirozený pro žáky. Nepřidávej technické dodatky typu „Parallel Version“, „Parallel Variant“, „Normální verze“, „Jednodušší verze“ nebo „Obtížnější verze“ — úroveň zobrazuje aplikace zvlášť.',
       'PŘED ODEVZDÁNÍM: bez dalšího komentáře si interně ověř, že všechny úlohy jsou řešitelné, answer_key odpovídá každé úloze, případné bodování je konzistentní a žádná část původní struktury omylem nechybí. U STEM materiálu přepočítej všechny výpočty ještě jednou nezávislou cestou; chybný výsledek se nesmí dostat do klíče.',
-      jsonSchema,
-      'PŮVODNÍ ZADÁNÍ:',
-      base,
-      'UČITELSKÝ KONTEXT (JSON):',
-      JSON.stringify((()=>{const a=getAdvancedOptions();return {subject:getSubjectValue()||'',workTime:a.workTime||'',learningGoal:a.learningGoal||'',supportType:a.supportType||'',teacherInstruction:a.teacherInstruction||''}})())
+      jsonSchema
     ].filter(Boolean).join('\n\n');
+    const a=getAdvancedOptions(),c=JSON.stringify({subject:getSubjectValue()||'',workTime:a.workTime||'',learningGoal:a.learningGoal||'',supportType:a.supportType||'',teacherInstruction:a.teacherInstruction||''});
+    if(p)Object.assign(p,{i:instructions,s:String(base??''),c});
+    return instructions;
   }
 };
-function makePromptForTier(key,base,batch=1){return PromptBuilder.makeTierPrompt(key,base,batch)}
+function makePromptForTier(key,base,batch=1,p){return PromptBuilder.makeTierPrompt(key,base,batch,p)}
 
 const ZAP='<span class="zap-cost">⚡ 1</span>';
 function setRichText(el,text){setRichTextWithVisuals(el,text,[])}
@@ -481,8 +480,8 @@ async function generateIntoSheet(sheet,key,base,idx,total){
   sheet.querySelector('.qualitybox').innerHTML='';sheet.querySelector('.qualitybox').classList.remove('show');
   const structureBox=sheet.querySelector('.structurebox');if(structureBox){structureBox.innerHTML='';structureBox.classList.remove('show')}
   setProgress((total>1?'Verze '+(idx+1)+' z '+total+': ':'Generuji ')+t.name.toLowerCase()+' verzi…',true);
-  const sourceAssets=preservedSourceVisualAssets(),generationParts=[{text:makePromptForTier(key,base,total)},...generationVisualParts()];
-  const out=await callGemini(generationParts,{json:true,operation:'worksheet-generation'});
+  const r={};makePromptForTier(key,base,total,r);const sourceAssets=preservedSourceVisualAssets(),generationParts=[{text:r.s,label:'source'},{text:r.c,label:'teacher-context'},...generationVisualParts()];
+  const out=await callGemini(generationParts,{json:true,operation:'worksheet-generation',appInstructions:r.i});
   let parsed=ensureMediaSourceMarker(normalizeParsedVisuals(parseWorksheetResponse(out),sourceAssets));
   let validation=validateWorksheetResponse(parsed);
   if(!validation.ok){
