@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.3.34 — GARP kolo 2 po kontrole Claude (2026-08-26)
+
+- D1 potvrzen a opraven: `qa:secrets` nově kontroluje i kořenové `.env` a `.env.*` soubory, aniž by vypisoval nalezenou hodnotu.
+- D2 částečně potvrzen jako přesnost pokrytí a opraven: scanner bezpečně rozbaluje a kontroluje `.gz` artefakty buildů s pevným limitem a fail-closed stavem při nečitelném gzipu.
+- D3 potvrzen jako defense-in-depth slabina a opraven strukturálně: aplikační instrukce jsou oddělené od zdrojových dat; textové AI inputParts jsou JSON-escaped uvnitř označeného `<data>` obalu. Zdrojový materiál a `teacher-context` jsou rozlišeny; pracovní list, modelový výstup a quality vstupy zůstávají vždy v nedůvěryhodné datové vrstvě.
+- volný pedagogický text učitele se nepřidává přímo jako neoddělená instrukce; je předán jako omezený `teacher-context`. Předmětové bezpečnostní instrukce používají jen lokálně odvozenou kanonickou kategorii předmětu, nikoli volný text uživatele.
+- přidány regrese T44–T45; T45 spouští pětiprvkový otrávený korpus přímo proti skutečné funkci datového obalu.
+- kandidát je určen pro druhou a poslední nezávislou kontrolu Claude podle GARP.
+
+## 1.3.33 — GARP security candidate (2026-08-26)
+
+- doplněna systémová ochrana proti prompt injection z nedůvěryhodných školních materiálů a zákaz vyzrazování tajných údajů/interních instrukcí,
+- všechny externí GitHub Actions jsou připnuté na konkrétní 40znakové commit SHA a regresní brána návrat pohyblivého tagu blokuje,
+- automatický sync AI Core instaluje závislosti s `--ignore-scripts --no-audit --no-fund`,
+- přidána tajemství-nevypisující `qa:secrets` kontrola zdrojů i buildů a bezpečnější logování chyb access bootstrapu,
+- bezpečnostní kandidát čeká na první nezávislou kontrolu Claude.
+
 ## 1.3.32 - performance-budget hotfix (2026-08-21)
 
 - Compact vertical-arithmetic implementation; frozen performance budgets unchanged.

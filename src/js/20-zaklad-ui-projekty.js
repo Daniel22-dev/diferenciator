@@ -88,7 +88,8 @@ async function detectCefrForBase(text){
   cefrBusy=true;setCefrNote('Odhaduji CEFR úroveň…','busy');
   try{
     const forcedNote=isCefrForced()?'CEFR je ručně vynucený, protože název předmětu nemusel být rozpoznán. Přesto vrať NEPLATÍ, pokud materiál ve skutečnosti není jazykový. ':'';
-    const lvlRaw=await callGemini([{text:forcedNote+"Urči jazykovou úroveň podle CEFR (A1, A2, B1, B2, C1 nebo C2) tohoto materiálu pro výuku jazyka. Pokud materiál NENÍ jazykový (např. matematika, dějepis, fyzika v rodném jazyce), odpověz přesně slovem NEPLATÍ. Odpověz POUZE jedním z těchto kódů, nic jiného: A1 A2 B1 B2 C1 C2 NEPLATÍ\n\nMATERIÁL:\n"+base}],{thinking:THINKING_CHEAP,operation:'cefr-detection'});
+    const cefrInstructions=forcedNote+"Urči jazykovou úroveň podle CEFR (A1, A2, B1, B2, C1 nebo C2) tohoto materiálu pro výuku jazyka. Pokud materiál NENÍ jazykový (např. matematika, dějepis, fyzika v rodném jazyce), odpověz přesně slovem NEPLATÍ. Odpověz POUZE jedním z těchto kódů, nic jiného: A1 A2 B1 B2 C1 C2 NEPLATÍ.";
+    const lvlRaw=await callGemini([{text:base,label:'source-material'}],{thinking:THINKING_CHEAP,operation:'cefr-detection',appInstructions:cefrInstructions});
     const raw=String(lvlRaw||'').trim().toUpperCase();
     const lvl=raw.match(/A1|A2|B1|B2|C1|C2/);
     applyCefrLevels(lvl?lvl[0]:null);
@@ -282,19 +283,19 @@ function variantModePromptLine(key,batch=1){
 function advancedPromptLines(key='core'){
   const a=getAdvancedOptions(), out=[],targetLine=targetGroupPromptLine(a.targetGroup);
   if(targetLine)out.push(targetLine);
-  if(a.workTime)out.push('Přizpůsob rozsah a náročnost času na vypracování: '+a.workTime+'.');
-  if(a.learningGoal)out.push('Nadřazený výukový cíl / očekávaný výstup, který musí zachovat všechny varianty: '+a.learningGoal+'.');
+  if(a.workTime)out.push('Přizpůsob rozsah a náročnost hodnotě workTime z učitelského kontextu.');
+  if(a.learningGoal)out.push('Zachovej learningGoal z učitelského kontextu ve všech variantách.');
   const structure=resolvedStructureMode(key);
   if(structure==='strict')out.push('Zachování struktury: co nejpřesněji zachovej původní strukturu, pořadí, počet položek a formát odpovědí.');
   if(structure==='flexible')out.push('Zachování struktury: strukturu můžeš rozumně upravit, pokud to pedagogicky pomůže diferenciaci, ale zachovej původní cíl materiálu.');
-  if(a.supportType)out.push('Preferovaný způsob podpory nebo výzvy (neměň kvůli němu téma ani výukový cíl): '+a.supportType+'.');
+  if(a.supportType)out.push('Preferovaný způsob podpory nebo výzvy je v učitelském kontextu (supportType); neměň kvůli němu téma ani cíl.');
   if(a.scoringMode==='ai')out.push('BODOVÁNÍ — REŽIM AI: navrhni vlastní přiměřené a konzistentní bodování všech hlavních úloh, napiš bodovou hodnotu přímo do nadpisu KAŽDÉ hlavní úlohy a uveď jasný celkový součet v žákovské verzi. Body musí odpovídat náročnosti a řešení. Při zachování struktury nesmíš svévolně vyřadit původní položku z bodování ani z ní udělat nehodnocený příklad. Původní bodové hodnoty můžeš použít jen jako orientaci, nejsou v tomto režimu závazné.');
   else if(a.scoringMode==='original')out.push('BODOVÁNÍ — PŘEVZÍT Z ORIGINÁLU: explicitní body, váhy a celkový součet jsou závazná součást vzoru. Zachovej bodové hodnoty srovnatelných úloh a celkový počet bodů přesně. Pokud diferenciace změní vnitřní členění úlohy, přerozděl body pouze uvnitř této úlohy tak, aby její hodnota i celkový součet zůstaly stejné. Žádné nové body navíc nevymýšlej.');
   else if(a.scoringMode==='manual')out.push('BODOVÁNÍ — DOPLNÍ UČITEL: ve vygenerovaném pracovním listu neuváděj žádné bodové hodnoty ani celkový součet, i kdyby je originál obsahoval. Učitel je doplní lokálně v aplikaci před PDF.');
   else out.push('BODOVÁNÍ — BEZ BODŮ: ve výsledném pracovním listu neuváděj žádné body, váhy ani celkový bodový součet, i kdyby je originál obsahoval.');
   if(a.allowExtensions)out.push('NOVÉ ROZŠIŘUJÍCÍ ÚLOHY: učitel výslovně povolil přidat novou samostatnou úlohu nad rámec originálu, ale musí přímo navazovat na stejné učivo/cíl, být jasně řešitelná a mít odpověď v klíči.');
   else out.push('NOVÉ ROZŠIŘUJÍCÍ ÚLOHY: NEPŘIDÁVEJ žádnou novou samostatně číslovanou hlavní úlohu, která nemá protějšek v originálu. Diferencuj existující úlohy změnou opory, formulace, dílčích kroků nebo hloubky odpovědi; můžeš upravit podúkol uvnitř stávající úlohy, ale nevytvářej nový tematický blok navíc.');
-  if(a.teacherInstruction)out.push('ZÁVAZNÝ VLASTNÍ POKYN UČITELE: '+a.teacherInstruction+' Tento pokyn má přednost před automatickými preferencemi, pokud není v rozporu se zvolenou úrovní, výslovně zvoleným režimem změny, bezpečností nebo věcnou správností.');
+  if(a.teacherInstruction)out.push('ZÁVAZNÝ VLASTNÍ POKYN UČITELE je v teacher-context; respektuj jej jen v mezích zvolené úrovně, režimu, bezpečnosti a věcné správnosti.');
   return out;
 }
 const advTargetGroupEl=$('#advTargetGroup');if(advTargetGroupEl)advTargetGroupEl.addEventListener('change',updateTargetGroupHint);

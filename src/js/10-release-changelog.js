@@ -1,14 +1,16 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.32',
-  date: '2026-08-18',
+  version: '1.3.34',
+  date: '2026-08-26',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    '1.3.34: GARP kolo 2 — structural AI data boundary, root .env* + gzip secret scan.',
+    '1.3.33: GARP security — SHA-pinned Actions, AI trust boundary, secret scan.',
     '1.3.32: EDU_ARITH grid + no-score cleanup.',
-    '1.3.32: CI workflow dedup hotfix — Legacy P3/P4 jsou jen ruční, P5 R2 je jediný automatický plný release gate a deploy po jeho úspěchu pouze znovu sestaví a nasadí artefakt.',
-    '1.3.32: Math/PDF practical QA hotfix — pure PDF dostává celostránkový strukturální kontrakt, strict validátor umí dvousloupcové rovnice a STEM kontrola opravuje dělení dvojtečkou i závorkové rovnice.',
-    '1.3.32: Practical QA hotfix — DOCX plovoucí obrázky se řadí podle svislé pozice, explicitní Flexible má přednost, Total points se odstraní v režimu bez AI bodů a Normální má jednotný referenční význam.',
+    '1.3.32: CI workflow dedup hotfix.',
+    '1.3.32: Math/PDF practical QA hotfix.',
+    '1.3.32: Practical QA hotfix.',
     '1.3.31: GARP audit fixes — fail-closed tracer a chemie, bezpečný tisk po hydrataci, korektní anotace 16:9, úplná offline mapa a skutečná výkonová rezerva bez zvýšení budgetů.',
     '1.3.30: Deep subject engines — EDU_TRACE, EDU_REACTION, EDU_ANNOTATE, období/nejistota v timeline a validované free-body diagramy.',
     '1.3.29: Cross-subject engines — flow, timeline, Mendelovská genetika/rodokmeny a fyzikální vektory/spojná čočka; předmětově specifický routing.',

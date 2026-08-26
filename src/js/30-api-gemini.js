@@ -253,7 +253,7 @@ function loadMultimediaModule(){return multimediaModulePromise||(multimediaModul
 let sourceMediaAsset=null;
 function cloneMediaSource(value,withData=true){if(!value||!/^(?:audio|video)$/.test(String(value.kind||'')))return null;const mime=String(value.mime_type||'');if(!/^(?:audio|video)\//i.test(mime))return null;const out={kind:value.kind,name:String(value.name||value.kind).slice(0,300),mime_type:mime,bytes:Number(value.bytes)||0};if(withData)out.data=String(value.data||'').replace(/\s+/g,'');return out}
 function resetSourceMedia(){sourceMediaAsset=null}
-function sourceMediaPromptLines(){if(!sourceMediaAsset)return [];const k=sourceMediaAsset.kind==='audio'?'AUDIO / POSLECH':'VIDEO / AUDIOVIZUÁLNÍ PODKLAD';return [k+': zdrojový soubor „'+sourceMediaAsset.name+'“ je pevnou součástí materiálu. V tasks vlož marker [[MEDIA_SOURCE]] tam, kde má žák dostat pokyn k přehrání podkladu. Pokud jde o poslechovou nebo observační úlohu, NESMÍŠ do student_instructions ani tasks prozradit transkript, titulky, přesné repliky, popis odpovědí nebo jiné informace, které má žák teprve zjistit ze záznamu. Transkript/rozbor smí být použit v answer_key a teacher_note. Zdrojové médium při paralelní variantě neměň ani nepředstírej, že vznikl nový soubor.'];}
+function sourceMediaPromptLines(){if(!sourceMediaAsset)return [];const k=sourceMediaAsset.kind==='audio'?'AUDIO / POSLECH':'VIDEO / AUDIOVIZUÁLNÍ PODKLAD';return [k+': zdrojový soubor je pevnou součástí materiálu. Jeho název a obsah přicházejí pouze v datové vrstvě. V tasks vlož marker [[MEDIA_SOURCE]] tam, kde má žák dostat pokyn k přehrání podkladu. Pokud jde o poslechovou nebo observační úlohu, NESMÍŠ do student_instructions ani tasks prozradit transkript, titulky, přesné repliky, popis odpovědí nebo jiné informace, které má žák teprve zjistit ze záznamu. Transkript/rozbor smí být použit v answer_key a teacher_note. Zdrojové médium při paralelní variantě neměň ani nepředstírej, že vznikl nový soubor.'];}
 function sheetMediaAiParts(sheet){const m=cloneMediaSource(sheet&&sheet._mediaSource,true);return m&&m.data?[{text:(m.kind==='audio'?'Zdrojové audio':'Zdrojové video')+' pro tento pracovní list: '+m.name+'.'},{inline_data:{mime_type:m.mime_type,data:m.data}}]:[]}
 
 function ensureMediaSourceMarker(parsed){
@@ -361,18 +361,18 @@ function sourceVisualPromptLines(){
   for(const a of active){
     const intent=normalizeVisualIntent(a.intent);
     if(a.mode==='preserve'){
-      lines.push(a.id+': POUŽÍT JAKO PŮVODNÍ OBRAZOVÝ PODKLAD; '+visualTypeLabel(a.type)+'; '+(a.description||visualIntentLabel(intent))+'.');
+      lines.push(a.id+': POUŽÍT JAKO PŮVODNÍ OBRAZOVÝ PODKLAD; '+visualTypeLabel(a.type)+'; '+visualIntentLabel(intent)+'.');
       lines.push('Pro '+a.id+' vlož do tasks marker [['+a.id+']] PŘESNĚ JEDNOU a vždy jako samostatný blokový řádek mezi dvěma úplnými větami/odstavci. Marker nesmí být uvnitř věty. Obraz nepřekresluj, nepřepisuj do textu a neměň jeho obsah; aplikace marker nahradí uloženým zdrojovým obrázkem. VŠECHNY hodnoty, popisky, polohy, symboly a fakta zakódované v zachovaném obrazu jsou neměnné.');
       if(intent==='task_image'||intent==='hybrid')lines.push('UPOZORNĚNÍ: učitel ručně přepsal doporučení a chce zachovat celý '+a.id+'. Nevkládej jej vícekrát a neopakuj stejnou úlohu ještě jednou jako kopii pod obrázkem.');
     }else if(a.mode==='reconstruct'){
-      lines.push(a.id+': PŘEVÉST NA NOVOU EDITOVATELNOU/DIFERENCOVANOU ÚLOHU; '+visualTypeLabel(a.type)+'; '+(a.description||visualIntentLabel(intent))+'.');
+      lines.push(a.id+': PŘEVÉST NA NOVOU EDITOVATELNOU/DIFERENCOVANOU ÚLOHU; '+visualTypeLabel(a.type)+'; '+visualIntentLabel(intent)+'.');
       if(a.task_item_counts&&a.task_item_counts.length)lines.push('STRUKTURNÍ KONTRAKT '+a.id+': jednotlivé hlavní úlohy v tomto obrazu mají po '+a.task_item_counts.join(', ')+' položkách. Při režimu se zachováním struktury tyto počty přesně dodrž.');
       if(a.explicit_examples===0)lines.push('V '+a.id+' není žádná položka výslovně označená jako nehodnocený příklad. Nepřeváděj předvyplněnou nebo ručně dopsanou odpověď na „Example / not scored“; v nové variantě zachovej odpovídající plnohodnotnou řešitelnou a bodovatelnou položku.');
       else if(Number.isInteger(a.explicit_examples)&&a.explicit_examples>0)lines.push('V '+a.id+' je výslovně označeno '+a.explicit_examples+' nehodnocených příkladů/vzorů; nevytvářej další navíc.');
       lines.push('Pro '+a.id+' NEVKLÁDEJ marker [['+a.id+']] ani původní bitmapu do žákovského výstupu. Nejprve věrně pochop strukturu, položky, instrukce, data a vazby zachycené v obrazu a potom je vytvoř jako čistý text/tabulku/úlohu v tasks podle zvolené diferenciace. Chraň význam, pořadí a řešitelnost úlohy, nikoli pixely. Nezdvojuj původní a novou verzi stejné úlohy.');
       if(intent==='hybrid')lines.push('HYBRIDNÍ PODKLAD '+a.id+': celý screenshot nezachovávej. Pokud bez skutečné obrazové části nelze úlohu bezpečně rekonstruovat, upozorni v teacher_note, že učitel má vyříznout a zachovat jen mapu/graf/schéma/fotografii.');
     }else{
-      lines.push(a.id+': POUŽÍT JEN JAKO REFERENCI; '+visualTypeLabel(a.type)+'; '+(a.description||visualIntentLabel(intent))+'. Marker [['+a.id+']] do žákovského výstupu nevkládej.');
+      lines.push(a.id+': POUŽÍT JEN JAKO REFERENCI; '+visualTypeLabel(a.type)+'; '+visualIntentLabel(intent)+'. Marker [['+a.id+']] do žákovského výstupu nevkládej.');
     }
   }
   if(sourceDocumentVisualNotes.length)lines.push('Zdrojový PDF/dokument obsahuje obrazově důležitý prvek. Pokud k němu učitel přidal samostatný snímek nebo výřez mezi VISUAL_n, respektuj jeho zvolenou didaktickou roli. Pokud samostatný obraz přidán není, nevymýšlej náhradu a v teacher_note upozorni, že původní obraz z PDF nelze pixelově přenést bez doplňkového snímku.');
@@ -832,18 +832,20 @@ $('#extractBtn').addEventListener('click',async()=>{
   const hasPdf=!!(uploaded&&Array.isArray(uploaded.items)&&uploaded.items.some(it=>it&&it.mime_type==='application/pdf'));
   const mediaExtraction=sourceMediaAsset?('MULTIMEDIÁLNÍ VSTUP: '+(sourceMediaAsset.kind==='audio'?'poslechni celý zvukový soubor':'prohlédni a poslechni celý video soubor')+' v časovém pořadí. Přepiš mluvený obsah věrně pro interní učitelský pracovní základ; u videa stručně zachyť také vizuální dění, které je nutné pro řešení úloh. Nevymýšlej neslyšené repliky ani neviděné dění. Tento přepis je pouze zdroj pro následnou tvorbu — žákovská verze poslechové/pozorovací úlohy jej nesmí automaticky prozradit.') : visualManifestPrompt(sourceVisualAssets.length,hasPdf);
   const prompt=extractionCore+'\n\n'+mediaExtraction;
-  let parts;
+  let parts,appInstructions=prompt;
   try{
     if(uploaded&&uploaded.kind==='media'){
-      parts=[{text:sourceMediaAsset?('Zpracuj následující '+(sourceMediaAsset.kind==='audio'?'audio':'video')+' jako pevný zdrojový podklad. Zachovej časovou posloupnost a nic nedoplňuj z domněnek.'):'Zpracuj následující mediální vstup nebo vstupy. PDF projdi stránku po stránce; samostatné obrázky VISUAL_n zpracuj v pořadí, v jakém jsou zde přiloženy. Pokud je přiloženo PDF i obrázky, obrázky mohou být přesné snímky/výřezy obrazových prvků z PDF.'},...extractionMediaParts(uploaded),{text:prompt}];
+      appInstructions=(sourceMediaAsset?('Zpracuj přiložené '+(sourceMediaAsset.kind==='audio'?'audio':'video')+' jako pevný zdrojový podklad. Zachovej časovou posloupnost a nic nedoplňuj z domněnek.'):'Zpracuj přiložený mediální vstup nebo vstupy. PDF projdi stránku po stránce; samostatné obrázky zpracuj v pořadí přiložení. Pokud je přiloženo PDF i obrázky, obrázky mohou být přesné snímky/výřezy obrazových prvků z PDF.')+'\n\n'+prompt;
+      parts=[...extractionMediaParts(uploaded)];
     } else if(uploaded&&uploaded.kind==='mixed'){
-      parts=[{text:'Tento Office dokument obsahuje textovou vrstvu i vložené obrázky. Všechny části patří do jednoho materiálu. Přepiš obsah z textu i ze všech obrázků; nic nevynechávej a nedoplňuj úlohy, které ve zdroji nejsou. Každý vložený obrázek je označen VISUAL_n a stejný identifikátor použij v technickém manifestu.\n\nTEXTOVÁ VRSTVA DOKUMENTU:\n'+uploaded.text},...extractionMediaParts(uploaded),{text:prompt}];
+      appInstructions='Tento Office dokument obsahuje textovou vrstvu i vložené obrázky. Všechny části patří do jednoho materiálu. Přepiš obsah z textu i ze všech obrázků; nic nevynechávej a nedoplňuj úlohy, které ve zdroji nejsou. Každý vložený obrázek je označen VISUAL_n a stejný identifikátor použij v technickém manifestu.\n\n'+prompt;
+      parts=[{text:uploaded.text,label:'source-document-text'},...extractionMediaParts(uploaded)];
     } else if(uploaded&&uploaded.kind==='text'){
-      parts=[{text:prompt+"\n\nZADÁNÍ:\n"+uploaded.text}];
+      parts=[{text:uploaded.text,label:'source-material'}];
     } else {
-      parts=[{text:prompt+"\n\nZADÁNÍ:\n"+pasted}];
+      parts=[{text:pasted,label:'source-material'}];
     }
-    const out=await callGemini(parts,{operation:'material-extraction'});
+    const out=await callGemini(parts,{operation:'material-extraction',appInstructions});
     const visualSplit=splitVisualManifest(String(out||pasted||(uploaded&&uploaded.text)||''));
     const extracted=String(visualSplit.text||pasted||(uploaded&&uploaded.text)||'').trim();
     if(!extracted)throw makeAppError('Ze vstupu se nepodařilo získat žádný čitelný text.','EMPTY_EXTRACT');

@@ -365,7 +365,7 @@ const PromptBuilder={
   makeTierPrompt(key,base,batch=1){
     const t=TIERS[key], opt=getOptionState();
     const tierInstruction=(key==='core'&&batch>1)?'Vytvoř NORMÁLNÍ referenční verzi celé sady: zachovej původní obsah, příklady, data, počet položek, pořadí, formát odpovědí, strukturu i obtížnost. Nepřidávej ani neubírej oporu; měň jen to, co je nezbytné pro čisté a použitelné zpracování.':t.instr;
-    const subject=getSubjectValue()||"daný předmět / obor";
+    const subject=stemSubjectKind()||subjectDomainKind();
     const add=[
       variantModePromptLine(key,batch),
       'U otevřených úloh ponech přiměřené místo na odpověď žáka.',
@@ -397,7 +397,9 @@ const PromptBuilder={
       'PŘED ODEVZDÁNÍM: bez dalšího komentáře si interně ověř, že všechny úlohy jsou řešitelné, answer_key odpovídá každé úloze, případné bodování je konzistentní a žádná část původní struktury omylem nechybí. U STEM materiálu přepočítej všechny výpočty ještě jednou nezávislou cestou; chybný výsledek se nesmí dostat do klíče.',
       jsonSchema,
       'PŮVODNÍ ZADÁNÍ:',
-      base
+      base,
+      'UČITELSKÝ KONTEXT (JSON):',
+      JSON.stringify((()=>{const a=getAdvancedOptions();return {subject:getSubjectValue()||'',workTime:a.workTime||'',learningGoal:a.learningGoal||'',supportType:a.supportType||'',teacherInstruction:a.teacherInstruction||''}})())
     ].filter(Boolean).join('\n\n');
   }
 };
@@ -578,7 +580,6 @@ const QualityRevision={
     return [
       'Jsi zkušený učitel. Uprav již vytvořený pracovní list POUZE podle níže vybraných bodů kontroly kvality.',
       'Cílová úroveň zůstává: '+t.name+'. Neměň výukový cíl, téma, jazyk ani jiné části jen proto, že bys je sám formuloval jinak. Nevybrané návrhy auditu nejsou pokyn k úpravě.',
-      'VYBRANÉ BODY K ZAPRACOVÁNÍ:\n- '+suggestions.map(x=>x.body).join('\n- '),
       'Po zapracování proveď ještě v rámci TÉHOŽ požadavku interní závěrečné ověření: zkontroluj, že oprava nezavedla nový rozpor, že všechny odpovědi v answer_key stále sedí k úlohám a že případné bodování je konzistentní. U STEM materiálu znovu přepočítej změněné výsledky, jednotky a rovnice. Výstup už dál nerozebírej; vrať rovnou čistou opravenou verzi.',
       ...(typeof stemQualityPromptLines==='function'?stemQualityPromptLines(getSubjectValue()):[]),
       ...(typeof subjectQualityPromptLines==='function'?subjectQualityPromptLines(getSubjectValue()):[]),
@@ -586,6 +587,7 @@ const QualityRevision={
       sheet._mediaSource?'MULTIMÉDIA: zachovej marker [[MEDIA_SOURCE]]. Do student_instructions ani tasks nepřenášej transkript, titulky ani popis odpovědí ze zdrojového audia/videa; ty patří nanejvýš do answer_key nebo teacher_note.':'',
       'ODBORNÉ RENDERERY: existující [[EDU_...|{...}]] marker zachovej jako jeden samostatný řádek s platným JSON. Pokud oprava mění data úlohy, aktualizuj marker i answer_key konzistentně; pokud data nemění, marker svévolně neupravuj.',
       'Vrať pouze platný JSON objekt bez Markdownu se stejnými klíči: worksheet_title, student_instructions, tasks, answer_key, teacher_note. Všechny hodnoty jsou textové řetězce. Pokud úprava změní správnou odpověď, aktualizuj answer_key.',
+      'VYBRANÉ BODY K ZAPRACOVÁNÍ:\n- '+suggestions.map(x=>x.body).join('\n- '),
       'AKTUÁLNÍ NÁZEV:\n'+(parts.title||''),
       'AKTUÁLNÍ INSTRUKCE:\n'+(parts.instructions||''),
       'AKTUÁLNÍ ÚLOHY / PRACOVNÍ LIST:\n'+(parts.tasks||sheet._text||''),

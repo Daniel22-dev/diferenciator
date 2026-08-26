@@ -137,7 +137,7 @@ globalThis.TestSystem={
     const payload=visualAnalysisPayload(fake);
     this.assert(payload&&payload.mime_type==='image/jpeg'&&payload.data==='REVG'&&fake.data==='QUJD','Oddělená čtecí kopie','AI může dostat vylepšenou kopii, zatímco originální obraz zůstává beze změny pro výstup.','Vylepšení přepisuje originální obraz');
     const scanPrompt=visualManifestPrompt(2,true);
-    this.assert(/SCAN_REPORT/.test(scanPrompt)&&/PDF_VISUAL/.test(scanPrompt)&&/Nehádej nečitelný obsah/.test(scanPrompt),'Scan pravidla promptu','PDF a fotografie mají technický report čitelnosti a zákaz domýšlení nečitelných dat.','Chybí ochrana proti hádání ze skenu');
+    this.assert(/SCAN_REPORT/.test(scanPrompt)&&/PDF_VISUAL/.test(scanPrompt)&&/(?:Nehádej nečitelný obsah|Never guess unreadable content)/i.test(scanPrompt),'Scan pravidla promptu','PDF a fotografie mají technický report čitelnosti a zákaz domýšlení nečitelných dat.','Chybí ochrana proti hádání ze skenu');
     this.assert(typeof analyzeVisualQuality==='function'&&typeof rotateVisualAsset==='function'&&typeof enhanceVisualForAnalysis==='function'&&typeof appendSupplementalVisualFiles==='function','Lokální scan nástroje','Otočení, kontrola kvality, čtecí kontrast a doplňkový PDF snímek jsou dostupné lokálně.','Některý scan nástroj chybí');
   },
   runCefrTests(){
@@ -252,13 +252,13 @@ globalThis.TestSystem={
       const state=testing.snapshot().state,credentials=await state.credentialProvider({mode:"direct-gemini",operation:"worksheet-generation",modelProfile:"balanced"}),map=state.runtime.ai.directGemini.profileModels;
       this.assert(!("modelOverride" in credentials)&&MODEL_PROFILES.every(p=>map[p])&&new Set(MODEL_PROFILES.map(p=>map[p])).size===3,"T6 direct runtime","3 profily bez modelOverride.","Neplatný direct runtime.");
       const direct=[];testing.setTestHooks({isEnabled:()=>true,directGemini:async({modelProfile})=>{direct.push(modelProfile);return JSON.parse(this.sampleStructured())}});
-      for(const p of MODEL_PROFILES){setModelProfile(p);await callGemini([{text:"T6"}],{json:true,operation:"worksheet-generation"})}
+      for(const p of MODEL_PROFILES){setModelProfile(p);await callGemini([{text:"T6"}],{json:true,operation:"worksheet-generation",appInstructions:'test'})}
       this.assert(direct.join(",")==="economy,balanced,quality","T6 direct routing","3 profily dorazily do Core.","Chybný direct modelProfile.");
       window.__GHRAB_DEPLOYMENT_CONFIG__={...(oldDeployment||{}),profile:"school-server",aiTransport:"school-gateway",apiBaseUrl:"https://school.example/api/v1/",endpoints:{...(oldDeployment?.endpoints||{}),aiGenerate:"ai/generate",aiHealth:"ai/health"}};
       dplConfiguredSignature="";dplEnsureAiCore();
       const seen=[],response=p=>({schema:window.GHRAB_AI.responseSchema,requestId:"mock",clientRequestId:p.clientRequestId,result:JSON.parse(this.sampleStructured()),usage:{providerRequests:1,retryRequests:0,generatedOutputs:1},meta:{latencyMs:0}});
       testing.setTestHooks({isEnabled:()=>true,schoolGateway:async p=>{seen.push(p.modelProfile);return response(p)}});
-      for(const p of MODEL_PROFILES){setModelProfile(p);await callGemini([{text:"T6"}],{json:true,operation:"worksheet-generation"})}
+      for(const p of MODEL_PROFILES){setModelProfile(p);await callGemini([{text:"T6"}],{json:true,operation:"worksheet-generation",appInstructions:'test'})}
       this.assert(seen.join(",")==="economy,balanced,quality","T6 gateway routing","3 profily dorazily na gateway.","Chybný gateway modelProfile.");
     }finally{
       testing.setTestHooks(oldHooks);if(oldDeployment===undefined)delete window.__GHRAB_DEPLOYMENT_CONFIG__;else window.__GHRAB_DEPLOYMENT_CONFIG__=oldDeployment;setModelProfile(oldProfile);dplConfiguredSignature="";dplEnsureAiCore();

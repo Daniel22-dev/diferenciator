@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="cs" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.32">
+<html lang="cs" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.34">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -68,7 +68,7 @@ async function boot() {
     void startLocalReporter('differentiator:granted');
     unlockProtectedScripts();
   } catch (error) {
-    console.error('Diferenciátor access bootstrap failed', error);
+    console.error('Diferenciátor access bootstrap failed.');
     showAccessBootstrapFailure();
     void startLocalReporter('differentiator:bootstrap-failure');
   }

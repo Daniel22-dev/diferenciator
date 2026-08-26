@@ -35,10 +35,10 @@ try{
     ? `dplEnsureAiCore();window.__profileSeen=[];GHRAB_AI.__testing.setTestHooks({isEnabled:()=>true,schoolGateway:async p=>{window.__profileSeen.push(p.modelProfile);return {schema:GHRAB_AI.responseSchema,requestId:'qa',clientRequestId:p.clientRequestId,result:({...window.__qaSample}),usage:{providerRequests:1,retryRequests:0,generatedOutputs:1},meta:{latencyMs:0}}}});`
     : `geminiApiKey='qa-test-key';dplEnsureAiCore();window.__profileSeen=[];window.__profileCalls=[];GHRAB_AI.__testing.setTestHooks({isEnabled:()=>true,directGemini:async ({modelProfile,reasoningHint,operation})=>{window.__profileSeen.push(modelProfile);window.__profileCalls.push({modelProfile,reasoningHint,operation});return operation==='cefr-detection'?{text:'A2'}:({...window.__qaSample})}});`;
   await client.eval(setup);
-  const results=[];for(const p of ['economy','balanced','quality']){await click(client,`[data-model-profile="${p}"]`);const state=await client.eval(`({selected:selectedModelProfile,pressed:document.querySelector('[data-model-profile="${p}"]').getAttribute('aria-pressed'),status:document.querySelector('#statusModel .v')?.textContent||''})`);await client.eval(`callGemini([{text:'Profil QA'}],{json:true,operation:'worksheet-generation'})`);results.push({profile:p,...state})}
+  const results=[];for(const p of ['economy','balanced','quality']){await click(client,`[data-model-profile="${p}"]`);const state=await client.eval(`({selected:selectedModelProfile,pressed:document.querySelector('[data-model-profile="${p}"]').getAttribute('aria-pressed'),status:document.querySelector('#statusModel .v')?.textContent||''})`);await client.eval(`callGemini([{text:'Profil QA'}],{json:true,operation:'worksheet-generation',appInstructions:'QA profil'})`);results.push({profile:p,...state})}
   let qualityCheapHint=null;
   if(mode!=='school-gateway'){
-    await client.eval(`callGemini([{text:'Thinking QA'}],{thinking:'minimal',operation:'cefr-detection'})`);
+    await client.eval(`callGemini([{text:'Thinking QA'}],{thinking:'minimal',operation:'cefr-detection',appInstructions:'QA thinking'})`);
     qualityCheapHint=await client.eval(`window.__profileCalls.at(-1)?.reasoningHint||null`);
   }
   const trusted=await client.eval('window.__profileTrusted');const seen=await client.eval('window.__profileSeen');
