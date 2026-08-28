@@ -1,3 +1,10 @@
+## 1.3.36 — ecosystem access alignment (2026-08-28)
+
+- oba aktivní deployment profily (`github-pages` a `school-server`) používají aktuální podepsaný access bundle AI Studia `access-p1-20260824175535Z-k_wtm7Zj`;
+- historický P0 profil a distribuční šablona zůstávají beze změny;
+- regresní brána T48 blokuje budoucí drift `sharedAccessVersion` mezi aktivními profily a aktuálním bundle;
+- bez změny pedagogické logiky, vzhledu, datových formátů nebo AI operací; patch navazuje na GARP-reviewed 1.3.35 a před RED TEAMem vyžaduje standardní CI/release gate.
+
 # Changelog
 
 ## 1.3.35 — GARP finální hardening po 2. kole Claude (2026-08-26)

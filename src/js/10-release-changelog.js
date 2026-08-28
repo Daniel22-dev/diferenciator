@@ -1,12 +1,13 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.35',
-  date: '2026-08-26',
+  version: '1.3.36',
+  date: '2026-08-28',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
-    '1.3.35.',
-    '1.3.34: GARP kolo 2 — structural AI data boundary, root .env* + gzip secret scan.',
+    '1.3.36: access sync.',
+    '1.3.35: GARP final.',
+    '1.3.34: GARP kolo 2.',
     '1.3.33: GARP security — SHA-pinned Actions, AI trust boundary, secret scan.',
     '1.3.32: EDU_ARITH grid + no-score cleanup.',
     '1.3.32: CI workflow dedup hotfix.',

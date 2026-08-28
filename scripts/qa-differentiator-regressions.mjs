@@ -576,5 +576,18 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   else ok('T47: dplData povoluje jen pevné labely a neznámý label degraduje na source');
 }
 
+// T48: active deployment profiles must stay aligned with the currently signed AI Studio access bundle.
+{
+  const github=JSON.parse(read('src/config/deployment.json'));
+  const school=JSON.parse(read('src/config/deployment.school-server.json'));
+  const expected='access-p1-20260824175535Z-k_wtm7Zj';
+  const problems=[];
+  if(github.sharedAccessVersion!==expected)problems.push('github-pages='+github.sharedAccessVersion);
+  if(school.sharedAccessVersion!==expected)problems.push('school-server='+school.sharedAccessVersion);
+  if(github.sharedAccessVersion!==school.sharedAccessVersion)problems.push('aktivní profily se liší');
+  if(problems.length)bad('T48: shared access bundle drift: '+problems.join('; '));
+  else ok('T48: oba aktivní deployment profily používají aktuální podepsaný access bundle AI Studia');
+}
+
 if(failures){console.error(`CELKEM: ${failures} regresních problémů — release stopka.`);process.exit(1);}
 console.log('CELKEM: regresní brána zelená.');

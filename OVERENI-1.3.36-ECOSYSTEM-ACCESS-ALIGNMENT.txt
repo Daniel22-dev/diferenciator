@@ -1,0 +1,72 @@
+DIFERENCIATOR 1.3.36 - OVERENI ECOSYSTEM ACCESS ALIGNMENT
+Datum: 28. 8. 2026
+
+VSTUP
+- Zdroj: diferenciator-main(5).zip
+- Vychozi verze: 1.3.35
+- GARP zaklad: 1.3.35 (finalni hardening po 2. kole Claude)
+
+ROZSAH PATCHU
+1. Oba aktivni deployment profily byly sjednoceny s aktualnim podepsanym access bundle AI Studia:
+   access-p1-20260824175535Z-k_wtm7Zj
+2. Historicky deployment.school-server-p0.json zustal beze zmeny.
+3. deployment.school-server.example.json zustal sablonou REPLACE_WITH_RELEASE_ID.
+4. Pridana regrese T48: release se zastavi, pokud se aktivni github-pages a school-server sharedAccessVersion rozjedou nebo neodpovidaji aktualnimu bundle.
+5. Patch verze byla zvysena prave jednou na 1.3.36 a synchronizovana v runtime, PWA cache, platformnich manifestech, AI metadatech, reporteru a manualu.
+6. Nebyla zmenena pedagogicka logika, vzhled, AI operace ani datove formaty.
+
+DODATECNA OPRAVA ODKRYTA REGRESI
+- Interni RELEASE.changes mel historickou polozku 1.3.35 zapsanou nestandardne jako "1.3.35.".
+- Pri pridani 1.3.36 to T8 spravne vyhodnotil jako diru v rade.
+- Zaznam byl opraven na standardni format s dvojteckou; funkcni kod aplikace tim nebyl zmenen.
+
+VYSLEDKY KONTROL
+PASS - qa:lock
+PASS - build 1.3.36
+PASS - platform conformance: 109/109
+PASS - school-server build, SW 27 assetu OK
+PASS - secret scan zdroju a obou buildu
+PASS - quality gate: 31/31
+       distBytes 1 049 988 <= 1 050 000; vykonnostni limity nebyly zvyseny
+PASS - regresni brana T1-T48 (vcetne nove T48)
+PASS - qa:profiles
+PASS - qa:all-subjects
+PASS - qa:browser
+PASS - qa:visuals
+PASS - qa:scan
+PASS - qa:stem
+PASS - qa:all-subjects:browser
+PASS - qa:office-rich
+PASS - qa:multimedia
+PASS - qa:multimedia:browser
+PASS - qa:specialists
+PASS - qa:renderers
+PASS - qa:xss; zadna nova XSS sink regrese
+PASS - scripts/test.mjs; 166/166 internich testu, release gate OK
+PASS - reporter: 56 PASS / 0 FAIL
+
+NEPROVEDENA / PROSTREDIM BLOKOVANA KONTROLA
+NOT TESTED - qa:runtime nedokoncil navigaci, Chromium vratil net::ERR_BLOCKED_BY_ADMINISTRATOR.
+- Stejny problem byl reprodukovan na nezmenene puvodni verzi 1.3.35 ve stejnem prostredi.
+- Jde tedy o omezeni spravovane Chromium URLBlocklist politiky tohoto prostredi, nikoli prokazanou regresi 1.3.36.
+- Browser cast reporteru byla ze stejneho duvodu oznacena NOT_READY.
+- Finalni qa-p5-release / qa-p5-acceptance zavisi na uspesnem runtime reportu, proto musi byt definitivne potvrzeny v GitHub Actions.
+
+LOKALNI INSTALACE
+- npm ci v tomto prostredi prekrocil casovy limit procesu; node_modules byly pote dostupne a vsechny vyse uvedene Node/Chromium testy s nimi byly skutecne spusteny.
+- Cisty npm ci zustava povinnou soucasti GitHub Actions.
+
+FINALNI INVARIANTY
+- package.json: 1.3.36
+- ghrab-platform.consumer.json: 1.3.36
+- data manifest: 1.3.36
+- PWA/cache: 1.3.36
+- github-pages sharedAccessVersion: access-p1-20260824175535Z-k_wtm7Zj
+- school-server sharedAccessVersion: access-p1-20260824175535Z-k_wtm7Zj
+- buildy pouzivaji stejnou aktivni sharedAccessVersion jako zdroje
+- zadny znamy soukromy podpisovy klic, provider API klic ani skutecne opravneni nebylo nalezeno
+
+VERDIKT
+AMBER PRED UPLOADEM: potvrzeny prurezovy problem je opraven a dostupne testy jsou zelene.
+GREEN pro tento patch lze uzavrit po zelenych GitHub Actions vcetne runtime/axe/release gate na GitHubu.
+Nasledne lze pokracovat v dalsich ecosystem opravach a pote v rizene RED TEAM fazi.
