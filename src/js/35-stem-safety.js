@@ -164,18 +164,18 @@ function stemEvalArithmetic(expr){
   try{const v=add();return i===s.length&&Number.isFinite(v)?v:null}catch(_){return null}
 }
 function stemArithmeticIssues(text){
-  const issues=[];for(const raw of String(text||'').split(/\r?\n/)){const line=raw.replace(/\*\*/g,'');if(!line.includes('='))continue;const parts=line.split('=').map(x=>x.trim());for(let i=0;i<parts.length-1;i++){const a=stemEvalArithmetic(parts[i]),b=stemEvalArithmetic(parts[i+1]);if(a==null||b==null)continue;const tol=Math.max(1e-9,Math.abs(a)*1e-8,Math.abs(b)*1e-8);if(Math.abs(a-b)>tol){issues.push('STEM kontrola: početní rovnost „'+parts[i]+' = '+parts[i+1]+'“ numericky nesedí.');break}}}return issues;
+  const issues=[];for(const [n,raw] of String(text||'').split(/\r?\n/).entries()){const line=raw.replace(/\*\*/g,'');if(!line.includes('='))continue;const parts=line.split('=').map(x=>x.trim());for(let i=0;i<parts.length-1;i++){const a=stemEvalArithmetic(parts[i]),b=stemEvalArithmetic(parts[i+1]);if(a==null||b==null)continue;const tol=Math.max(1e-9,Math.abs(a)*1e-8,Math.abs(b)*1e-8);if(Math.abs(a-b)>tol){issues.push('STEM: početní rovnost na řádku '+(n+1)+' nesedí.');break}}}return issues;
 }
 function stemLinearEquationIssues(text){
   const issues=[];
-  for(const raw of String(text||'').split(/\r?\n/)){
+  for(const [n,raw] of String(text||'').split(/\r?\n/).entries()){
     const line=raw.replace(/\*\*/g,'').trim().replace(/^\d{1,3}\s*[.)]\s*/,'').trim(),m=line.match(/^(.+?)=([^=]+?)(?:\s*(?:→|=>|⇒|;)\s*|\s{2,})([a-zA-Z])\s*=\s*(-?\d+(?:[.,]\d+)?)\s*$/);if(!m)continue;
     const variable=m[3],value=Number(m[4].replace(',','.'));if(!Number.isFinite(value))continue;
     const escapedVariable=variable.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     // Replace only the variable token. Keeping its surrounding sign/coefficient intact avoids
     // turning "6 - x" or "-(4 + x)" into a different expression before evaluation.
     const subst=expr=>String(expr).replace(new RegExp(escapedVariable,'g'),'('+value+')');
-    const a=stemEvalArithmetic(subst(m[1])),b=stemEvalArithmetic(subst(m[2]));if(a==null||b==null)continue;const tol=Math.max(1e-9,Math.abs(a)*1e-8,Math.abs(b)*1e-8);if(Math.abs(a-b)>tol)issues.push('STEM kontrola: uvedené řešení „'+variable+' = '+m[4]+'“ po dosazení nesplňuje rovnici „'+m[1].trim()+' = '+m[2].trim()+'“.');
+    const a=stemEvalArithmetic(subst(m[1])),b=stemEvalArithmetic(subst(m[2]));if(a==null||b==null)continue;const tol=Math.max(1e-9,Math.abs(a)*1e-8,Math.abs(b)*1e-8);if(Math.abs(a-b)>tol)issues.push('STEM: uvedené řešení na řádku '+(n+1)+' nesplňuje rovnici.');
   }
   return issues;
 }
@@ -192,7 +192,7 @@ const STEM_UNITS=Object.freeze({
 function normalizeUnitToken(u){return String(u||'').trim().replace(/²/g,'2').replace(/³/g,'3').replace(/\^2/g,'2').replace(/\^3/g,'3').replace(/ℓ/g,'l').toLowerCase()}
 function stemUnitConversionIssues(text){
   const issues=[],rx=/(-?\d+(?:[.,]\d+)?)\s*(mm²|cm²|dm²|m²|km²|mm\^2|cm\^2|dm\^2|m\^2|km\^2|mm³|cm³|dm³|m³|mm\^3|cm\^3|dm\^3|m\^3|km\/h|m\/s|mm|cm|dm|km|m|mg|kg|g|t|ms|min|h|s|mL|ml|L|l|kPa|MPa|Pa|kN|N|kJ|J|kW|W|kHz|Hz)\s*=\s*(-?\d+(?:[.,]\d+)?)\s*(mm²|cm²|dm²|m²|km²|mm\^2|cm\^2|dm\^2|m\^2|km\^2|mm³|cm³|dm³|m³|mm\^3|cm\^3|dm\^3|m\^3|km\/h|m\/s|mm|cm|dm|km|m|mg|kg|g|t|ms|min|h|s|mL|ml|L|l|kPa|MPa|Pa|kN|N|kJ|J|kW|W|kHz|Hz)/gi;
-  for(const m of String(text||'').matchAll(rx)){const a=Number(m[1].replace(',','.')),b=Number(m[3].replace(',','.')),ua=STEM_UNITS[normalizeUnitToken(m[2])],ub=STEM_UNITS[normalizeUnitToken(m[4])];if(!ua||!ub||ua[0]!==ub[0])continue;const av=a*ua[1],bv=b*ub[1],tol=Math.max(1e-9,Math.abs(av)*1e-7,Math.abs(bv)*1e-7);if(Math.abs(av-bv)>tol)issues.push('STEM kontrola: převod „'+m[0]+'“ numericky nesedí.');}
+  for(const [n,line] of String(text||'').split(/\r?\n/).entries())for(const m of line.matchAll(rx)){const a=Number(m[1].replace(',','.')),b=Number(m[3].replace(',','.')),ua=STEM_UNITS[normalizeUnitToken(m[2])],ub=STEM_UNITS[normalizeUnitToken(m[4])];if(!ua||!ub||ua[0]!==ub[0])continue;const av=a*ua[1],bv=b*ub[1],tol=Math.max(1e-9,Math.abs(av)*1e-7,Math.abs(bv)*1e-7);if(Math.abs(av-bv)>tol)issues.push('STEM: převod jednotek na řádku '+(n+1)+' nesedí.');}
   return issues;
 }
 const CHEM_SUP_DIGITS=Object.freeze({'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'});
@@ -223,8 +223,8 @@ function chemReactionBalanced(line){
   function side(species){const total={};for(const raw of species){let coeff=1,formula=raw.replace(/^\d+[.)]\s*/,'').trim();const cm=formula.match(/^(\d+)\s*(?=[A-Z(\[])/);if(cm){coeff=Number(cm[1]);formula=formula.slice(cm[0].length).trim()}const counts=chemParseFormula(formula);if(!counts)return null;for(const [el,n] of Object.entries(counts))total[el]=(total[el]||0)+coeff*n}return total}
   const a=side(left),b=side(right);if(!a||!b)return null;const keys=new Set([...Object.keys(a),...Object.keys(b)]);return [...keys].every(k=>(a[k]||0)===(b[k]||0));
 }
-function stemChemicalIssues(text){const issues=[];for(const raw of String(text||'').split(/\r?\n/)){const balanced=chemReactionBalanced(raw),charge=chemReactionChargeBalanced(raw);if(balanced===false)issues.push('STEM kontrola: chemická rovnice „'+raw.trim()+'“ není vyčíslena na stejný počet atomů.');if(charge===false)issues.push('STEM kontrola: iontová rovnice „'+raw.trim()+'“ nemá stejný celkový náboj na obou stranách.');}return issues}
-function stemLatexIssues(text){const issues=[],seen=new Set();for(const m of String(text||'').matchAll(/\\([A-Za-z]+)/g)){if(!STEM_ALLOWED_LATEX.has(m[1])&&!seen.has(m[1])){seen.add(m[1]);issues.push('STEM zobrazení: nepodporovaný LaTeX příkaz \\'+m[1]+' může být v listu zobrazen doslova; uprav zápis nebo použij běžné symboly.')}}return issues}
+function stemChemicalIssues(text){const issues=[];for(const [n,raw] of String(text||'').split(/\r?\n/).entries()){const balanced=chemReactionBalanced(raw),charge=chemReactionChargeBalanced(raw);if(balanced===false)issues.push('STEM: chemická rovnice na řádku '+(n+1)+' není vyčíslena.');if(charge===false)issues.push('STEM: iontová rovnice na řádku '+(n+1)+' nemá shodný náboj.');}return issues}
+function stemLatexIssues(text){const issues=[],seen=new Set();for(const [n,line] of String(text||'').split(/\r?\n/).entries())for(const m of line.matchAll(/\\([A-Za-z]+)/g)){if(!STEM_ALLOWED_LATEX.has(m[1])&&!seen.has(m[1])){seen.add(m[1]);issues.push('STEM: nepodporovaný LaTeX příkaz na řádku '+(n+1)+' může být zobrazen doslova; uprav zápis.')}}return issues}
 function stemValidationIssues(parsed,subject){
   const kind=stemSubjectKind(subject);if(!kind||!parsed)return [];
   const p=parsed.parts||{},key=String(p.answerKey||parsed.answerKey||''),all=[p.title,p.instructions,p.tasks,key].join('\n');let issues=[...stemLatexIssues(all)];

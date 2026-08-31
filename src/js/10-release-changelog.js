@@ -1,10 +1,12 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.36',
-  date: '2026-08-28',
+  version: '1.3.38',
+  date: '2026-08-31',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    '1.3.38: GARP 2.3 kolo 2 — explicitní trusted instructions, fail-closed privacy preflight, očištěný Studio návrat a stabilní build-manifest performance gate.',
+    '1.3.37: GARP 2.3 hardening — privacy preflight bez sdíleného rozhodnutí a bezpečný návrat z AI Studio handoffu.',
     '1.3.36: access sync.',
     '1.3.35: GARP final.',
     '1.3.34: GARP kolo 2.',

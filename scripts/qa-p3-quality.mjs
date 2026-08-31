@@ -20,8 +20,16 @@ const walk = (dir) => fs.existsSync(dir) ? fs.readdirSync(dir, { withFileTypes: 
   const target = path.join(dir, entry.name);
   return entry.isDirectory() ? walk(target) : [target];
 }) : [];
-const generatedQualityArtifacts = new Set(['quality-report.json', 'config/quality-manifest.json']);
-const files = walk(dist).filter((file) => !generatedQualityArtifacts.has(posix(path.relative(dist, file))));
+const buildFilesPath = path.join(root, 'test-results', 'build-files.json');
+if (!fs.existsSync(buildFilesPath)) throw new Error('Chybí test-results/build-files.json; performance gate vyžaduje čerstvý build manifest.');
+const buildFiles = readJson(buildFilesPath);
+if (buildFiles.schema !== 'ghrab-build-files-v1' || buildFiles.appId !== consumer.appId || buildFiles.appVersion !== consumer.appVersion || !Array.isArray(buildFiles.files)) throw new Error('Build file manifest neodpovídá aktuálnímu release.');
+const files = buildFiles.files.map((item) => path.join(dist, String(item.path || '')));
+for (let i=0;i<files.length;i++) {
+  const item=buildFiles.files[i],file=files[i];
+  const digest=fs.existsSync(file)&&fs.statSync(file).isFile()?crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'):'';
+  if (!file.startsWith(dist + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile() || fs.statSync(file).size !== Number(item.bytes) || digest !== String(item.sha256 || '')) throw new Error(`Build file manifest nesedí na ${item.path || 'neznámý soubor'}.`);
+}
 const rel = (file) => posix(path.relative(dist, file));
 const size = (file) => fs.statSync(file).size;
 const sumExt = (extensions) => files.filter((file) => extensions.some((ext) => file.toLowerCase().endsWith(ext))).reduce((sum, file) => sum + size(file), 0);

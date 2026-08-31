@@ -337,7 +337,8 @@ async function toggleKey(sheet,btn){
   if(!requireApiKeyForAction('vytvoření řešení'))return;
   btn.disabled=true;const old=btn.innerHTML;btn.innerHTML='<span class="mini"></span>';
   try{
-    const out=await callGemini([{text:"Ke každé úloze v tomto pracovním listu napiš stručné správné řešení / klíč. Vycházej výhradně z pracovního listu níže a zachovej jazyk úloh. Pokud úloha závisí na přiloženém obrazovém podkladu, pracuj s tím, co je na něm skutečně vidět; nic si nedomýšlej."+(typeof stemAnswerKeyPromptLine==='function'?stemAnswerKeyPromptLine(getSubjectValue()):'')+(typeof subjectAnswerKeyPromptLine==='function'?subjectAnswerKeyPromptLine(getSubjectValue()):'')+" Pouze klíč, očíslovaně podle úloh, bez úvodu.\n\nPRACOVNÍ LIST:\n"+sheet._text},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{thinking:THINKING_CHEAP,operation:'answer-key-generation'});
+    const instructions="Ke každé úloze napiš stručné správné řešení / klíč. Vycházej jen z dat pracovního listu a zachovej jazyk úloh. U obrazového podkladu pracuj jen s tím, co je vidět; nic si nedomýšlej."+(typeof stemAnswerKeyPromptLine==='function'?stemAnswerKeyPromptLine(getSubjectValue()):'')+(typeof subjectAnswerKeyPromptLine==='function'?subjectAnswerKeyPromptLine(getSubjectValue()):'')+" Pouze klíč, očíslovaně podle úloh, bez úvodu.";
+    const out=await callGemini([{text:sheet._text,label:'source'},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{thinking:THINKING_CHEAP,operation:'answer-key-generation',appInstructions:instructions});
     sheet._key=out;if(sheet._parts)sheet._parts.answerKey=out;
     sheet._validation=validateWorksheetResponse({worksheet:sheet._text,answerKey:out,parts:{...(sheet._parts||{}),answerKey:out},structured:!!sheet._structured,structureType:sheet._structured?'json':'fallback'});showStructureWarning(sheet,sheet._validation);
     box.innerHTML=keyHeaderHtml()+render(out);box.dataset.filled='1';
@@ -460,16 +461,14 @@ function attachSheetTools(sheet){
 
 async function repairWorksheetJson(raw,validation,base,key){
   const t=TIERS[key]||TIERS.core;
-  const issues=(validation&&validation.issues||[]).join('\n- ');
-  const prompt=[
-    'Převeď následující odpověď modelu na čistý platný JSON podle přesného schématu. Neměň věcný obsah, jen oprav strukturu. Pokud chybí answer_key, vytvoř stručný klíč podle úloh. Odpověz pouze JSONem, bez Markdownu a bez komentáře.',
+  const instructions=[
+    'Převeď datovou odpověď modelu na platný JSON podle schématu. Věcný obsah neměň; oprav jen strukturu. Chybí-li answer_key, vytvoř stručný klíč. Vrať jen JSON.',
     'Schéma: worksheet_title, student_instructions, tasks, answer_key, teacher_note. Všechny hodnoty musí být textové řetězce.',
-    'Cílová verze: '+(t.name||'Normální')+'.',
-    issues?'Zjištěné problémy:\n- '+issues:'',
-    'PŮVODNÍ ZADÁNÍ:\n'+String(base||'').slice(0,8000),
-    'ODPOVĚĎ K OPRAVĚ:\n'+String(raw||'')
-  ].filter(Boolean).join('\n\n');
-  return callGemini([{text:prompt}],{json:true,operation:'worksheet-structure-repair'});
+    'Cílová verze: '+(t.name||'Normální')+'.'
+  ].join('\n\n');
+  const count=Math.max(0,Number(validation&&validation.issues&&validation.issues.length)||0);
+  const data='DETERMINISTICKÁ VALIDACE APLIKACE: zjištěno '+count+' problémů.\n\nPŮVODNÍ ZADÁNÍ:\n'+String(base||'').slice(0,8000)+'\n\nODPOVĚĎ K OPRAVĚ:\n'+String(raw||'');
+  return callGemini([{text:data,label:'source'}],{json:true,operation:'worksheet-structure-repair',appInstructions:instructions});
 }
 
 async function generateIntoSheet(sheet,key,base,idx,total){
@@ -536,63 +535,54 @@ function renderQualityAudit(text,interactive=false,appliedIndexes=[]){
 }
 const QualityCheck={
   makePrompt(sheet,finalPass=false){
-    const parts=sheet._parts||{};
-    const structuredContext=sheet._structured?([
-      '',
-      'VNITŘNÍ ČÁSTI PRO KONTROLU:',
-      'NÁZEV:', parts.title||'',
-      '',
-      'INSTRUKCE PRO ŽÁKY:', parts.instructions||'',
-      '',
-      'ÚLOHY:', parts.tasks||'',
-      '',
-      'POZNÁMKA PRO UČITELE:', parts.teacherNote||''
-    ].join('\n')):'';
-    const validationContext=(sheet._validation&&!sheet._validation.ok)?([
-      '',
-      'STRUKTURNÍ UPOZORNĚNÍ APLIKACE:',
-      '- '+sheet._validation.issues.join('\n- '),
-      'Při kontrole výslovně ověř, zda tento problém neohrožuje použitelnost materiálu.'
-    ].join('\n')):'';
     return [
-      finalPass?'Toto je VOLITELNÁ FINÁLNÍ kontrola po zapracování předchozích oprav. Hledej jen skutečné zbývající chyby a rozpory, ne nové stylistické preference.':'Zkontroluj tento pracovní list nebo test před použitím ve škole. Jde o HLAVNÍ kontrolu a cílem je zachytit všechny konkrétní problémy už v tomto jediném průchodu.',
+      finalPass?'Toto je VOLITELNÁ FINÁLNÍ kontrola po zapracování předchozích oprav. Hledej jen skutečné zbývající chyby a rozpory, ne nové stylistické preference.':'Zkontroluj pracovní list nebo test před použitím ve škole. Jde o HLAVNÍ kontrolu a cílem je zachytit všechny konkrétní problémy už v tomto jediném průchodu.',
       'V rámci tohoto jednoho požadavku proveď interně dva průchody: nejprve systematicky projdi každou úlohu, instrukci, bodování a odpověď v klíči; potom znovu projdi celý materiál jako celek a sluč duplicitní nálezy. Neodkládej další skutečné chyby na budoucí kontrolu a nevracej jen náhodný vzorek problémů.',
       ...(typeof stemQualityPromptLines==='function'?stemQualityPromptLines(getSubjectValue()):[]),
       ...(typeof subjectQualityPromptLines==='function'?subjectQualityPromptLines(getSubjectValue()):[]),
       'Zaměř se na: 1) věcnou správnost a zachování odborného zápisu, 2) soulad s požadovanou diferenciací a zvolenou variantou, 3) jazykovou správnost, 4) úplnost a použitelnost řešení, 5) rizika nejasného zadání, 6) přiměřenost rozsahu a času, 7) zachování formátu, počtu úloh a bodování tam, kde bylo v originálu, a konzistenci nově navržených bodů, 8) přítomnost hlavního pedagogického cíle a ověřovaných dovedností, 9) možná citlivá data, jména žáků nebo údaje, které je vhodné anonymizovat, 10) pokud jsou přiložené mapy, grafy, schémata nebo jiné obrazy, zda zadání skutečně odpovídá tomu, co je na nich vidět, a zda je materiál bez nich řešitelný tak, jak má být.',
-      'ODBORNÉ RENDERERY: pokud text obsahuje [[EDU_...|{...}]], ověř, že JSON marker je platný a jeho data přesně souhlasí se zadáním i answer_key; vizuál nesmí zobrazovat jiné hodnoty, body, vazby, noty nebo zvýraznění než text.',
+      'ODBORNÉ RENDERERY: pokud data obsahují [[EDU_...|{...}]], ověř, že JSON marker je platný a jeho data přesně souhlasí se zadáním i answer_key; vizuál nesmí zobrazovat jiné hodnoty, body, vazby, noty nebo zvýraznění než text.',
       'Každé tvrzení Opravit musí být konkrétní a skutečně opravitelné. Doporučení používej jen pro užitečné nepovinné zlepšení; nevytvářej další práci jen kvůli stylu. Pokud je vše správně, napiš to jako OK a nevymýšlej problém.',
       'Pokud jsou v textu české pasáže, uplatni nulovou toleranci ke gramatickým, stylistickým a lexikálním chybám.',
-      'Vrať krátký audit v češtině, každý bod na samostatném řádku, každý řádek začni jedním ze štítků OK: / Opravit: / Doporučení: podle závažnosti. Bez úvodu a bez závěru.',
-      structuredContext,
-      validationContext,
-      'PRACOVNÍ LIST:',
-      sheet._text||'',
-      'ŘEŠENÍ:',
-      sheet._key||''
-    ].filter(x=>x!==null&&x!==undefined&&String(x).length).join('\n\n');
+      'Vrať krátký audit v češtině, každý bod na samostatném řádku, každý řádek začni jedním ze štítků OK: / Opravit: / Doporučení: podle závažnosti. Bez úvodu a bez závěru.'
+    ].join('\n\n');
+  },
+  dataParts(sheet){
+    const parts=sheet._parts||{},count=sheet._validation&&!sheet._validation.ok?Math.max(0,Number(sheet._validation.issues&&sheet._validation.issues.length)||0):0;
+    const data=[
+      sheet._structured?'VNITŘNÍ ČÁSTI PRO KONTROLU:\nNÁZEV: '+String(parts.title||'')+'\nINSTRUKCE PRO ŽÁKY: '+String(parts.instructions||'')+'\nÚLOHY: '+String(parts.tasks||'')+'\nPOZNÁMKA PRO UČITELE: '+String(parts.teacherNote||''):'',
+      count?'STRUKTURNÍ UPOZORNĚNÍ APLIKACE: deterministická validace zjistila '+count+' problémů; při kontrole ověř použitelnost materiálu.':'',
+      'PRACOVNÍ LIST:\n'+String(sheet._text||''),
+      'ŘEŠENÍ:\n'+String(sheet._key||'')
+    ].filter(Boolean).join('\n\n');
+    return [{text:data,label:'source'}];
   }
 };
 const QualityRevision={
-  makePrompt(sheet,suggestions){
-    const t=TIERS[sheet._tierKey]||TIERS.core,parts=sheet._parts||{};
+  makePrompt(sheet){
+    const t=TIERS[sheet._tierKey]||TIERS.core;
     return [
-      'Jsi zkušený učitel. Uprav již vytvořený pracovní list POUZE podle níže vybraných bodů kontroly kvality.',
+      'Jsi zkušený učitel. Uprav pracovní list POUZE podle vybraných bodů kontroly kvality v datové vrstvě.',
       'Cílová úroveň zůstává: '+t.name+'. Neměň výukový cíl, téma, jazyk ani jiné části jen proto, že bys je sám formuloval jinak. Nevybrané návrhy auditu nejsou pokyn k úpravě.',
-      'Po zapracování proveď ještě v rámci TÉHOŽ požadavku interní závěrečné ověření: zkontroluj, že oprava nezavedla nový rozpor, že všechny odpovědi v answer_key stále sedí k úlohám a že případné bodování je konzistentní. U STEM materiálu znovu přepočítej změněné výsledky, jednotky a rovnice. Výstup už dál nerozebírej; vrať rovnou čistou opravenou verzi.',
+      'Po zapracování proveď v TÉMŽ požadavku interní závěrečné ověření: zkontroluj, že oprava nezavedla nový rozpor, všechny odpovědi v answer_key stále sedí k úlohám a případné bodování je konzistentní. U STEM materiálu znovu přepočítej změněné výsledky, jednotky a rovnice. Výstup už dál nerozebírej; vrať rovnou čistou opravenou verzi.',
       ...(typeof stemQualityPromptLines==='function'?stemQualityPromptLines(getSubjectValue()):[]),
       ...(typeof subjectQualityPromptLines==='function'?subjectQualityPromptLines(getSubjectValue()):[]),
       (sheet._visualAssets&&sheet._visualAssets.length)?'OBRAZOVÉ PODKLADY: zachovej všechny existující markery [[VISUAL_n]] na smysluplném místě. Původní obrazy se nesmí překreslit ani nahradit textovou imitací; aplikace je vloží sama.':'',
       sheet._mediaSource?'MULTIMÉDIA: zachovej marker [[MEDIA_SOURCE]]. Do student_instructions ani tasks nepřenášej transkript, titulky ani popis odpovědí ze zdrojového audia/videa; ty patří nanejvýš do answer_key nebo teacher_note.':'',
       'ODBORNÉ RENDERERY: existující [[EDU_...|{...}]] marker zachovej jako jeden samostatný řádek s platným JSON. Pokud oprava mění data úlohy, aktualizuj marker i answer_key konzistentně; pokud data nemění, marker svévolně neupravuj.',
-      'Vrať pouze platný JSON objekt bez Markdownu se stejnými klíči: worksheet_title, student_instructions, tasks, answer_key, teacher_note. Všechny hodnoty jsou textové řetězce. Pokud úprava změní správnou odpověď, aktualizuj answer_key.',
+      'Vrať pouze platný JSON objekt bez Markdownu se stejnými klíči: worksheet_title, student_instructions, tasks, answer_key, teacher_note. Všechny hodnoty jsou textové řetězce. Pokud úprava změní správnou odpověď, aktualizuj answer_key.'
+    ].filter(Boolean).join('\n\n');
+  },
+  dataParts(sheet,suggestions){
+    const parts=sheet._parts||{};
+    return [{text:[
       'VYBRANÉ BODY K ZAPRACOVÁNÍ:\n- '+suggestions.map(x=>x.body).join('\n- '),
-      'AKTUÁLNÍ NÁZEV:\n'+(parts.title||''),
-      'AKTUÁLNÍ INSTRUKCE:\n'+(parts.instructions||''),
-      'AKTUÁLNÍ ÚLOHY / PRACOVNÍ LIST:\n'+(parts.tasks||sheet._text||''),
-      'AKTUÁLNÍ ŘEŠENÍ:\n'+(sheet._key||parts.answerKey||''),
-      'AKTUÁLNÍ POZNÁMKA PRO UČITELE:\n'+(parts.teacherNote||'')
-    ].join('\n\n');
+      'AKTUÁLNÍ NÁZEV:\n'+String(parts.title||''),
+      'AKTUÁLNÍ INSTRUKCE:\n'+String(parts.instructions||''),
+      'AKTUÁLNÍ ÚLOHY / PRACOVNÍ LIST:\n'+String(parts.tasks||sheet._text||''),
+      'AKTUÁLNÍ ŘEŠENÍ:\n'+String(sheet._key||parts.answerKey||''),
+      'AKTUÁLNÍ POZNÁMKA PRO UČITELE:\n'+String(parts.teacherNote||'')
+    ].join('\n\n'),label:'source'}];
   }
 };
 let qualityActiveSheet=null;
@@ -615,8 +605,8 @@ async function runQualityAudit(sheet,btn,finalPass=false){
   if(!requireApiKeyForAction(finalPass?'finální kontrolu kvality':'kontrolu kvality'))return false;
   btn.disabled=true;const old=btn.innerHTML;btn.innerHTML='<span class="mini"></span>';
   try{
-    const prompt=QualityCheck.makePrompt(sheet,finalPass);
-    const out=await callGemini([{text:prompt},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{thinking:THINKING_DEFAULT,operation:'worksheet-quality-audit'});
+    const instructions=QualityCheck.makePrompt(sheet,finalPass);
+    const out=await callGemini([...QualityCheck.dataParts(sheet),...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{thinking:THINKING_DEFAULT,operation:'worksheet-quality-audit',appInstructions:instructions});
     sheet._quality=out;sheet._qualityApplied=[];
     if(finalPass){sheet._qualityStage='final';sheet._finalAuditUsed=true;setSheetStatus(sheet,'finálně zkontrolováno','ok');}
     else{sheet._qualityStage='initial';setSheetStatus(sheet,'zkontrolováno','ok');}
@@ -639,7 +629,7 @@ async function applySelectedQualitySuggestions(){
   if(!requireApiKeyForAction('zapracování vybraných bodů kontroly'))return;
   const btn=$('#qualityApply'),oldNodes=[...btn.childNodes].map(n=>n.cloneNode(true)),sheet=qualityActiveSheet,snapshot=snapshotSheet(sheet),wasFinal=sheet._qualityStage==='final'||sheet._qualityStage==='final-revised';btn.disabled=true;const spin=document.createElement('span');spin.className='mini';btn.replaceChildren(spin,document.createTextNode(' Zapracovávám…'));
   try{
-    const raw=await callGemini([{text:QualityRevision.makePrompt(sheet,selected)},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{json:true,operation:'worksheet-quality-revision'});
+    const raw=await callGemini([...QualityRevision.dataParts(sheet,selected),...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{json:true,operation:'worksheet-quality-revision',appInstructions:QualityRevision.makePrompt(sheet)});
     let parsed=normalizeParsedVisuals(parseWorksheetResponse(raw),sheet._visualAssets||[]),validation=validateWorksheetResponse(parsed);
     if(!validation.ok){
       try{const fixed=await repairWorksheetJson(raw,validation,$('#baseText').value.trim(),sheet._tierKey),fp=normalizeParsedVisuals(parseWorksheetResponse(fixed),sheet._visualAssets||[]),fv=validateWorksheetResponse(fp);if(fp&&String(fp.worksheet||'').trim()&&(fv.ok||fv.issues.length<validation.issues.length)){parsed=fp;validation=fv}}catch(_){}

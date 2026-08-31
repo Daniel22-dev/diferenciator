@@ -1,3 +1,18 @@
+## 1.3.38 — GARP 2.3 opravné kolo po Claude (2026-08-31)
+
+- C-01 HIGH potvrzen a opraven strukturálně: `dplPartition()` už nikdy nehledá markery v nedůvěryhodném textu a nemůže z něj vytvořit `systemInstruction`; všechny produkční AI operace dostávají důvěryhodné instrukce explicitně přes `appInstructions` a worksheet/model/validation/media obsah zůstává v datové vrstvě pod privacy preflightem.
+- Deterministické validační hlášky už necitují cizí/modelový řádek ani nepodporovaný příkaz; používají neutrální odkaz na číslo řádku. Do následného AI kroku se navíc předává pouze počet validačních problémů. Metadata pro následné audio/video a zachované vizuály neposílají volný název souboru ani popis do instrukční vrstvy.
+- C-02 potvrzen: neznámé rozhodnutí privacy dialogu je nyní fail-closed (`PREFLIGHT_BLOCKED`).
+- C-03 potvrzen jako LOW defense-in-depth: návrat do AI Studia zahazuje nedůvěryhodný query/fragment a credentials.
+- C-04 potvrzen jako QA křehkost: performance budget se měří nad kryptograficky svázaným seznamem produkčních souborů vytvořeným buildem, nikoli nad později znečištěným `dist/`.
+- Doplněny regresní a GARP 2.3 testy pro instruction-boundary path coverage a negative controls; kandidát je určen pro druhou nezávislou kontrolu Claude.
+
+## 1.3.37 — GARP 2.3 hardening (2026-08-31)
+
+- Privacy preflight již neuchovává rozhodnutí mezi AI požadavky; detekovaný e-mail lze pouze anonymizovat nebo odeslání zrušit.
+- Návratový odkaz z AI Studio handoffu je omezen na nakonfigurovaný Studio origin a cestu.
+- Datový manifest byl zpřesněn podle skutečných klientských storage a mazacích cest.
+
 ## 1.3.36 — ecosystem access alignment (2026-08-28)
 
 - oba aktivní deployment profily (`github-pages` a `school-server`) používají aktuální podepsaný access bundle AI Studia `access-p1-20260824175535Z-k_wtm7Zj`;

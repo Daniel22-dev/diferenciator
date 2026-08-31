@@ -1,11 +1,10 @@
-const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.36'});
+const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.38'});
 const DPL_WORKSHEET_SCHEMA=Object.freeze({type:'object',properties:{worksheet_title:{type:'string'},student_instructions:{type:'string'},tasks:{type:'string'},answer_key:{type:'string'},teacher_note:{type:'string'}},required:['worksheet_title','student_instructions','tasks','answer_key','teacher_note'],additionalProperties:false});
 const DPL_AI_SCHEMAS=Object.freeze({'differentiator.text.v1':Object.freeze({type:'object',required:['text'],properties:{text:{type:'string'}},additionalProperties:false}),'differentiator.object.v1':DPL_WORKSHEET_SCHEMA});
 const dplOp=(s,d,i,m)=>({outputSchemaId:s,defaultModelProfile:d,allowedModelProfiles:['economy','balanced','quality'],inputTypes:i,streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:m});
 const DPL_AI_OPERATIONS=Object.freeze({schema:'ghrab-ai-operations-v1',appId:DPL_AI_APP.id,operations:Object.freeze({'cefr-detection':dplOp('differentiator.text.v1','economy',['text'],4096),'material-extraction':dplOp('differentiator.text.v1','balanced',['text','image','document'],32768),'worksheet-generation':dplOp('differentiator.object.v1','balanced',['text','image','document'],32768),'worksheet-structure-repair':dplOp('differentiator.object.v1','economy',['text'],32768),'answer-key-generation':dplOp('differentiator.text.v1','economy',['text','image','document'],16384),'worksheet-quality-audit':dplOp('differentiator.text.v1','economy',['text','image','document'],8192),'worksheet-quality-revision':dplOp('differentiator.object.v1','balanced',['text','image','document'],32768)})});
 
 const DPL_EMAIL_RE=/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g;
-const dplPreflightDecisionCache=new Map();
 let dplConfiguredSignature='';
 
 function dplDeployment(){return window.__GHRAB_DEPLOYMENT_CONFIG__||{}}
@@ -58,7 +57,7 @@ function dplReasoningHint(operation,requested){
 }
 const DPL_DATA_LABEL=/^(?:source(?:-material|-document-text)?|teacher-context)$/;
 function dplData(v,label='source'){const l=DPL_DATA_LABEL.test(String(label||''))?String(label):'source',j=JSON.stringify(String(v??'')).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');return{type:'text',text:'<data label="'+l+'">\n'+j+'\n</data>'}}
-function dplPartition(p,o,e=''){const a=[],t=[String(e||'').trim()],m={'answer-key-generation':'PRACOVNÍ LIST:','worksheet-structure-repair':'PŮVODNÍ ZADÁNÍ:','worksheet-quality-audit':'VNITŘNÍ ČÁSTI PRO KONTROLU:','worksheet-quality-revision':'VYBRANÉ BODY K ZAPRACOVÁNÍ:'}[o];for(const x of(Array.isArray(p)?p:[])){if(x&&typeof x.text==='string'&&m){let q=m,i=x.text.indexOf(q);if(i<0&&o==='worksheet-quality-audit'){q='PRACOVNÍ LIST:';i=x.text.indexOf(q)}if(i>=0){t.push(x.text.slice(0,i));a.push({text:x.text.slice(i+q.length),label:x.label});continue}}a.push(x)}return{parts:a,instructions:t.filter(Boolean).join('\n\n')}}
+function dplPartition(p,o,e=''){void o;return{parts:Array.isArray(p)?p:[],instructions:String(e||'').trim()}}
 
 function dplCoreParts(parts){const out=[];for(const part of(Array.isArray(parts)?parts:[])){if(part&&typeof part.text==='string'){out.push(dplData(part.text,part.label));continue}const inline=part?.inline_data||part?.inlineData;if(inline?.data){const mime=inline.mime_type||inline.mimeType||'application/octet-stream';out.push({type:String(mime).startsWith('image/')?'image':'document',mimeType:mime,name:'material',source:{kind:'inline-base64',data:inline.data}})}}return out}
 function dplEmailMatches(parts){
@@ -73,29 +72,26 @@ function dplAnonymizeEmails(parts){
   return parts.map(part=>part.type==='text'?{...part,text:String(part.text||'').replace(DPL_EMAIL_RE,'[e-mail anonymizován]')}:part);
 }
 function dplPrivacyDecision(emails,hasOpaqueInput){
-  const fingerprint=emails.join('\n');
-  if(dplPreflightDecisionCache.has(fingerprint))return Promise.resolve(dplPreflightDecisionCache.get(fingerprint));
   const overlay=document.getElementById('privacyOverlay');
   const list=document.getElementById('privacyEmailList');
   const note=document.getElementById('privacyInputNote');
   const cancel=document.getElementById('privacyClose');
   const anonymize=document.getElementById('privacyAnonymize');
   const proceed=document.getElementById('privacyContinue');
-  if(!overlay||!list||!cancel||!anonymize||!proceed)return Promise.reject(makeAppError('Bezpečnostní kontrola našla e-mailovou adresu, ale potvrzovací dialog se nepodařilo otevřít.','PREFLIGHT_BLOCKED'));
+  if(!overlay||!list||!cancel||!anonymize)return Promise.reject(makeAppError('Bezpečnostní kontrola našla e-mailovou adresu, ale potvrzovací dialog se nepodařilo otevřít.','PREFLIGHT_BLOCKED'));
   list.textContent=emails.join(', ');
-  if(note)note.textContent=hasOpaqueInput?'Kontrola rozpoznává e-mailové adresy jen v textové části. Text uvnitř obrázků nebo skenů se před odesláním tímto krokem nekontroluje.':'Kontrola se týká textu, který aplikace právě odesílá do AI.';
+  if(note)note.textContent=hasOpaqueInput?'E-mail je v textu. Obsah obrázků/skenů se zde nekontroluje; skutečné studentské podklady předem anonymizujte.':'E-mail před odesláním anonymizujte, nebo požadavek zrušte.';
+  if(proceed){proceed.hidden=true;proceed.disabled=true;proceed.onclick=null;}
   overlay.classList.add('show');
   return new Promise(resolve=>{
     let done=false;
     const finish=decision=>{
       if(done)return;done=true;overlay.classList.remove('show');
-      cancel.onclick=null;anonymize.onclick=null;proceed.onclick=null;
-      if(decision!=='cancel')dplPreflightDecisionCache.set(fingerprint,decision);
+      cancel.onclick=null;anonymize.onclick=null;
       resolve(decision);
     };
     cancel.onclick=()=>finish('cancel');
     anonymize.onclick=()=>finish('anonymize');
-    proceed.onclick=()=>finish('continue');
   });
 }
 async function dplPreflight(parts){
@@ -104,7 +100,7 @@ async function dplPreflight(parts){
   const decision=await dplPrivacyDecision(emails,parts.some(part=>part.type!=='text'));
   if(decision==='cancel')throw makeAppError('Odeslání do AI bylo zrušeno kvůli kontrole osobních údajů.','PREFLIGHT_BLOCKED');
   if(decision==='anonymize')return{parts:dplAnonymizeEmails(parts),clientAnonymized:true};
-  return{parts,clientAnonymized:false};
+  throw makeAppError('Bezpečnostní kontrola osobních údajů skončila neznámým stavem. Odeslání bylo zablokováno.','PREFLIGHT_BLOCKED');
 }
 function dplAiSignature(){
   const runtime=dplRuntimeConfig();

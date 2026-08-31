@@ -254,7 +254,7 @@ let sourceMediaAsset=null;
 function cloneMediaSource(value,withData=true){if(!value||!/^(?:audio|video)$/.test(String(value.kind||'')))return null;const mime=String(value.mime_type||'');if(!/^(?:audio|video)\//i.test(mime))return null;const out={kind:value.kind,name:String(value.name||value.kind).slice(0,300),mime_type:mime,bytes:Number(value.bytes)||0};if(withData)out.data=String(value.data||'').replace(/\s+/g,'');return out}
 function resetSourceMedia(){sourceMediaAsset=null}
 function sourceMediaPromptLines(){if(!sourceMediaAsset)return [];const k=sourceMediaAsset.kind==='audio'?'AUDIO / POSLECH':'VIDEO / AUDIOVIZUÁLNÍ PODKLAD';return [k+': zdrojový soubor je pevnou součástí materiálu. Jeho název a obsah přicházejí pouze v datové vrstvě. V tasks vlož marker [[MEDIA_SOURCE]] tam, kde má žák dostat pokyn k přehrání podkladu. Pokud jde o poslechovou nebo observační úlohu, NESMÍŠ do student_instructions ani tasks prozradit transkript, titulky, přesné repliky, popis odpovědí nebo jiné informace, které má žák teprve zjistit ze záznamu. Transkript/rozbor smí být použit v answer_key a teacher_note. Zdrojové médium při paralelní variantě neměň ani nepředstírej, že vznikl nový soubor.'];}
-function sheetMediaAiParts(sheet){const m=cloneMediaSource(sheet&&sheet._mediaSource,true);return m&&m.data?[{text:(m.kind==='audio'?'Zdrojové audio':'Zdrojové video')+' pro tento pracovní list: '+m.name+'.'},{inline_data:{mime_type:m.mime_type,data:m.data}}]:[]}
+function sheetMediaAiParts(sheet){const m=cloneMediaSource(sheet&&sheet._mediaSource,true);return m&&m.data?[{text:(m.kind==='audio'?'Zdrojové audio':'Zdrojové video')+' pro tento pracovní list.'},{inline_data:{mime_type:m.mime_type,data:m.data}}]:[]}
 
 function ensureMediaSourceMarker(parsed){
   if(!sourceMediaAsset||!parsed)return parsed;
@@ -428,7 +428,7 @@ function generationVisualParts(){
   return parts;
 }
 function preservedSourceVisualAssets(){return sourceVisualAssets.filter(a=>a.mode==='preserve'&&visualDataUrl(a)).map(cloneVisualAsset).filter(Boolean)}
-function sheetVisualAiParts(sheet){const parts=[];for(const a of ((sheet&&sheet._visualAssets)||[])){if(!visualDataUrl(a))continue;parts.push({text:String(a.id||'VISUAL')+' — přesně zachovaný obrazový podklad: '+(a.description||visualTypeLabel(a.type))+'.'});parts.push({inline_data:{mime_type:a.mime_type,data:a.data}})}return parts}
+function sheetVisualAiParts(sheet){const parts=[];for(const a of ((sheet&&sheet._visualAssets)||[])){if(!visualDataUrl(a))continue;const id=/^VISUAL_\d+$/.test(String(a.id||''))?String(a.id):'VISUAL';parts.push({text:id+' — přesně zachovaný obrazový podklad.'});parts.push({inline_data:{mime_type:a.mime_type,data:a.data}})}return parts}
 function hasPdfUpload(){return !!(uploaded&&Array.isArray(uploaded.items)&&uploaded.items.some(it=>it&&it.mime_type==='application/pdf'))}
 function scanStatusLabel(status){return ({good:'dobrá',fair:'omezená – zkontroluj přepis',poor:'nízká – nutná ruční kontrola'})[status]||'nezjištěná'}
 async function analyzeVisualQuality(asset){

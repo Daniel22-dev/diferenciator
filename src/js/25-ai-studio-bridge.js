@@ -14,9 +14,10 @@
     return source.trim().length>0||taskList(m).length>0;
   }
   function studioUrl(p){
-    const configured=window.__GHRAB_DEPLOYMENT_CONFIG__?.studioBaseUrl||window.__GHRAB_STUDIO_URL__||'/AI-Studio-GHRAB/';
-    try{const u=new URL(p&&p.studioUrl||configured,location.href);if(/^https?:$/.test(u.protocol))return u.href}catch(_){}
-    return new URL(configured,location.href).href;
+    let s;try{s=new URL(window.__GHRAB_DEPLOYMENT_CONFIG__?.studioBaseUrl||window.__GHRAB_STUDIO_URL__||'/AI-Studio-GHRAB/',location.href)}catch(_){s=new URL('/AI-Studio-GHRAB/',location.href)}
+    s.search='';s.hash='';s.username='';s.password='';
+    try{const u=new URL(p?.studioUrl||s,location.href),b=s.pathname.replace(/\/?$/,'/');if(/^https?:$/.test(u.protocol)&&!u.username&&!u.password&&u.origin===s.origin&&(u.pathname===s.pathname||u.pathname.startsWith(b))){u.search='';u.hash='';return u.href}}catch(_){}
+    return s.href
   }
   function take(){
     const v2=window.GHRAB_PLATFORM?.bridge?.take?.({target:'differentiator',maxBytes:500000});if(v2)return v2;

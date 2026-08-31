@@ -3,7 +3,7 @@ import {cpSync,rmSync,mkdirSync,readFileSync,writeFileSync,readdirSync,statSync,
 import {execSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {gzipSync} from 'node:zlib';
-import {join,dirname} from 'node:path';
+import {join,dirname,relative} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {verifySwCoreAssets} from './sw-assets.mjs';
 const ROOT=join(dirname(fileURLToPath(import.meta.url)),'..'),SRC=join(ROOT,'src'),DIST=join(ROOT,'dist');
@@ -11,6 +11,8 @@ const APP_NAME='Diferenciátor pracovních listů a testů',APP_ID='differentiat
 const CORE_DIR=join(ROOT,'vendor',`ghrab-ai-core-${CORE_VERSION}`),CORE_FILE=`ghrab-ai-core-${CORE_VERSION}.js`,CORE_MANIFEST=`ghrab-ai-core-manifest-${CORE_VERSION}.json`;
 const TOKENS={css:'/*==SEM_BUILD_VLOZI_STYLES_CSS==*/',body:'<!--==SEM_BUILD_VLOZI_BODY_HTML==-->',js:'/*==SEM_BUILD_VLOZI_JS==*/'};
 const log=m=>console.log('[build] '+m),fail=m=>{console.error('[build] CHYBA: '+m);process.exit(1)},sha=f=>createHash('sha256').update(readFileSync(f)).digest('hex');
+
+function* releaseFiles(dir){for(const n of readdirSync(dir)){const p=join(dir,n),st=statSync(p);if(st.isDirectory())yield* releaseFiles(p);else if(st.isFile())yield p}}
 for(const f of [CORE_FILE,CORE_MANIFEST])if(!existsSync(join(CORE_DIR,f)))fail('chybí Core artefakt '+f);
 const coreManifest=JSON.parse(readFileSync(join(CORE_DIR,CORE_MANIFEST),'utf8'));if(coreManifest.coreVersion!==CORE_VERSION||coreManifest.artifacts?.[CORE_FILE]?.sha256!==sha(join(CORE_DIR,CORE_FILE)))fail('GHRAB AI Core neprošel SHA-256 kontrolou');
 rmSync(DIST,{recursive:true,force:true});mkdirSync(DIST,{recursive:true});cpSync(SRC,DIST,{recursive:true});
@@ -45,3 +47,5 @@ const compactJson=[join(DIST,'ghrab-platform.consumer.json'),join(DIST,'ai-opera
 const configDir=join(DIST,'config');if(existsSync(configDir))for(const n of readdirSync(configDir))if(n.endsWith('.json'))compactJson.push(join(configDir,n));
 for(const f of compactJson)if(existsSync(f)){const data=JSON.parse(readFileSync(f,'utf8'));writeFileSync(f,JSON.stringify(data))}
 const swCheck=verifySwCoreAssets(DIST,'dist');log(`service-worker precache: ${swCheck.checked} assetů existuje`);
+const releaseList=[...releaseFiles(DIST)].map(file=>({path:relative(DIST,file).replaceAll('\\','/'),bytes:statSync(file).size,sha256:sha(file)})).sort((a,b)=>a.path.localeCompare(b.path));
+mkdirSync(join(ROOT,'test-results'),{recursive:true});writeFileSync(join(ROOT,'test-results','build-files.json'),JSON.stringify({schema:'ghrab-build-files-v1',appId:APP_ID,appVersion:rel[1],files:releaseList})+'\n');log(`release file manifest: ${releaseList.length} produkčních souborů`);

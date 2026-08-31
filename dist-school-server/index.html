@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="cs" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.36" data-ghrab-platform-contract="ghrab-platform-v1" data-theme="light" data-theme-preference="light">
+<html lang="cs" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.38" data-ghrab-platform-contract="ghrab-platform-v1" data-theme="light" data-theme-preference="light">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -23,7 +23,7 @@
 
     <!-- GHRAB Platform 1.1.0 · generated -->
     <link rel="stylesheet" href="./ghrab/ghrab-platform.css" data-ghrab-platform-style>
-    <script id="ghrab-platform-config" type="application/json">{"appId":"differentiator","appName":"Diferenciátor","appVersion":"1.3.36","requiredPlatformRange":">=1.1.0 \u003c2.0.0","platformContract":"ghrab-platform-v1","brandVersion":"1.0.0","autoFooter":true,"theme":{"supported":["light","dark"],"default":"light"},"storageMigration":{"id":"p2-storage-namespace-v1","backup":"full","mappings":[{"legacy":"dpl_theme","canonical":"ghrab.differentiator.theme.v1"},{"legacy":"dpl_cefr_language_pref","canonical":"ghrab.differentiator.cefr-language.v1"},{"legacy":"dpl_guide_seen","canonical":"ghrab.differentiator.guide-seen.v1"},{"legacy":"dpl_gemini_model","canonical":"ghrab.differentiator.ai.model.v1"},{"legacy":"dpl_gemini_key","canonical":"ghrab.differentiator.ai.key.local.v1"},{"legacy":"dpl_gemini_key_session","canonical":"ghrab.differentiator.ai.key.session.v1","store":"session"},{"legacyPrefix":"dpl_","canonicalPrefix":"ghrab.differentiator.legacy."}]},"bridgeMaxBytes":500000,"artifactContract":"ghrab-artifact-envelope-v1","quality":{"schema":"ghrab-quality-consumer-v1","accessibilityContract":"ghrab-a11y-v1","performanceContract":"ghrab-performance-v1","moduleContract":"ghrab-lazy-modules-v1","requireBudget":true,"performanceBudget":{"distBytes":1050000,"entryHtmlBytes":490000,"entryCriticalBytes":670000,"largestInlineScriptBytes":380000,"precacheBytes":970000,"largestFileBytes":490000,"duplicateLargeBytes":30000},"modules":{"required":[]},"referenceProfile":{"cpuSlowdown":4,"viewport":"1366x768","memoryClassGb":4,"viewportWidths":[1280,390,320]},"stage":"P5","a11yContract":"ghrab-a11y-v1","requireRuntimeBudget":true,"runtimeBudget":{"maxDomNodes":1000,"maxRenderReadyMs":4000,"maxJsHeapUsedBytes":8000000,"maxLayoutDurationMs":3000,"maxTaskDurationMs":4000},"finalRelease":true,"cleanInstallRequired":true,"a11yGate":"ghrab-p5-runtime-a11y-v2","releaseGate":"ghrab-p5-release-v2","runtimeAudit":{"scriptsExecuted":true,"transport":"local-http","dialogStates":true,"viewports":[1280,390,320]}}}</script>
+    <script id="ghrab-platform-config" type="application/json">{"appId":"differentiator","appName":"Diferenciátor","appVersion":"1.3.38","requiredPlatformRange":">=1.1.0 \u003c2.0.0","platformContract":"ghrab-platform-v1","brandVersion":"1.0.0","autoFooter":true,"theme":{"supported":["light","dark"],"default":"light"},"storageMigration":{"id":"p2-storage-namespace-v1","backup":"full","mappings":[{"legacy":"dpl_theme","canonical":"ghrab.differentiator.theme.v1"},{"legacy":"dpl_cefr_language_pref","canonical":"ghrab.differentiator.cefr-language.v1"},{"legacy":"dpl_guide_seen","canonical":"ghrab.differentiator.guide-seen.v1"},{"legacy":"dpl_gemini_model","canonical":"ghrab.differentiator.ai.model.v1"},{"legacy":"dpl_gemini_key","canonical":"ghrab.differentiator.ai.key.local.v1"},{"legacy":"dpl_gemini_key_session","canonical":"ghrab.differentiator.ai.key.session.v1","store":"session"},{"legacyPrefix":"dpl_","canonicalPrefix":"ghrab.differentiator.legacy."}]},"bridgeMaxBytes":500000,"artifactContract":"ghrab-artifact-envelope-v1","quality":{"schema":"ghrab-quality-consumer-v1","accessibilityContract":"ghrab-a11y-v1","performanceContract":"ghrab-performance-v1","moduleContract":"ghrab-lazy-modules-v1","requireBudget":true,"performanceBudget":{"distBytes":1050000,"entryHtmlBytes":490000,"entryCriticalBytes":670000,"largestInlineScriptBytes":380000,"precacheBytes":970000,"largestFileBytes":490000,"duplicateLargeBytes":30000},"modules":{"required":[]},"referenceProfile":{"cpuSlowdown":4,"viewport":"1366x768","memoryClassGb":4,"viewportWidths":[1280,390,320]},"stage":"P5","a11yContract":"ghrab-a11y-v1","requireRuntimeBudget":true,"runtimeBudget":{"maxDomNodes":1000,"maxRenderReadyMs":4000,"maxJsHeapUsedBytes":8000000,"maxLayoutDurationMs":3000,"maxTaskDurationMs":4000},"finalRelease":true,"cleanInstallRequired":true,"a11yGate":"ghrab-p5-runtime-a11y-v2","releaseGate":"ghrab-p5-release-v2","runtimeAudit":{"scriptsExecuted":true,"transport":"local-http","dialogStates":true,"viewports":[1280,390,320]}}}</script>
     <script defer src="./ghrab/ghrab-platform.js" data-ghrab-platform-loader></script>
   </head>
 <body>
@@ -314,7 +314,7 @@
     <div class="modal-actions">
       <button class="btn ghost small" id="privacyClose">Zrušit odeslání</button>
       <button class="btn small" id="privacyAnonymize">Anonymizovat a pokračovat</button>
-      <button class="btn ghost small" id="privacyContinue">Pokračovat beze změny</button>
+      <button class="btn ghost small" id="privacyContinue" hidden disabled>Pokračovat beze změny</button>
     </div>
   </div>
 </div>
@@ -1440,11 +1440,13 @@
 ;
 
 const RELEASE = Object.freeze({
-  version: '1.3.36',
-  date: '2026-08-28',
+  version: '1.3.38',
+  date: '2026-08-31',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    '1.3.38: GARP 2.3 kolo 2 — explicitní trusted instructions, fail-closed privacy preflight, očištěný Studio návrat a stabilní build-manifest performance gate.',
+    '1.3.37: GARP 2.3 hardening — privacy preflight bez sdíleného rozhodnutí a bezpečný návrat z AI Studio handoffu.',
     '1.3.36: access sync.',
     '1.3.35: GARP final.',
     '1.3.34: GARP kolo 2.',
@@ -2027,9 +2029,10 @@ function setResultSummary(count){
     return source.trim().length>0||taskList(m).length>0;
   }
   function studioUrl(p){
-    const configured=window.__GHRAB_DEPLOYMENT_CONFIG__?.studioBaseUrl||window.__GHRAB_STUDIO_URL__||'/AI-Studio-GHRAB/';
-    try{const u=new URL(p&&p.studioUrl||configured,location.href);if(/^https?:$/.test(u.protocol))return u.href}catch(_){}
-    return new URL(configured,location.href).href;
+    let s;try{s=new URL(window.__GHRAB_DEPLOYMENT_CONFIG__?.studioBaseUrl||window.__GHRAB_STUDIO_URL__||'/AI-Studio-GHRAB/',location.href)}catch(_){s=new URL('/AI-Studio-GHRAB/',location.href)}
+    s.search='';s.hash='';s.username='';s.password='';
+    try{const u=new URL(p?.studioUrl||s,location.href),b=s.pathname.replace(/\/?$/,'/');if(/^https?:$/.test(u.protocol)&&!u.username&&!u.password&&u.origin===s.origin&&(u.pathname===s.pathname||u.pathname.startsWith(b))){u.search='';u.hash='';return u.href}}catch(_){}
+    return s.href
   }
   function take(){
     const v2=window.GHRAB_PLATFORM?.bridge?.take?.({target:'differentiator',maxBytes:500000});if(v2)return v2;
@@ -2319,7 +2322,7 @@ let sourceMediaAsset=null;
 function cloneMediaSource(value,withData=true){if(!value||!/^(?:audio|video)$/.test(String(value.kind||'')))return null;const mime=String(value.mime_type||'');if(!/^(?:audio|video)\//i.test(mime))return null;const out={kind:value.kind,name:String(value.name||value.kind).slice(0,300),mime_type:mime,bytes:Number(value.bytes)||0};if(withData)out.data=String(value.data||'').replace(/\s+/g,'');return out}
 function resetSourceMedia(){sourceMediaAsset=null}
 function sourceMediaPromptLines(){if(!sourceMediaAsset)return [];const k=sourceMediaAsset.kind==='audio'?'AUDIO / POSLECH':'VIDEO / AUDIOVIZUÁLNÍ PODKLAD';return [k+': zdrojový soubor je pevnou součástí materiálu. Jeho název a obsah přicházejí pouze v datové vrstvě. V tasks vlož marker [[MEDIA_SOURCE]] tam, kde má žák dostat pokyn k přehrání podkladu. Pokud jde o poslechovou nebo observační úlohu, NESMÍŠ do student_instructions ani tasks prozradit transkript, titulky, přesné repliky, popis odpovědí nebo jiné informace, které má žák teprve zjistit ze záznamu. Transkript/rozbor smí být použit v answer_key a teacher_note. Zdrojové médium při paralelní variantě neměň ani nepředstírej, že vznikl nový soubor.'];}
-function sheetMediaAiParts(sheet){const m=cloneMediaSource(sheet&&sheet._mediaSource,true);return m&&m.data?[{text:(m.kind==='audio'?'Zdrojové audio':'Zdrojové video')+' pro tento pracovní list: '+m.name+'.'},{inline_data:{mime_type:m.mime_type,data:m.data}}]:[]}
+function sheetMediaAiParts(sheet){const m=cloneMediaSource(sheet&&sheet._mediaSource,true);return m&&m.data?[{text:(m.kind==='audio'?'Zdrojové audio':'Zdrojové video')+' pro tento pracovní list.'},{inline_data:{mime_type:m.mime_type,data:m.data}}]:[]}
 
 function ensureMediaSourceMarker(parsed){
   if(!sourceMediaAsset||!parsed)return parsed;
@@ -2493,7 +2496,7 @@ function generationVisualParts(){
   return parts;
 }
 function preservedSourceVisualAssets(){return sourceVisualAssets.filter(a=>a.mode==='preserve'&&visualDataUrl(a)).map(cloneVisualAsset).filter(Boolean)}
-function sheetVisualAiParts(sheet){const parts=[];for(const a of ((sheet&&sheet._visualAssets)||[])){if(!visualDataUrl(a))continue;parts.push({text:String(a.id||'VISUAL')+' — přesně zachovaný obrazový podklad: '+(a.description||visualTypeLabel(a.type))+'.'});parts.push({inline_data:{mime_type:a.mime_type,data:a.data}})}return parts}
+function sheetVisualAiParts(sheet){const parts=[];for(const a of ((sheet&&sheet._visualAssets)||[])){if(!visualDataUrl(a))continue;const id=/^VISUAL_\d+$/.test(String(a.id||''))?String(a.id):'VISUAL';parts.push({text:id+' — přesně zachovaný obrazový podklad.'});parts.push({inline_data:{mime_type:a.mime_type,data:a.data}})}return parts}
 function hasPdfUpload(){return !!(uploaded&&Array.isArray(uploaded.items)&&uploaded.items.some(it=>it&&it.mime_type==='application/pdf'))}
 function scanStatusLabel(status){return ({good:'dobrá',fair:'omezená – zkontroluj přepis',poor:'nízká – nutná ruční kontrola'})[status]||'nezjištěná'}
 async function analyzeVisualQuality(asset){
@@ -3067,14 +3070,13 @@ function tryParseWorksheetJson(src){
 }
 
 ;
-const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.36'});
+const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.38'});
 const DPL_WORKSHEET_SCHEMA=Object.freeze({type:'object',properties:{worksheet_title:{type:'string'},student_instructions:{type:'string'},tasks:{type:'string'},answer_key:{type:'string'},teacher_note:{type:'string'}},required:['worksheet_title','student_instructions','tasks','answer_key','teacher_note'],additionalProperties:false});
 const DPL_AI_SCHEMAS=Object.freeze({'differentiator.text.v1':Object.freeze({type:'object',required:['text'],properties:{text:{type:'string'}},additionalProperties:false}),'differentiator.object.v1':DPL_WORKSHEET_SCHEMA});
 const dplOp=(s,d,i,m)=>({outputSchemaId:s,defaultModelProfile:d,allowedModelProfiles:['economy','balanced','quality'],inputTypes:i,streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:m});
 const DPL_AI_OPERATIONS=Object.freeze({schema:'ghrab-ai-operations-v1',appId:DPL_AI_APP.id,operations:Object.freeze({'cefr-detection':dplOp('differentiator.text.v1','economy',['text'],4096),'material-extraction':dplOp('differentiator.text.v1','balanced',['text','image','document'],32768),'worksheet-generation':dplOp('differentiator.object.v1','balanced',['text','image','document'],32768),'worksheet-structure-repair':dplOp('differentiator.object.v1','economy',['text'],32768),'answer-key-generation':dplOp('differentiator.text.v1','economy',['text','image','document'],16384),'worksheet-quality-audit':dplOp('differentiator.text.v1','economy',['text','image','document'],8192),'worksheet-quality-revision':dplOp('differentiator.object.v1','balanced',['text','image','document'],32768)})});
 
 const DPL_EMAIL_RE=/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g;
-const dplPreflightDecisionCache=new Map();
 let dplConfiguredSignature='';
 
 function dplDeployment(){return window.__GHRAB_DEPLOYMENT_CONFIG__||{}}
@@ -3127,7 +3129,7 @@ function dplReasoningHint(operation,requested){
 }
 const DPL_DATA_LABEL=/^(?:source(?:-material|-document-text)?|teacher-context)$/;
 function dplData(v,label='source'){const l=DPL_DATA_LABEL.test(String(label||''))?String(label):'source',j=JSON.stringify(String(v??'')).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');return{type:'text',text:'<data label="'+l+'">\n'+j+'\n</data>'}}
-function dplPartition(p,o,e=''){const a=[],t=[String(e||'').trim()],m={'answer-key-generation':'PRACOVNÍ LIST:','worksheet-structure-repair':'PŮVODNÍ ZADÁNÍ:','worksheet-quality-audit':'VNITŘNÍ ČÁSTI PRO KONTROLU:','worksheet-quality-revision':'VYBRANÉ BODY K ZAPRACOVÁNÍ:'}[o];for(const x of(Array.isArray(p)?p:[])){if(x&&typeof x.text==='string'&&m){let q=m,i=x.text.indexOf(q);if(i<0&&o==='worksheet-quality-audit'){q='PRACOVNÍ LIST:';i=x.text.indexOf(q)}if(i>=0){t.push(x.text.slice(0,i));a.push({text:x.text.slice(i+q.length),label:x.label});continue}}a.push(x)}return{parts:a,instructions:t.filter(Boolean).join('\n\n')}}
+function dplPartition(p,o,e=''){void o;return{parts:Array.isArray(p)?p:[],instructions:String(e||'').trim()}}
 
 function dplCoreParts(parts){const out=[];for(const part of(Array.isArray(parts)?parts:[])){if(part&&typeof part.text==='string'){out.push(dplData(part.text,part.label));continue}const inline=part?.inline_data||part?.inlineData;if(inline?.data){const mime=inline.mime_type||inline.mimeType||'application/octet-stream';out.push({type:String(mime).startsWith('image/')?'image':'document',mimeType:mime,name:'material',source:{kind:'inline-base64',data:inline.data}})}}return out}
 function dplEmailMatches(parts){
@@ -3142,29 +3144,26 @@ function dplAnonymizeEmails(parts){
   return parts.map(part=>part.type==='text'?{...part,text:String(part.text||'').replace(DPL_EMAIL_RE,'[e-mail anonymizován]')}:part);
 }
 function dplPrivacyDecision(emails,hasOpaqueInput){
-  const fingerprint=emails.join('\n');
-  if(dplPreflightDecisionCache.has(fingerprint))return Promise.resolve(dplPreflightDecisionCache.get(fingerprint));
   const overlay=document.getElementById('privacyOverlay');
   const list=document.getElementById('privacyEmailList');
   const note=document.getElementById('privacyInputNote');
   const cancel=document.getElementById('privacyClose');
   const anonymize=document.getElementById('privacyAnonymize');
   const proceed=document.getElementById('privacyContinue');
-  if(!overlay||!list||!cancel||!anonymize||!proceed)return Promise.reject(makeAppError('Bezpečnostní kontrola našla e-mailovou adresu, ale potvrzovací dialog se nepodařilo otevřít.','PREFLIGHT_BLOCKED'));
+  if(!overlay||!list||!cancel||!anonymize)return Promise.reject(makeAppError('Bezpečnostní kontrola našla e-mailovou adresu, ale potvrzovací dialog se nepodařilo otevřít.','PREFLIGHT_BLOCKED'));
   list.textContent=emails.join(', ');
-  if(note)note.textContent=hasOpaqueInput?'Kontrola rozpoznává e-mailové adresy jen v textové části. Text uvnitř obrázků nebo skenů se před odesláním tímto krokem nekontroluje.':'Kontrola se týká textu, který aplikace právě odesílá do AI.';
+  if(note)note.textContent=hasOpaqueInput?'E-mail je v textu. Obsah obrázků/skenů se zde nekontroluje; skutečné studentské podklady předem anonymizujte.':'E-mail před odesláním anonymizujte, nebo požadavek zrušte.';
+  if(proceed){proceed.hidden=true;proceed.disabled=true;proceed.onclick=null;}
   overlay.classList.add('show');
   return new Promise(resolve=>{
     let done=false;
     const finish=decision=>{
       if(done)return;done=true;overlay.classList.remove('show');
-      cancel.onclick=null;anonymize.onclick=null;proceed.onclick=null;
-      if(decision!=='cancel')dplPreflightDecisionCache.set(fingerprint,decision);
+      cancel.onclick=null;anonymize.onclick=null;
       resolve(decision);
     };
     cancel.onclick=()=>finish('cancel');
     anonymize.onclick=()=>finish('anonymize');
-    proceed.onclick=()=>finish('continue');
   });
 }
 async function dplPreflight(parts){
@@ -3173,7 +3172,7 @@ async function dplPreflight(parts){
   const decision=await dplPrivacyDecision(emails,parts.some(part=>part.type!=='text'));
   if(decision==='cancel')throw makeAppError('Odeslání do AI bylo zrušeno kvůli kontrole osobních údajů.','PREFLIGHT_BLOCKED');
   if(decision==='anonymize')return{parts:dplAnonymizeEmails(parts),clientAnonymized:true};
-  return{parts,clientAnonymized:false};
+  throw makeAppError('Bezpečnostní kontrola osobních údajů skončila neznámým stavem. Odeslání bylo zablokováno.','PREFLIGHT_BLOCKED');
 }
 function dplAiSignature(){
   const runtime=dplRuntimeConfig();
@@ -3423,18 +3422,18 @@ function stemEvalArithmetic(expr){
   try{const v=add();return i===s.length&&Number.isFinite(v)?v:null}catch(_){return null}
 }
 function stemArithmeticIssues(text){
-  const issues=[];for(const raw of String(text||'').split(/\r?\n/)){const line=raw.replace(/\*\*/g,'');if(!line.includes('='))continue;const parts=line.split('=').map(x=>x.trim());for(let i=0;i<parts.length-1;i++){const a=stemEvalArithmetic(parts[i]),b=stemEvalArithmetic(parts[i+1]);if(a==null||b==null)continue;const tol=Math.max(1e-9,Math.abs(a)*1e-8,Math.abs(b)*1e-8);if(Math.abs(a-b)>tol){issues.push('STEM kontrola: početní rovnost „'+parts[i]+' = '+parts[i+1]+'“ numericky nesedí.');break}}}return issues;
+  const issues=[];for(const [n,raw] of String(text||'').split(/\r?\n/).entries()){const line=raw.replace(/\*\*/g,'');if(!line.includes('='))continue;const parts=line.split('=').map(x=>x.trim());for(let i=0;i<parts.length-1;i++){const a=stemEvalArithmetic(parts[i]),b=stemEvalArithmetic(parts[i+1]);if(a==null||b==null)continue;const tol=Math.max(1e-9,Math.abs(a)*1e-8,Math.abs(b)*1e-8);if(Math.abs(a-b)>tol){issues.push('STEM: početní rovnost na řádku '+(n+1)+' nesedí.');break}}}return issues;
 }
 function stemLinearEquationIssues(text){
   const issues=[];
-  for(const raw of String(text||'').split(/\r?\n/)){
+  for(const [n,raw] of String(text||'').split(/\r?\n/).entries()){
     const line=raw.replace(/\*\*/g,'').trim().replace(/^\d{1,3}\s*[.)]\s*/,'').trim(),m=line.match(/^(.+?)=([^=]+?)(?:\s*(?:→|=>|⇒|;)\s*|\s{2,})([a-zA-Z])\s*=\s*(-?\d+(?:[.,]\d+)?)\s*$/);if(!m)continue;
     const variable=m[3],value=Number(m[4].replace(',','.'));if(!Number.isFinite(value))continue;
     const escapedVariable=variable.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     // Replace only the variable token. Keeping its surrounding sign/coefficient intact avoids
     // turning "6 - x" or "-(4 + x)" into a different expression before evaluation.
     const subst=expr=>String(expr).replace(new RegExp(escapedVariable,'g'),'('+value+')');
-    const a=stemEvalArithmetic(subst(m[1])),b=stemEvalArithmetic(subst(m[2]));if(a==null||b==null)continue;const tol=Math.max(1e-9,Math.abs(a)*1e-8,Math.abs(b)*1e-8);if(Math.abs(a-b)>tol)issues.push('STEM kontrola: uvedené řešení „'+variable+' = '+m[4]+'“ po dosazení nesplňuje rovnici „'+m[1].trim()+' = '+m[2].trim()+'“.');
+    const a=stemEvalArithmetic(subst(m[1])),b=stemEvalArithmetic(subst(m[2]));if(a==null||b==null)continue;const tol=Math.max(1e-9,Math.abs(a)*1e-8,Math.abs(b)*1e-8);if(Math.abs(a-b)>tol)issues.push('STEM: uvedené řešení na řádku '+(n+1)+' nesplňuje rovnici.');
   }
   return issues;
 }
@@ -3451,7 +3450,7 @@ const STEM_UNITS=Object.freeze({
 function normalizeUnitToken(u){return String(u||'').trim().replace(/²/g,'2').replace(/³/g,'3').replace(/\^2/g,'2').replace(/\^3/g,'3').replace(/ℓ/g,'l').toLowerCase()}
 function stemUnitConversionIssues(text){
   const issues=[],rx=/(-?\d+(?:[.,]\d+)?)\s*(mm²|cm²|dm²|m²|km²|mm\^2|cm\^2|dm\^2|m\^2|km\^2|mm³|cm³|dm³|m³|mm\^3|cm\^3|dm\^3|m\^3|km\/h|m\/s|mm|cm|dm|km|m|mg|kg|g|t|ms|min|h|s|mL|ml|L|l|kPa|MPa|Pa|kN|N|kJ|J|kW|W|kHz|Hz)\s*=\s*(-?\d+(?:[.,]\d+)?)\s*(mm²|cm²|dm²|m²|km²|mm\^2|cm\^2|dm\^2|m\^2|km\^2|mm³|cm³|dm³|m³|mm\^3|cm\^3|dm\^3|m\^3|km\/h|m\/s|mm|cm|dm|km|m|mg|kg|g|t|ms|min|h|s|mL|ml|L|l|kPa|MPa|Pa|kN|N|kJ|J|kW|W|kHz|Hz)/gi;
-  for(const m of String(text||'').matchAll(rx)){const a=Number(m[1].replace(',','.')),b=Number(m[3].replace(',','.')),ua=STEM_UNITS[normalizeUnitToken(m[2])],ub=STEM_UNITS[normalizeUnitToken(m[4])];if(!ua||!ub||ua[0]!==ub[0])continue;const av=a*ua[1],bv=b*ub[1],tol=Math.max(1e-9,Math.abs(av)*1e-7,Math.abs(bv)*1e-7);if(Math.abs(av-bv)>tol)issues.push('STEM kontrola: převod „'+m[0]+'“ numericky nesedí.');}
+  for(const [n,line] of String(text||'').split(/\r?\n/).entries())for(const m of line.matchAll(rx)){const a=Number(m[1].replace(',','.')),b=Number(m[3].replace(',','.')),ua=STEM_UNITS[normalizeUnitToken(m[2])],ub=STEM_UNITS[normalizeUnitToken(m[4])];if(!ua||!ub||ua[0]!==ub[0])continue;const av=a*ua[1],bv=b*ub[1],tol=Math.max(1e-9,Math.abs(av)*1e-7,Math.abs(bv)*1e-7);if(Math.abs(av-bv)>tol)issues.push('STEM: převod jednotek na řádku '+(n+1)+' nesedí.');}
   return issues;
 }
 const CHEM_SUP_DIGITS=Object.freeze({'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'});
@@ -3482,8 +3481,8 @@ function chemReactionBalanced(line){
   function side(species){const total={};for(const raw of species){let coeff=1,formula=raw.replace(/^\d+[.)]\s*/,'').trim();const cm=formula.match(/^(\d+)\s*(?=[A-Z(\[])/);if(cm){coeff=Number(cm[1]);formula=formula.slice(cm[0].length).trim()}const counts=chemParseFormula(formula);if(!counts)return null;for(const [el,n] of Object.entries(counts))total[el]=(total[el]||0)+coeff*n}return total}
   const a=side(left),b=side(right);if(!a||!b)return null;const keys=new Set([...Object.keys(a),...Object.keys(b)]);return [...keys].every(k=>(a[k]||0)===(b[k]||0));
 }
-function stemChemicalIssues(text){const issues=[];for(const raw of String(text||'').split(/\r?\n/)){const balanced=chemReactionBalanced(raw),charge=chemReactionChargeBalanced(raw);if(balanced===false)issues.push('STEM kontrola: chemická rovnice „'+raw.trim()+'“ není vyčíslena na stejný počet atomů.');if(charge===false)issues.push('STEM kontrola: iontová rovnice „'+raw.trim()+'“ nemá stejný celkový náboj na obou stranách.');}return issues}
-function stemLatexIssues(text){const issues=[],seen=new Set();for(const m of String(text||'').matchAll(/\\([A-Za-z]+)/g)){if(!STEM_ALLOWED_LATEX.has(m[1])&&!seen.has(m[1])){seen.add(m[1]);issues.push('STEM zobrazení: nepodporovaný LaTeX příkaz \\'+m[1]+' může být v listu zobrazen doslova; uprav zápis nebo použij běžné symboly.')}}return issues}
+function stemChemicalIssues(text){const issues=[];for(const [n,raw] of String(text||'').split(/\r?\n/).entries()){const balanced=chemReactionBalanced(raw),charge=chemReactionChargeBalanced(raw);if(balanced===false)issues.push('STEM: chemická rovnice na řádku '+(n+1)+' není vyčíslena.');if(charge===false)issues.push('STEM: iontová rovnice na řádku '+(n+1)+' nemá shodný náboj.');}return issues}
+function stemLatexIssues(text){const issues=[],seen=new Set();for(const [n,line] of String(text||'').split(/\r?\n/).entries())for(const m of line.matchAll(/\\([A-Za-z]+)/g)){if(!STEM_ALLOWED_LATEX.has(m[1])&&!seen.has(m[1])){seen.add(m[1]);issues.push('STEM: nepodporovaný LaTeX příkaz na řádku '+(n+1)+' může být zobrazen doslova; uprav zápis.')}}return issues}
 function stemValidationIssues(parsed,subject){
   const kind=stemSubjectKind(subject);if(!kind||!parsed)return [];
   const p=parsed.parts||{},key=String(p.answerKey||parsed.answerKey||''),all=[p.title,p.instructions,p.tasks,key].join('\n');let issues=[...stemLatexIssues(all)];
@@ -3539,7 +3538,7 @@ function subjectGenerationPromptLines(subject){
   return [common];
 }
 function educationalVisualPromptLines(subject){
-  const kind=subjectDomainKind(subject),stem=typeof stemSubjectKind==='function'?stemSubjectKind(subject):'',base='ODBORNÉ VIZUÁLY 1.3.36: nový přesný vizuál zapisuj jako samostatný [[EDU_TYP|{JSON}]]. Data markeru musí souhlasit se zadáním i klíčem. Zachovaný [[VISUAL_n]] nenahrazuj aproximací.';
+  const kind=subjectDomainKind(subject),stem=typeof stemSubjectKind==='function'?stemSubjectKind(subject):'',base='ODBORNÉ VIZUÁLY 1.3.38: nový přesný vizuál zapisuj jako samostatný [[EDU_TYP|{JSON}]]. Data markeru musí souhlasit se zadáním i klíčem. Zachovaný [[VISUAL_n]] nenahrazuj aproximací.';
   const chart='EDU_CHART: {"type":"bar|line|scatter|pie","title":"...","labels":["A","B"],"series":[{"name":"řada","values":[1,2]}]}.';
   const flow='EDU_FLOW: {"title":"...","direction":"lr|tb","nodes":[{"id":"a","label":"...","shape":"process|decision|start|end|entity|note"}],"edges":[{"from":"a","to":"b","label":"..."}]}. Vazby musí být odborně skutečné.';
   const timeline='EDU_TIMELINE: {"title":"...","events":[{"year":1918,"label":"..."},{"startYear":1939,"endYear":1945,"label":"..."},{"year":-500,"uncertainty":50,"approximate":true,"label":"..."}]}. Záporný rok = př. n. l.; dataci nevymýšlej.';
@@ -3981,7 +3980,8 @@ async function toggleKey(sheet,btn){
   if(!requireApiKeyForAction('vytvoření řešení'))return;
   btn.disabled=true;const old=btn.innerHTML;btn.innerHTML='<span class="mini"></span>';
   try{
-    const out=await callGemini([{text:"Ke každé úloze v tomto pracovním listu napiš stručné správné řešení / klíč. Vycházej výhradně z pracovního listu níže a zachovej jazyk úloh. Pokud úloha závisí na přiloženém obrazovém podkladu, pracuj s tím, co je na něm skutečně vidět; nic si nedomýšlej."+(typeof stemAnswerKeyPromptLine==='function'?stemAnswerKeyPromptLine(getSubjectValue()):'')+(typeof subjectAnswerKeyPromptLine==='function'?subjectAnswerKeyPromptLine(getSubjectValue()):'')+" Pouze klíč, očíslovaně podle úloh, bez úvodu.\n\nPRACOVNÍ LIST:\n"+sheet._text},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{thinking:THINKING_CHEAP,operation:'answer-key-generation'});
+    const instructions="Ke každé úloze napiš stručné správné řešení / klíč. Vycházej jen z dat pracovního listu a zachovej jazyk úloh. U obrazového podkladu pracuj jen s tím, co je vidět; nic si nedomýšlej."+(typeof stemAnswerKeyPromptLine==='function'?stemAnswerKeyPromptLine(getSubjectValue()):'')+(typeof subjectAnswerKeyPromptLine==='function'?subjectAnswerKeyPromptLine(getSubjectValue()):'')+" Pouze klíč, očíslovaně podle úloh, bez úvodu.";
+    const out=await callGemini([{text:sheet._text,label:'source'},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{thinking:THINKING_CHEAP,operation:'answer-key-generation',appInstructions:instructions});
     sheet._key=out;if(sheet._parts)sheet._parts.answerKey=out;
     sheet._validation=validateWorksheetResponse({worksheet:sheet._text,answerKey:out,parts:{...(sheet._parts||{}),answerKey:out},structured:!!sheet._structured,structureType:sheet._structured?'json':'fallback'});showStructureWarning(sheet,sheet._validation);
     box.innerHTML=keyHeaderHtml()+render(out);box.dataset.filled='1';
@@ -4104,16 +4104,14 @@ function attachSheetTools(sheet){
 
 async function repairWorksheetJson(raw,validation,base,key){
   const t=TIERS[key]||TIERS.core;
-  const issues=(validation&&validation.issues||[]).join('\n- ');
-  const prompt=[
-    'Převeď následující odpověď modelu na čistý platný JSON podle přesného schématu. Neměň věcný obsah, jen oprav strukturu. Pokud chybí answer_key, vytvoř stručný klíč podle úloh. Odpověz pouze JSONem, bez Markdownu a bez komentáře.',
+  const instructions=[
+    'Převeď datovou odpověď modelu na platný JSON podle schématu. Věcný obsah neměň; oprav jen strukturu. Chybí-li answer_key, vytvoř stručný klíč. Vrať jen JSON.',
     'Schéma: worksheet_title, student_instructions, tasks, answer_key, teacher_note. Všechny hodnoty musí být textové řetězce.',
-    'Cílová verze: '+(t.name||'Normální')+'.',
-    issues?'Zjištěné problémy:\n- '+issues:'',
-    'PŮVODNÍ ZADÁNÍ:\n'+String(base||'').slice(0,8000),
-    'ODPOVĚĎ K OPRAVĚ:\n'+String(raw||'')
-  ].filter(Boolean).join('\n\n');
-  return callGemini([{text:prompt}],{json:true,operation:'worksheet-structure-repair'});
+    'Cílová verze: '+(t.name||'Normální')+'.'
+  ].join('\n\n');
+  const count=Math.max(0,Number(validation&&validation.issues&&validation.issues.length)||0);
+  const data='DETERMINISTICKÁ VALIDACE APLIKACE: zjištěno '+count+' problémů.\n\nPŮVODNÍ ZADÁNÍ:\n'+String(base||'').slice(0,8000)+'\n\nODPOVĚĎ K OPRAVĚ:\n'+String(raw||'');
+  return callGemini([{text:data,label:'source'}],{json:true,operation:'worksheet-structure-repair',appInstructions:instructions});
 }
 
 async function generateIntoSheet(sheet,key,base,idx,total){
@@ -4180,63 +4178,54 @@ function renderQualityAudit(text,interactive=false,appliedIndexes=[]){
 }
 const QualityCheck={
   makePrompt(sheet,finalPass=false){
-    const parts=sheet._parts||{};
-    const structuredContext=sheet._structured?([
-      '',
-      'VNITŘNÍ ČÁSTI PRO KONTROLU:',
-      'NÁZEV:', parts.title||'',
-      '',
-      'INSTRUKCE PRO ŽÁKY:', parts.instructions||'',
-      '',
-      'ÚLOHY:', parts.tasks||'',
-      '',
-      'POZNÁMKA PRO UČITELE:', parts.teacherNote||''
-    ].join('\n')):'';
-    const validationContext=(sheet._validation&&!sheet._validation.ok)?([
-      '',
-      'STRUKTURNÍ UPOZORNĚNÍ APLIKACE:',
-      '- '+sheet._validation.issues.join('\n- '),
-      'Při kontrole výslovně ověř, zda tento problém neohrožuje použitelnost materiálu.'
-    ].join('\n')):'';
     return [
-      finalPass?'Toto je VOLITELNÁ FINÁLNÍ kontrola po zapracování předchozích oprav. Hledej jen skutečné zbývající chyby a rozpory, ne nové stylistické preference.':'Zkontroluj tento pracovní list nebo test před použitím ve škole. Jde o HLAVNÍ kontrolu a cílem je zachytit všechny konkrétní problémy už v tomto jediném průchodu.',
+      finalPass?'Toto je VOLITELNÁ FINÁLNÍ kontrola po zapracování předchozích oprav. Hledej jen skutečné zbývající chyby a rozpory, ne nové stylistické preference.':'Zkontroluj pracovní list nebo test před použitím ve škole. Jde o HLAVNÍ kontrolu a cílem je zachytit všechny konkrétní problémy už v tomto jediném průchodu.',
       'V rámci tohoto jednoho požadavku proveď interně dva průchody: nejprve systematicky projdi každou úlohu, instrukci, bodování a odpověď v klíči; potom znovu projdi celý materiál jako celek a sluč duplicitní nálezy. Neodkládej další skutečné chyby na budoucí kontrolu a nevracej jen náhodný vzorek problémů.',
       ...(typeof stemQualityPromptLines==='function'?stemQualityPromptLines(getSubjectValue()):[]),
       ...(typeof subjectQualityPromptLines==='function'?subjectQualityPromptLines(getSubjectValue()):[]),
       'Zaměř se na: 1) věcnou správnost a zachování odborného zápisu, 2) soulad s požadovanou diferenciací a zvolenou variantou, 3) jazykovou správnost, 4) úplnost a použitelnost řešení, 5) rizika nejasného zadání, 6) přiměřenost rozsahu a času, 7) zachování formátu, počtu úloh a bodování tam, kde bylo v originálu, a konzistenci nově navržených bodů, 8) přítomnost hlavního pedagogického cíle a ověřovaných dovedností, 9) možná citlivá data, jména žáků nebo údaje, které je vhodné anonymizovat, 10) pokud jsou přiložené mapy, grafy, schémata nebo jiné obrazy, zda zadání skutečně odpovídá tomu, co je na nich vidět, a zda je materiál bez nich řešitelný tak, jak má být.',
-      'ODBORNÉ RENDERERY: pokud text obsahuje [[EDU_...|{...}]], ověř, že JSON marker je platný a jeho data přesně souhlasí se zadáním i answer_key; vizuál nesmí zobrazovat jiné hodnoty, body, vazby, noty nebo zvýraznění než text.',
+      'ODBORNÉ RENDERERY: pokud data obsahují [[EDU_...|{...}]], ověř, že JSON marker je platný a jeho data přesně souhlasí se zadáním i answer_key; vizuál nesmí zobrazovat jiné hodnoty, body, vazby, noty nebo zvýraznění než text.',
       'Každé tvrzení Opravit musí být konkrétní a skutečně opravitelné. Doporučení používej jen pro užitečné nepovinné zlepšení; nevytvářej další práci jen kvůli stylu. Pokud je vše správně, napiš to jako OK a nevymýšlej problém.',
       'Pokud jsou v textu české pasáže, uplatni nulovou toleranci ke gramatickým, stylistickým a lexikálním chybám.',
-      'Vrať krátký audit v češtině, každý bod na samostatném řádku, každý řádek začni jedním ze štítků OK: / Opravit: / Doporučení: podle závažnosti. Bez úvodu a bez závěru.',
-      structuredContext,
-      validationContext,
-      'PRACOVNÍ LIST:',
-      sheet._text||'',
-      'ŘEŠENÍ:',
-      sheet._key||''
-    ].filter(x=>x!==null&&x!==undefined&&String(x).length).join('\n\n');
+      'Vrať krátký audit v češtině, každý bod na samostatném řádku, každý řádek začni jedním ze štítků OK: / Opravit: / Doporučení: podle závažnosti. Bez úvodu a bez závěru.'
+    ].join('\n\n');
+  },
+  dataParts(sheet){
+    const parts=sheet._parts||{},count=sheet._validation&&!sheet._validation.ok?Math.max(0,Number(sheet._validation.issues&&sheet._validation.issues.length)||0):0;
+    const data=[
+      sheet._structured?'VNITŘNÍ ČÁSTI PRO KONTROLU:\nNÁZEV: '+String(parts.title||'')+'\nINSTRUKCE PRO ŽÁKY: '+String(parts.instructions||'')+'\nÚLOHY: '+String(parts.tasks||'')+'\nPOZNÁMKA PRO UČITELE: '+String(parts.teacherNote||''):'',
+      count?'STRUKTURNÍ UPOZORNĚNÍ APLIKACE: deterministická validace zjistila '+count+' problémů; při kontrole ověř použitelnost materiálu.':'',
+      'PRACOVNÍ LIST:\n'+String(sheet._text||''),
+      'ŘEŠENÍ:\n'+String(sheet._key||'')
+    ].filter(Boolean).join('\n\n');
+    return [{text:data,label:'source'}];
   }
 };
 const QualityRevision={
-  makePrompt(sheet,suggestions){
-    const t=TIERS[sheet._tierKey]||TIERS.core,parts=sheet._parts||{};
+  makePrompt(sheet){
+    const t=TIERS[sheet._tierKey]||TIERS.core;
     return [
-      'Jsi zkušený učitel. Uprav již vytvořený pracovní list POUZE podle níže vybraných bodů kontroly kvality.',
+      'Jsi zkušený učitel. Uprav pracovní list POUZE podle vybraných bodů kontroly kvality v datové vrstvě.',
       'Cílová úroveň zůstává: '+t.name+'. Neměň výukový cíl, téma, jazyk ani jiné části jen proto, že bys je sám formuloval jinak. Nevybrané návrhy auditu nejsou pokyn k úpravě.',
-      'Po zapracování proveď ještě v rámci TÉHOŽ požadavku interní závěrečné ověření: zkontroluj, že oprava nezavedla nový rozpor, že všechny odpovědi v answer_key stále sedí k úlohám a že případné bodování je konzistentní. U STEM materiálu znovu přepočítej změněné výsledky, jednotky a rovnice. Výstup už dál nerozebírej; vrať rovnou čistou opravenou verzi.',
+      'Po zapracování proveď v TÉMŽ požadavku interní závěrečné ověření: zkontroluj, že oprava nezavedla nový rozpor, všechny odpovědi v answer_key stále sedí k úlohám a případné bodování je konzistentní. U STEM materiálu znovu přepočítej změněné výsledky, jednotky a rovnice. Výstup už dál nerozebírej; vrať rovnou čistou opravenou verzi.',
       ...(typeof stemQualityPromptLines==='function'?stemQualityPromptLines(getSubjectValue()):[]),
       ...(typeof subjectQualityPromptLines==='function'?subjectQualityPromptLines(getSubjectValue()):[]),
       (sheet._visualAssets&&sheet._visualAssets.length)?'OBRAZOVÉ PODKLADY: zachovej všechny existující markery [[VISUAL_n]] na smysluplném místě. Původní obrazy se nesmí překreslit ani nahradit textovou imitací; aplikace je vloží sama.':'',
       sheet._mediaSource?'MULTIMÉDIA: zachovej marker [[MEDIA_SOURCE]]. Do student_instructions ani tasks nepřenášej transkript, titulky ani popis odpovědí ze zdrojového audia/videa; ty patří nanejvýš do answer_key nebo teacher_note.':'',
       'ODBORNÉ RENDERERY: existující [[EDU_...|{...}]] marker zachovej jako jeden samostatný řádek s platným JSON. Pokud oprava mění data úlohy, aktualizuj marker i answer_key konzistentně; pokud data nemění, marker svévolně neupravuj.',
-      'Vrať pouze platný JSON objekt bez Markdownu se stejnými klíči: worksheet_title, student_instructions, tasks, answer_key, teacher_note. Všechny hodnoty jsou textové řetězce. Pokud úprava změní správnou odpověď, aktualizuj answer_key.',
+      'Vrať pouze platný JSON objekt bez Markdownu se stejnými klíči: worksheet_title, student_instructions, tasks, answer_key, teacher_note. Všechny hodnoty jsou textové řetězce. Pokud úprava změní správnou odpověď, aktualizuj answer_key.'
+    ].filter(Boolean).join('\n\n');
+  },
+  dataParts(sheet,suggestions){
+    const parts=sheet._parts||{};
+    return [{text:[
       'VYBRANÉ BODY K ZAPRACOVÁNÍ:\n- '+suggestions.map(x=>x.body).join('\n- '),
-      'AKTUÁLNÍ NÁZEV:\n'+(parts.title||''),
-      'AKTUÁLNÍ INSTRUKCE:\n'+(parts.instructions||''),
-      'AKTUÁLNÍ ÚLOHY / PRACOVNÍ LIST:\n'+(parts.tasks||sheet._text||''),
-      'AKTUÁLNÍ ŘEŠENÍ:\n'+(sheet._key||parts.answerKey||''),
-      'AKTUÁLNÍ POZNÁMKA PRO UČITELE:\n'+(parts.teacherNote||'')
-    ].join('\n\n');
+      'AKTUÁLNÍ NÁZEV:\n'+String(parts.title||''),
+      'AKTUÁLNÍ INSTRUKCE:\n'+String(parts.instructions||''),
+      'AKTUÁLNÍ ÚLOHY / PRACOVNÍ LIST:\n'+String(parts.tasks||sheet._text||''),
+      'AKTUÁLNÍ ŘEŠENÍ:\n'+String(sheet._key||parts.answerKey||''),
+      'AKTUÁLNÍ POZNÁMKA PRO UČITELE:\n'+String(parts.teacherNote||'')
+    ].join('\n\n'),label:'source'}];
   }
 };
 let qualityActiveSheet=null;
@@ -4259,8 +4248,8 @@ async function runQualityAudit(sheet,btn,finalPass=false){
   if(!requireApiKeyForAction(finalPass?'finální kontrolu kvality':'kontrolu kvality'))return false;
   btn.disabled=true;const old=btn.innerHTML;btn.innerHTML='<span class="mini"></span>';
   try{
-    const prompt=QualityCheck.makePrompt(sheet,finalPass);
-    const out=await callGemini([{text:prompt},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{thinking:THINKING_DEFAULT,operation:'worksheet-quality-audit'});
+    const instructions=QualityCheck.makePrompt(sheet,finalPass);
+    const out=await callGemini([...QualityCheck.dataParts(sheet),...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{thinking:THINKING_DEFAULT,operation:'worksheet-quality-audit',appInstructions:instructions});
     sheet._quality=out;sheet._qualityApplied=[];
     if(finalPass){sheet._qualityStage='final';sheet._finalAuditUsed=true;setSheetStatus(sheet,'finálně zkontrolováno','ok');}
     else{sheet._qualityStage='initial';setSheetStatus(sheet,'zkontrolováno','ok');}
@@ -4283,7 +4272,7 @@ async function applySelectedQualitySuggestions(){
   if(!requireApiKeyForAction('zapracování vybraných bodů kontroly'))return;
   const btn=$('#qualityApply'),oldNodes=[...btn.childNodes].map(n=>n.cloneNode(true)),sheet=qualityActiveSheet,snapshot=snapshotSheet(sheet),wasFinal=sheet._qualityStage==='final'||sheet._qualityStage==='final-revised';btn.disabled=true;const spin=document.createElement('span');spin.className='mini';btn.replaceChildren(spin,document.createTextNode(' Zapracovávám…'));
   try{
-    const raw=await callGemini([{text:QualityRevision.makePrompt(sheet,selected)},...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{json:true,operation:'worksheet-quality-revision'});
+    const raw=await callGemini([...QualityRevision.dataParts(sheet,selected),...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{json:true,operation:'worksheet-quality-revision',appInstructions:QualityRevision.makePrompt(sheet)});
     let parsed=normalizeParsedVisuals(parseWorksheetResponse(raw),sheet._visualAssets||[]),validation=validateWorksheetResponse(parsed);
     if(!validation.ok){
       try{const fixed=await repairWorksheetJson(raw,validation,$('#baseText').value.trim(),sheet._tierKey),fp=normalizeParsedVisuals(parseWorksheetResponse(fixed),sheet._visualAssets||[]),fv=validateWorksheetResponse(fp);if(fp&&String(fp.worksheet||'').trim()&&(fv.ok||fv.issues.length<validation.issues.length)){parsed=fp;validation=fv}}catch(_){}

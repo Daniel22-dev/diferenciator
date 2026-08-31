@@ -1,8 +1,8 @@
 {
   "schema": "ghrab-data-manifest-v1",
   "appId": "differentiator",
-  "appVersion": "1.3.36",
-  "manifestVersion": 3,
+  "appVersion": "1.3.38",
+  "manifestVersion": 4,
   "dataCategories": [
     "settings",
     "application-content",
@@ -18,45 +18,36 @@
   "stores": [
     {
       "kind": "localStorage",
-      "category": "application-data",
+      "category": "settings",
       "patterns": [
-        "ghrab.differentiator.*"
+        "ghrab.differentiator.theme.v1",
+        "ghrab.differentiator.cefr-language.v1",
+        "ghrab.differentiator.guide-seen.v1",
+        "ghrab.differentiator.ai.model.v1"
       ],
-      "sensitivity": "potentially-personal",
+      "sensitivity": "non-content",
       "authority": "client",
-      "clearOnEndWork": true
+      "clearOnEndWork": false
     },
     {
       "kind": "sessionStorage",
-      "category": "session-data",
+      "category": "credential",
       "patterns": [
         "ghrab.differentiator.ai.key.session.v1"
       ],
-      "sensitivity": "confidential",
-      "authority": "client",
-      "clearOnEndWork": true
+      "sensitivity": "secret",
+      "authority": "client-direct-mode-only",
+      "clearOnEndWork": false
     },
     {
       "kind": "localStorage",
-      "category": "credential",
+      "category": "credential-migration-only",
       "patterns": [
-        "ghrab.differentiator.ai.key.local.v1",
-        "ghrab.differentiator.ai.key.session.v1"
+        "ghrab.differentiator.ai.key.local.v1"
       ],
       "sensitivity": "secret",
       "authority": "client-direct-mode-only",
-      "clearOnEndWork": true
-    },
-    {
-      "kind": "sessionStorage",
-      "category": "credential",
-      "patterns": [
-        "ghrab.differentiator.ai.key.local.v1",
-        "ghrab.differentiator.ai.key.session.v1"
-      ],
-      "sensitivity": "secret",
-      "authority": "client-direct-mode-only",
-      "clearOnEndWork": true
+      "clearOnEndWork": false
     },
     {
       "kind": "cacheStorage",
@@ -92,12 +83,18 @@
   "deletion": {
     "supported": true,
     "clientVerified": true,
-    "serverEndpoint": "data/differentiator"
+    "clientControls": [
+      "clearWorkingData()",
+      "clearPreferenceData()",
+      "clearKey()"
+    ],
+    "serverEndpoint": "data/differentiator",
+    "serverStatus": "prepared-not-connected"
   },
   "sharedDevice": {
     "supported": true,
     "defaultInSchoolProfile": true,
-    "control": "GHRABPlatform.endWork()"
+    "control": "UI clearWorkingData + clearKey; school profile removes local provider keys"
   },
   "storageNamespace": {
     "schema": "ghrab-storage-namespace-v1",

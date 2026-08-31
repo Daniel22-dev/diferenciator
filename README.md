@@ -1,14 +1,14 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.36  
+**Aktuální verze:** 1.3.38  
 
-1.3.36 je úzký post-GARP ecosystem hardening. Nemění pedagogickou logiku ani AI workflow; sjednocuje oba aktivní deployment profily s aktuálním podepsaným access bundle AI Studia a přidává regresní pojistku proti budoucímu driftu. Bezpečnostní GARP základ z 1.3.35 zůstává zachován.
+1.3.38 je bezpečnostní kandidát pro GARP 2.3. Zpřesňuje privacy preflight, omezuje nedůvěryhodný návratový URL z AI Studio handoffu a opravuje deklaraci klientských datových/mazacích cest; pedagogická logika zůstává beze změny.
 **Platforma:** GHRAB Platform 1.1.0 · etapa P5
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.36
+- **Verze:** 1.3.38
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž
