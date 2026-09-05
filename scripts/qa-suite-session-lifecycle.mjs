@@ -5,7 +5,7 @@ import path from 'node:path';
 const root=path.resolve('.');
 const lifecycle=fs.readFileSync(path.join(root,'src/js/21-suite-session-lifecycle.js'),'utf8');
 const platform=fs.readFileSync(path.join(root,'vendor/ghrab-platform-1.1.2/ghrab-platform.js'),'utf8');
-const report={schema:'ghrab-suite-session-qa-v1',appId:'differentiator',appVersion:'1.3.40',platformVersion:'1.1.2',syntheticOnly:true,mode:'deterministic-multi-context-simulation',cases:[]};
+const report={schema:'ghrab-suite-session-qa-v1',appId:'differentiator',appVersion:'1.3.41',platformVersion:'1.1.2',syntheticOnly:true,mode:'deterministic-multi-context-simulation',cases:[]};
 const add=(id,pass,detail={})=>report.cases.push({id,pass,...detail});
 class Store{constructor(shared){this.map=shared||new Map();this.failRemoveKey='';this.failSetKey=''}getItem(k){k=String(k);return this.map.has(k)?this.map.get(k):null}setItem(k,v){k=String(k);if(k===this.failSetKey)throw new Error('synthetic-set-failure:'+k);this.map.set(k,String(v))}removeItem(k){k=String(k);if(k===this.failRemoveKey)throw new Error('synthetic-remove-failure:'+k);this.map.delete(k)}clear(){this.map.clear()}key(i){return [...this.map.keys()][i]??null}get length(){return this.map.size}}
 const sharedMap=new Map();let contexts=[];
@@ -25,6 +25,19 @@ async function settle(){await new Promise(r=>setTimeout(r,20))}
 function reset(){sharedMap.clear();contexts=[]}
 function seed(c,label){c.setMemory({paste:label+'-paste',base:label+'-base',subject:label+'-subject',working:true,keyMemory:label+'-secret'});c.session.setItem('ghrab.differentiator.ai.key.session.v1',label+'-secret');c.local.setItem('ghrab.differentiator.ai.key.local.v1',label+'-local-secret');c.local.setItem('ghrab.platform.handoff.v2',JSON.stringify({schema:'ghrab-studio-handoff-v2',target:{appId:'differentiator'},payload:{value:{content:{sourceText:label}}}}))}
 function state(c){return {memory:c.memory(),sessionKey:c.session.getItem('ghrab.differentiator.ai.key.session.v1'),localKey:c.local.getItem('ghrab.differentiator.ai.key.local.v1'),handoff:c.local.getItem('ghrab.platform.handoff.v2'),generation:c.local.getItem('ghrab.platform.suite-session-generation.v1'),observed:c.local.getItem('ghrab.differentiator.suite-session-observed.v1'),cleaned:c.local.getItem('ghrab.differentiator.suite-session-cleaned.v1'),ack:c.local.getItem('ghrab.differentiator.suite-session-ack.v1'),seen:c.local.getItem('ghrab.differentiator.suite-session-seen.v1')}}
+// Regression guard: the app lifecycle must be safe when Platform has not created a global binding yet.
+{
+ const local=new Store(),session=new Store(),docEvents=new Map(),winEvents=new Map();let lateHandler=null,memory={working:true,paste:'LATE',base:'LATE'};
+ const window={localStorage:local,sessionStorage:session,addEventListener(type,fn){if(!winEvents.has(type))winEvents.set(type,new Set());winEvents.get(type).add(fn)},dispatchEvent(ev){for(const fn of winEvents.get(ev.type)||[])fn(ev)}};
+ const document={addEventListener(type,fn){if(!docEvents.has(type))docEvents.set(type,new Set());docEvents.get(type).add(fn)},dispatchEvent(ev){for(const fn of docEvents.get(ev.type)||[])fn(ev)}};
+ const sandbox={window,document,console,setTimeout,clearTimeout,Promise,Object,String,Boolean,Error,JSON,clearWorkingData(){memory={working:false,paste:'',base:''}},hasWorkingData(){return memory.working||Boolean(memory.paste||memory.base)},setKey(){}};
+ let initialSafe=true;try{vm.createContext(sandbox);vm.runInContext(lifecycle,sandbox,{filename:'21-suite-session-lifecycle.js'})}catch(e){initialSafe=false}
+ const lateSession={contract:'ghrab-suite-session-v1',generation:()=>'',onEnd(fn){lateHandler=fn;return()=>{}},acknowledge(){return true}};
+ window.GHRAB_PLATFORM={version:'1.1.2',session:lateSession};document.dispatchEvent({type:'ghrab:platform-ready'});
+ session.setItem('ghrab.differentiator.ai.key.session.v1','LATE-secret');local.setItem('ghrab.differentiator.ai.key.local.v1','LATE-local');
+ let cleanup=null;if(lateHandler)cleanup=await lateHandler({schema:'ghrab-suite-session-v1',generation:'late-g',reason:'late-platform',clearApplicationData:true});
+ add('late-platform-init-no-reference-error',initialSafe&&typeof lateHandler==='function'&&cleanup?.ok===true&&session.getItem('ghrab.differentiator.ai.key.session.v1')===null&&local.getItem('ghrab.differentiator.ai.key.local.v1')===null,{initialSafe,handlerInstalled:typeof lateHandler==='function',cleanup});
+}
 // Platform source contract guard
 add('platform-1.1.2-contract-source',platform.includes("const PLATFORM_VERSION = '1.1.2'")&&platform.includes("contract: 'ghrab-suite-session-v1'")&&platform.includes('onEnd: onSuiteSessionEnd')&&platform.includes('acknowledge:'),{});
 // 1 open child

@@ -1,3 +1,9 @@
+## 1.3.41 — Suite-session runtime initialization hotfix (2026-09-05)
+
+- Opraven `ReferenceError: GHRAB_PLATFORM is not defined` při časném načtení lifecycle handleru.
+- Suite-session vrstva nyní bezpečně používá `window.GHRAB_PLATFORM?.session` a při pozdější inicializaci se napojí přes `ghrab:platform-ready`.
+- Beze změny storage ownership, cleanup policy a GHRAB Platform 1.1.2.
+
 ## 1.3.40 — GHRAB Platform 1.1.2 suite-session migrace (2026-09-05)
 
 - Přenesena referenční GHRAB Platform 1.1.2 z AI Studio 0.21.40 a consumer/runtime metadata vyžadují `>=1.1.2 <2.0.0`.

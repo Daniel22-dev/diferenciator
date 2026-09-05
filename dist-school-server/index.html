@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="cs" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.40" data-ghrab-platform-contract="ghrab-platform-v1" data-theme="light" data-theme-preference="light">
+<html lang="cs" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.41" data-ghrab-platform-contract="ghrab-platform-v1" data-theme="light" data-theme-preference="light">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -23,7 +23,7 @@
 
     <!-- GHRAB Platform 1.1.2 · generated -->
     <link rel="stylesheet" href="./ghrab/ghrab-platform.css" data-ghrab-platform-style>
-    <script id="ghrab-platform-config" type="application/json">{"appId":"differentiator","appName":"Diferenciátor","appVersion":"1.3.40","requiredPlatformRange":">=1.1.2 \u003c2.0.0","platformContract":"ghrab-platform-v1","brandVersion":"1.0.0","autoFooter":true,"theme":{"supported":["light","dark"],"default":"light"},"storageMigration":{"id":"p2-storage-namespace-v1","backup":"full","mappings":[{"legacy":"dpl_theme","canonical":"ghrab.differentiator.theme.v1"},{"legacy":"dpl_cefr_language_pref","canonical":"ghrab.differentiator.cefr-language.v1"},{"legacy":"dpl_guide_seen","canonical":"ghrab.differentiator.guide-seen.v1"},{"legacy":"dpl_gemini_model","canonical":"ghrab.differentiator.ai.model.v1"},{"legacy":"dpl_gemini_key","canonical":"ghrab.differentiator.ai.key.local.v1"},{"legacy":"dpl_gemini_key_session","canonical":"ghrab.differentiator.ai.key.session.v1","store":"session"},{"legacyPrefix":"dpl_","canonicalPrefix":"ghrab.differentiator.legacy."}]},"bridgeMaxBytes":500000,"artifactContract":"ghrab-artifact-envelope-v1","quality":{"schema":"ghrab-quality-consumer-v1","accessibilityContract":"ghrab-a11y-v1","performanceContract":"ghrab-performance-v1","moduleContract":"ghrab-lazy-modules-v1","requireBudget":true,"performanceBudget":{"distBytes":1050000,"entryHtmlBytes":490000,"entryCriticalBytes":670000,"largestInlineScriptBytes":380000,"precacheBytes":970000,"largestFileBytes":490000,"duplicateLargeBytes":30000},"modules":{"required":[]},"referenceProfile":{"cpuSlowdown":4,"viewport":"1366x768","memoryClassGb":4,"viewportWidths":[1280,390,320]},"stage":"P5","a11yContract":"ghrab-a11y-v1","requireRuntimeBudget":true,"runtimeBudget":{"maxDomNodes":1000,"maxRenderReadyMs":4000,"maxJsHeapUsedBytes":8000000,"maxLayoutDurationMs":3000,"maxTaskDurationMs":4000},"finalRelease":true,"cleanInstallRequired":true,"a11yGate":"ghrab-p5-runtime-a11y-v2","releaseGate":"ghrab-p5-release-v2","runtimeAudit":{"scriptsExecuted":true,"transport":"local-http","dialogStates":true,"viewports":[1280,390,320]}}}</script>
+    <script id="ghrab-platform-config" type="application/json">{"appId":"differentiator","appName":"Diferenciátor","appVersion":"1.3.41","requiredPlatformRange":">=1.1.2 \u003c2.0.0","platformContract":"ghrab-platform-v1","brandVersion":"1.0.0","autoFooter":true,"theme":{"supported":["light","dark"],"default":"light"},"storageMigration":{"id":"p2-storage-namespace-v1","backup":"full","mappings":[{"legacy":"dpl_theme","canonical":"ghrab.differentiator.theme.v1"},{"legacy":"dpl_cefr_language_pref","canonical":"ghrab.differentiator.cefr-language.v1"},{"legacy":"dpl_guide_seen","canonical":"ghrab.differentiator.guide-seen.v1"},{"legacy":"dpl_gemini_model","canonical":"ghrab.differentiator.ai.model.v1"},{"legacy":"dpl_gemini_key","canonical":"ghrab.differentiator.ai.key.local.v1"},{"legacy":"dpl_gemini_key_session","canonical":"ghrab.differentiator.ai.key.session.v1","store":"session"},{"legacyPrefix":"dpl_","canonicalPrefix":"ghrab.differentiator.legacy."}]},"bridgeMaxBytes":500000,"artifactContract":"ghrab-artifact-envelope-v1","quality":{"schema":"ghrab-quality-consumer-v1","accessibilityContract":"ghrab-a11y-v1","performanceContract":"ghrab-performance-v1","moduleContract":"ghrab-lazy-modules-v1","requireBudget":true,"performanceBudget":{"distBytes":1050000,"entryHtmlBytes":490000,"entryCriticalBytes":670000,"largestInlineScriptBytes":380000,"precacheBytes":970000,"largestFileBytes":490000,"duplicateLargeBytes":30000},"modules":{"required":[]},"referenceProfile":{"cpuSlowdown":4,"viewport":"1366x768","memoryClassGb":4,"viewportWidths":[1280,390,320]},"stage":"P5","a11yContract":"ghrab-a11y-v1","requireRuntimeBudget":true,"runtimeBudget":{"maxDomNodes":1000,"maxRenderReadyMs":4000,"maxJsHeapUsedBytes":8000000,"maxLayoutDurationMs":3000,"maxTaskDurationMs":4000},"finalRelease":true,"cleanInstallRequired":true,"a11yGate":"ghrab-p5-runtime-a11y-v2","releaseGate":"ghrab-p5-release-v2","runtimeAudit":{"scriptsExecuted":true,"transport":"local-http","dialogStates":true,"viewports":[1280,390,320]}}}</script>
     <script defer src="./ghrab/ghrab-platform.js" data-ghrab-platform-loader></script>
   </head>
 <body>
@@ -1440,11 +1440,12 @@
 ;
 
 const RELEASE = Object.freeze({
-  version: '1.3.40',
+  version: '1.3.41',
   date: '2026-09-05',
   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
   status: 'řízený pilot',
   changes: [
+    '1.3.41: Runtime hotfix.',
     '1.3.40: Platform 1.1.2 suite-session.',
     '1.3.39: GARP 2.3.',
     '1.3.38: GARP 2.3.',
@@ -2014,7 +2015,6 @@ function setResultSummary(count){
 
 
 ;
-/* GHRAB_SUITE_SESSION_LIFECYCLE_START */
 (()=>{'use strict';
 const APP_ID='differentiator',K=Object.freeze({observed:'ghrab.differentiator.suite-session-observed.v1',cleaned:'ghrab.differentiator.suite-session-cleaned.v1',ack:'ghrab.differentiator.suite-session-ack.v1',keySession:'ghrab.differentiator.ai.key.session.v1',keySessionLegacy:'dpl_gemini_key_session',keyLocal:'ghrab.differentiator.ai.key.local.v1',keyLocalLegacy:'dpl_gemini_key',handoffV2:'ghrab.platform.handoff.v2',handoffLegacy:'ghrab.handoff.v1'});
 const store=k=>{try{return k==='session'?window.sessionStorage:window.localStorage}catch{return null}},strictSet=(s,k,v)=>{if(!s)throw Error('S:'+k);s.setItem(k,String(v));if(s.getItem(k)!==String(v))throw Error('W:'+k)},strictRemove=(s,k)=>{if(!s)throw Error('S:'+k);s.removeItem(k);if(s.getItem(k)!==null)throw Error('D:'+k)};
@@ -2022,11 +2022,10 @@ function target(raw){if(!raw)return'';try{const p=JSON.parse(raw);return p?.sche
 function clearHandoff(s){for(const k of[K.handoffV2,K.handoffLegacy]){const v=s.getItem(k);if(v!==null&&target(v)===APP_ID)strictRemove(s,k)}}
 const memoryClear=()=>{try{return typeof hasWorkingData!=='function'||hasWorkingData()===false}catch{return false}};
 async function cleanupForSuiteEnd(d){const generation=String(d?.generation||'').trim();if(!generation)return{ok:false,error:'MG'};const local=store('local'),session=store('session');try{strictSet(local,K.observed,generation);if(typeof clearWorkingData!=='function')throw Error('WCU');clearWorkingData({silent:true});strictRemove(session,K.keySession);strictRemove(session,K.keySessionLegacy);strictRemove(local,K.keyLocal);strictRemove(local,K.keyLocalLegacy);if(typeof setKey==='function')setKey('','');clearHandoff(local);if(!memoryClear())throw Error('WMV');for(const k of[K.keySession,K.keySessionLegacy])if(session.getItem(k)!==null)throw Error('SSR:'+k);for(const k of[K.keyLocal,K.keyLocalLegacy])if(local.getItem(k)!==null)throw Error('LSR:'+k);strictSet(local,K.cleaned,generation);strictSet(local,K.ack,generation);return{ok:true,generation}}catch(e){try{if(local?.getItem(K.cleaned)===generation)local.removeItem(K.cleaned)}catch{}try{if(local?.getItem(K.ack)===generation)local.removeItem(K.ack)}catch{}console.error('[Diferenciátor] Suite-session cleanup selhal.',e);return{ok:false,generation,error:String(e?.message||e)}}}
-let last='';function resume(reason){const sessionApi=GHRAB_PLATFORM?.session,generation=String(sessionApi?.generation?.()||'');if(!generation||generation===last)return;void cleanupForSuiteEnd({schema:'ghrab-suite-session-v1',generation,reason,clearApplicationData:true,replay:true}).then(r=>{if(r?.ok){last=generation;sessionApi?.acknowledge?.(generation)}})}
-function install(){const sessionApi=GHRAB_PLATFORM?.session;if(!sessionApi||sessionApi.contract!=='ghrab-suite-session-v1'||typeof sessionApi.onEnd!=='function')return false;sessionApi.onEnd(async d=>{const r=await cleanupForSuiteEnd(d);if(r?.ok)last=String(d?.generation||'');return r},{replay:true});window.addEventListener('pageshow',()=>resume('pageshow'));return true}
+let last='';function resume(reason){const sessionApi=window.GHRAB_PLATFORM?.session,generation=String(sessionApi?.generation?.()||'');if(!generation||generation===last)return;void cleanupForSuiteEnd({schema:'ghrab-suite-session-v1',generation,reason,clearApplicationData:true,replay:true}).then(r=>{if(r?.ok){last=generation;sessionApi?.acknowledge?.(generation)}})}
+function install(){const sessionApi=window.GHRAB_PLATFORM?.session;if(!sessionApi||sessionApi.contract!=='ghrab-suite-session-v1'||typeof sessionApi.onEnd!=='function')return false;sessionApi.onEnd(async d=>{const r=await cleanupForSuiteEnd(d);if(r?.ok)last=String(d?.generation||'');return r},{replay:true});window.addEventListener('pageshow',()=>resume('pageshow'));return true}
 window.GHRABDifferentiatorSuiteSession=Object.freeze({contract:'ghrab-suite-session-v1',keys:K,cleanupForSuiteEnd,install});if(!install())document.addEventListener('ghrab:platform-ready',install,{once:true});
 })();
-/* GHRAB_SUITE_SESSION_LIFECYCLE_END */
 
 ;
 (function(){
@@ -3086,7 +3085,7 @@ function tryParseWorksheetJson(src){
 }
 
 ;
-const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.40'});
+const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.41'});
 const DPL_WORKSHEET_SCHEMA=Object.freeze({type:'object',properties:{worksheet_title:{type:'string'},student_instructions:{type:'string'},tasks:{type:'string'},answer_key:{type:'string'},teacher_note:{type:'string'}},required:['worksheet_title','student_instructions','tasks','answer_key','teacher_note'],additionalProperties:false});
 const DPL_AI_SCHEMAS=Object.freeze({'differentiator.text.v1':Object.freeze({type:'object',required:['text'],properties:{text:{type:'string'}},additionalProperties:false}),'differentiator.object.v1':DPL_WORKSHEET_SCHEMA});
 const dplOp=(s,d,i,m)=>({outputSchemaId:s,defaultModelProfile:d,allowedModelProfiles:['economy','balanced','quality'],inputTypes:i,streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:m});
@@ -3554,7 +3553,7 @@ function subjectGenerationPromptLines(subject){
   return [common];
 }
 function educationalVisualPromptLines(subject){
-  const kind=subjectDomainKind(subject),stem=typeof stemSubjectKind==='function'?stemSubjectKind(subject):'',base='ODBORNÉ VIZUÁLY 1.3.40: nový přesný vizuál zapisuj jako samostatný [[EDU_TYP|{JSON}]]. Data markeru musí souhlasit se zadáním i klíčem. Zachovaný [[VISUAL_n]] nenahrazuj aproximací.';
+  const kind=subjectDomainKind(subject),stem=typeof stemSubjectKind==='function'?stemSubjectKind(subject):'',base='ODBORNÉ VIZUÁLY 1.3.41: nový přesný vizuál zapisuj jako samostatný [[EDU_TYP|{JSON}]]. Data markeru musí souhlasit se zadáním i klíčem. Zachovaný [[VISUAL_n]] nenahrazuj aproximací.';
   const chart='EDU_CHART: {"type":"bar|line|scatter|pie","title":"...","labels":["A","B"],"series":[{"name":"řada","values":[1,2]}]}.';
   const flow='EDU_FLOW: {"title":"...","direction":"lr|tb","nodes":[{"id":"a","label":"...","shape":"process|decision|start|end|entity|note"}],"edges":[{"from":"a","to":"b","label":"..."}]}. Vazby musí být odborně skutečné.';
   const timeline='EDU_TIMELINE: {"title":"...","events":[{"year":1918,"label":"..."},{"startYear":1939,"endYear":1945,"label":"..."},{"year":-500,"uncertainty":50,"approximate":true,"label":"..."}]}. Záporný rok = př. n. l.; dataci nevymýšlej.';

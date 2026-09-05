@@ -1,14 +1,14 @@
 {
   "schema": "ghrab-p5-release-certification-v2",
   "appId": "differentiator",
-  "appVersion": "1.3.40",
-  "generatedAt": "2026-09-05T15:18:15.234Z",
+  "appVersion": "1.3.41",
+  "generatedAt": "2026-09-05T15:51:00.529Z",
   "axeRequired": false,
   "checks": [
     {
       "id": "version.package-consumer",
       "ok": true,
-      "detail": "1.3.40 / 1.3.40"
+      "detail": "1.3.41 / 1.3.41"
     },
     {
       "id": "stage.p5",
@@ -38,7 +38,7 @@
     {
       "id": "lock.version",
       "ok": true,
-      "detail": "1.3.40"
+      "detail": "1.3.41"
     },
     {
       "id": "dist.exists",
@@ -58,7 +58,7 @@
     {
       "id": "report.quality.version",
       "ok": true,
-      "detail": "1.3.40"
+      "detail": "1.3.41"
     },
     {
       "id": "report.browser.exists",
@@ -73,7 +73,7 @@
     {
       "id": "report.browser.version",
       "ok": true,
-      "detail": "1.3.40"
+      "detail": "1.3.41"
     },
     {
       "id": "report.runtime.exists",

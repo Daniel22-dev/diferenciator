@@ -1,11 +1,21 @@
 {
   "schema": "ghrab-suite-session-qa-v1",
   "appId": "differentiator",
-  "appVersion": "1.3.40",
+  "appVersion": "1.3.41",
   "platformVersion": "1.1.2",
   "syntheticOnly": true,
   "mode": "deterministic-multi-context-simulation",
   "cases": [
+    {
+      "id": "late-platform-init-no-reference-error",
+      "pass": true,
+      "initialSafe": true,
+      "handlerInstalled": true,
+      "cleanup": {
+        "ok": true,
+        "generation": "late-g"
+      }
+    },
     {
       "id": "platform-1.1.2-contract-source",
       "pass": true
@@ -13,7 +23,7 @@
     {
       "id": "open-child-suite-end",
       "pass": true,
-      "generation": "g-1788621491905-gsiyknnj0s7",
+      "generation": "g-1788623446701-tpvkb12gtgm",
       "state": {
         "memory": {
           "paste": "",
@@ -25,11 +35,11 @@
         "sessionKey": null,
         "localKey": null,
         "handoff": null,
-        "generation": "g-1788621491905-gsiyknnj0s7",
-        "observed": "g-1788621491905-gsiyknnj0s7",
-        "cleaned": "g-1788621491905-gsiyknnj0s7",
-        "ack": "g-1788621491905-gsiyknnj0s7",
-        "seen": "g-1788621491905-gsiyknnj0s7"
+        "generation": "g-1788623446701-tpvkb12gtgm",
+        "observed": "g-1788623446701-tpvkb12gtgm",
+        "cleaned": "g-1788623446701-tpvkb12gtgm",
+        "ack": "g-1788623446701-tpvkb12gtgm",
+        "seen": "g-1788623446701-tpvkb12gtgm"
       }
     },
     {
@@ -56,7 +66,7 @@
     {
       "id": "multi-tab",
       "pass": true,
-      "generation": "g-1788621491968-e6w9xs2a4yp",
+      "generation": "g-1788623446764-psvqq9pwxm",
       "tabA": {
         "memory": {
           "paste": "",
@@ -68,11 +78,11 @@
         "sessionKey": null,
         "localKey": null,
         "handoff": null,
-        "generation": "g-1788621491968-e6w9xs2a4yp",
-        "observed": "g-1788621491968-e6w9xs2a4yp",
-        "cleaned": "g-1788621491968-e6w9xs2a4yp",
-        "ack": "g-1788621491968-e6w9xs2a4yp",
-        "seen": "g-1788621491968-e6w9xs2a4yp"
+        "generation": "g-1788623446764-psvqq9pwxm",
+        "observed": "g-1788623446764-psvqq9pwxm",
+        "cleaned": "g-1788623446764-psvqq9pwxm",
+        "ack": "g-1788623446764-psvqq9pwxm",
+        "seen": "g-1788623446764-psvqq9pwxm"
       },
       "tabB": {
         "memory": {
@@ -85,17 +95,17 @@
         "sessionKey": null,
         "localKey": null,
         "handoff": null,
-        "generation": "g-1788621491968-e6w9xs2a4yp",
-        "observed": "g-1788621491968-e6w9xs2a4yp",
-        "cleaned": "g-1788621491968-e6w9xs2a4yp",
-        "ack": "g-1788621491968-e6w9xs2a4yp",
-        "seen": "g-1788621491968-e6w9xs2a4yp"
+        "generation": "g-1788623446764-psvqq9pwxm",
+        "observed": "g-1788623446764-psvqq9pwxm",
+        "cleaned": "g-1788623446764-psvqq9pwxm",
+        "ack": "g-1788623446764-psvqq9pwxm",
+        "seen": "g-1788623446764-psvqq9pwxm"
       }
     },
     {
       "id": "browser-back-forward",
       "pass": true,
-      "generation": "g-1788621491990-3pqi3dgn4jb",
+      "generation": "g-1788623446786-ebsrk54k73q",
       "state": {
         "memory": {
           "paste": "",
@@ -107,17 +117,17 @@
         "sessionKey": null,
         "localKey": null,
         "handoff": null,
-        "generation": "g-1788621491990-3pqi3dgn4jb",
-        "observed": "g-1788621491990-3pqi3dgn4jb",
-        "cleaned": "g-1788621491990-3pqi3dgn4jb",
-        "ack": "g-1788621491990-3pqi3dgn4jb",
-        "seen": "g-1788621491990-3pqi3dgn4jb"
+        "generation": "g-1788623446786-ebsrk54k73q",
+        "observed": "g-1788623446786-ebsrk54k73q",
+        "cleaned": "g-1788623446786-ebsrk54k73q",
+        "ack": "g-1788623446786-ebsrk54k73q",
+        "seen": "g-1788623446786-ebsrk54k73q"
       }
     },
     {
       "id": "fail-closed",
       "pass": true,
-      "generation": "g-1788621492031-w9yg6prxmhs",
+      "generation": "g-1788623446827-zni4dbn4wb",
       "state": {
         "memory": {
           "paste": "",
@@ -129,8 +139,8 @@
         "sessionKey": "FAIL-secret",
         "localKey": "FAIL-local-secret",
         "handoff": "{\"schema\":\"ghrab-studio-handoff-v2\",\"target\":{\"appId\":\"differentiator\"},\"payload\":{\"value\":{\"content\":{\"sourceText\":\"FAIL\"}}}}",
-        "generation": "g-1788621492031-w9yg6prxmhs",
-        "observed": "g-1788621492031-w9yg6prxmhs",
+        "generation": "g-1788623446827-zni4dbn4wb",
+        "observed": "g-1788623446827-zni4dbn4wb",
         "cleaned": null,
         "ack": null,
         "seen": null
@@ -141,7 +151,7 @@
       "pass": true,
       "expectedSecurityOutcome": "FAIL",
       "observedSecurityOutcome": "FAIL",
-      "generation": "g-1788621492053-7ao3idva9dj",
+      "generation": "g-1788623446849-tgx5mwh27v",
       "state": {
         "memory": {
           "paste": "NEG-paste",
@@ -153,7 +163,7 @@
         "sessionKey": "NEG-secret",
         "localKey": "NEG-local-secret",
         "handoff": "{\"schema\":\"ghrab-studio-handoff-v2\",\"target\":{\"appId\":\"differentiator\"},\"payload\":{\"value\":{\"content\":{\"sourceText\":\"NEG\"}}}}",
-        "generation": "g-1788621492053-7ao3idva9dj",
+        "generation": "g-1788623446849-tgx5mwh27v",
         "observed": null,
         "cleaned": null,
         "ack": null,
@@ -162,8 +172,8 @@
     }
   ],
   "summary": {
-    "total": 7,
-    "passed": 7,
+    "total": 8,
+    "passed": 8,
     "failed": 0
   },
   "status": "passed"
