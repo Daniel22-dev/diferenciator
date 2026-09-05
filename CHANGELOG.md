@@ -1,4 +1,12 @@
-## 1.3.38 — GARP 2.3 opravné kolo po Claude (2026-08-31)
+## 1.3.40 — GHRAB Platform 1.1.2 suite-session migrace (2026-09-05)
+
+- Přenesena referenční GHRAB Platform 1.1.2 z AI Studio 0.21.40 a consumer/runtime metadata vyžadují `>=1.1.2 <2.0.0`.
+- Přidán lifecycle handler `ghrab-suite-session-v1` s replay, multi-tab/BFCache ochranou, manifestově omezeným cleanupem a fail-closed potvrzením.
+- PC-01 a datový manifest byly srovnány se skutečnými writery včetně session/local API key migrace, target-scoped Studio handoffu, manuálových preferencí, pilot telemetry a lifecycle tombstones.
+- Přidán deterministický suite-session QA scénář s canary, delayed-open, multi-tab, Back/Forward, fail-closed a povinným negative control.
+- Kandidát je určen pro koordinovanou Platform 1.1.2 release wave; nejde o tvrzení o GREEN celého ekosystému.
+
+## 1.3.39 — GARP 2.3 opravné kolo po Claude (2026-08-31)
 
 - C-01 HIGH potvrzen a opraven strukturálně: `dplPartition()` už nikdy nehledá markery v nedůvěryhodném textu a nemůže z něj vytvořit `systemInstruction`; všechny produkční AI operace dostávají důvěryhodné instrukce explicitně přes `appInstructions` a worksheet/model/validation/media obsah zůstává v datové vrstvě pod privacy preflightem.
 - Deterministické validační hlášky už necitují cizí/modelový řádek ani nepodporovaný příkaz; používají neutrální odkaz na číslo řádku. Do následného AI kroku se navíc předává pouze počet validačních problémů. Metadata pro následné audio/video a zachované vizuály neposílají volný název souboru ani popis do instrukční vrstvy.
@@ -6,6 +14,14 @@
 - C-03 potvrzen jako LOW defense-in-depth: návrat do AI Studia zahazuje nedůvěryhodný query/fragment a credentials.
 - C-04 potvrzen jako QA křehkost: performance budget se měří nad kryptograficky svázaným seznamem produkčních souborů vytvořeným buildem, nikoli nad později znečištěným `dist/`.
 - Doplněny regresní a GARP 2.3 testy pro instruction-boundary path coverage a negative controls; kandidát je určen pro druhou nezávislou kontrolu Claude.
+
+## 1.3.38 — GARP 2.3 kandidát pro Claude kolo 2 (2026-08-31)
+
+- Opravuje potvrzený HIGH C-01: nedůvěryhodný text nelze povýšit do `systemInstruction` přes markerové dělení.
+- Produkční AI cesty používají explicitní `appInstructions`; datová vrstva prochází centrálním privacy preflightem.
+- Deterministické STEM validační hlášky necitují cizí/modelový obsah; privacy preflight je fail-closed při neznámém rozhodnutí.
+- Studio návrat odstraňuje query/fragment a userinfo; performance gate používá build file manifest.
+- Release note výslovně uvádí použití pouze syntetických dat a povinnou nezávislou kontrolu Claude.
 
 ## 1.3.37 — GARP 2.3 hardening (2026-08-31)
 

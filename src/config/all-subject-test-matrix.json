@@ -1,6 +1,6 @@
 {
   "schema": "ghrab-differentiator-all-subject-matrix-v1",
-  "version": "1.3.38",
+  "version": "1.3.40",
   "domains": [
     {
       "id": "language",

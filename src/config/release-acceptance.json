@@ -2,7 +2,7 @@
   "schema": "ghrab-release-acceptance-v1",
   "stage": "P5",
   "appId": "differentiator",
-  "appVersion": "1.3.38",
+  "appVersion": "1.3.40",
   "releaseStatus": "security-candidate-awaiting-independent-review",
   "primaryRuntime": {
     "mode": "standalone-github-pages",

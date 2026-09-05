@@ -444,13 +444,15 @@ function clearPreferenceData(){
   [[GUIDE_SEEN_SK,LEGACY_STORAGE_KEYS.guide],[CEFR_PREF_SK,LEGACY_STORAGE_KEYS.cefr],[MODEL_PROFILE_SK,LEGACY_STORAGE_KEYS.model],[THEME_SK,LEGACY_STORAGE_KEYS.theme]].forEach(([canonical,legacy])=>storageRemovePair('local',canonical,legacy));
   resetAdvancedSettings();loadModelProfile();loadTheme();restoreCefrPreference();closeDataManagement();showMessage('Nastavení smazáno','Uložené preference byly odstraněny. API klíč zůstal beze změny.');updateDataSummary();
 }
-function clearWorkingData(){
+function clearWorkingData(options={}){
+  const silent=options&&options.silent===true;
   uploaded=null;resetSourceMedia();resetSourceVisualAssets();if(typeof fileInput!=='undefined'&&fileInput)fileInput.value='';
   $('#pasteText').value='';$('#baseText').value='';$('#subject').value='';$('#mSubject').value='';$('#mTopic').value='';$('#mClass').value='';$('#mDate').value='';
   resetAdvancedSettings();$('#results').innerHTML='';hide($('#resultsPanel'));hide($('#configPanel'));show($('#inputPanel'));
   const fc=$('#filechip');if(fc)fc.classList.remove('show');const th=$('#thumb');if(th)th.classList.remove('show');setUploadInfo('');
-  setStatus('statusInput','čeká na zadání','');setStatus('statusFlow','připraveno','ok');closeDataManagement();showMessage('Pracovní data vyčištěna','Aktuální zadání a výstupy byly vyčištěny. API klíč ani uložené preference se nesmazaly.');updateDataSummary();
+  setStatus('statusInput','čeká na zadání','');setStatus('statusFlow','připraveno','ok');if(!silent){closeDataManagement();showMessage('Pracovní data vyčištěna','Aktuální zadání a výstupy byly vyčištěny. API klíč ani uložené preference se nesmazaly.')}updateDataSummary();
 }
+
 
 $('#foot').innerHTML='<div class="footer-tools"><div class="tools-wrap"><button class="footer-tools-btn" id="footerToolsBtn" type="button" aria-expanded="false" aria-controls="footerToolsMenu">Nástroje a nápověda ▴</button><div class="footer-tools-menu" id="footerToolsMenu"><button id="exportProjectBtn" type="button" title="Uloží rozpracovaný stav bez API klíče do souboru JSON">💾 Exportovat projekt</button><button id="importProjectBtn" type="button" title="Načte dříve exportovaný projekt">📂 Načíst projekt</button><button id="dataManageBtn" type="button" title="Správa lokálních dat v tomto prohlížeči">🧹 Správa dat</button><button class="test-toggle" id="testToggle" type="button" title="Otevře interní testovací nástroj" aria-expanded="false">🧪 Testy</button><button id="changelogBtn" type="button" title="Zobrazí poslední změny v aplikaci">📝 Změny</button><button id="helpBtn" type="button">❔ Jak to funguje?</button></div></div><div class="footer-tools-hint">Nápověda, projekty, správa dat a release testy jsou dostupné tady.</div></div><div data-ghrab-footer-branding></div>';
 window.GHRAB_PLATFORM?.mountFooter?.($('#foot'));

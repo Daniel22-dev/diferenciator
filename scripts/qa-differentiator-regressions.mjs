@@ -28,7 +28,7 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
 
 // T1: every direct top-level GHRAB_PLATFORM method call must exist in the shipped vendor API.
 {
-  const vendor=read('vendor/ghrab-platform-1.1.0/ghrab-platform.js');
+  const vendor=read('vendor/ghrab-platform-1.1.2/ghrab-platform.js');
   const block=vendor.match(/const api = Object\.freeze\(\{([\s\S]*?)\n\s*\}\);\n\s*\n\s*global\.GHRAB_PLATFORM = api;/)?.[1]||'';
   const exposed=new Set([...block.matchAll(/^\s{4}([A-Za-z_$][\w$]*)\s*(?=[:,])/gm)].map(m=>m[1]));
   const candidates=['src/index.template.html','src/manual/index.html',...readdirSync(join(ROOT,'src/js')).filter(x=>x.endsWith('.js')).map(x=>'src/js/'+x)];
@@ -51,7 +51,7 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
 {
   const app=JSON.parse(read('src/config/platform-manifest.json'));
   const consumer=JSON.parse(read('ghrab-platform.consumer.json'));
-  const vendor=JSON.parse(read('vendor/ghrab-platform-1.1.0/ghrab-platform-manifest-1.1.0.json'));
+  const vendor=JSON.parse(read('vendor/ghrab-platform-1.1.2/ghrab-platform-manifest-1.1.2.json'));
   const sameVersion=app.platformVersion===consumer.platform.version&&app.platformVersion===vendor.platformVersion;
   const sameRange=app.requiredPlatformRange===consumer.platform.requiredRange;
   if(!sameVersion||!sameRange)bad(`T4: rozpor platformy: app ${app.platformVersion} ${app.requiredPlatformRange}; consumer ${consumer.platform.version} ${consumer.platform.requiredRange}; vendor ${vendor.platformVersion}`);
@@ -614,16 +614,18 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   else ok('T50: návratový handoff odkaz je omezen na nakonfigurovaný Studio origin a cestu');
 }
 
-// T51: data manifest must describe real storage/deletion controls instead of a nonexistent shared-device API.
+// T51: data manifest must match the real Platform 1.1.2 suite-session deletion controls.
 {
-  const manifest=JSON.parse(read('src/config/data-manifest.json')),platform=read('vendor/ghrab-platform-1.1.0/ghrab-platform.js'),problems=[];
+  const manifest=JSON.parse(read('src/config/data-manifest.json')),platform=read('vendor/ghrab-platform-1.1.2/ghrab-platform.js'),life=read('src/js/21-suite-session-lifecycle.js'),problems=[];
   if(String(manifest.sharedDevice?.control||'').includes('GHRABPlatform.endWork'))problems.push('manifest stále deklaruje neexistující endWork API');
-  if(platform.includes('endWork')&&String(manifest.sharedDevice?.control||'').includes('clearWorkingData')===false)problems.push('manifest neodpovídá aktuálnímu control modelu');
+  if(!platform.includes("contract: 'ghrab-suite-session-v1'")||!platform.includes('onEnd'))problems.push('vendorizovaná Platforma nemá očekávaný suite-session kontrakt');
   const cred=manifest.stores.filter(x=>x.category&&String(x.category).includes('credential'));
-  if(cred.some(x=>x.clearOnEndWork===true))problems.push('credential store falešně tvrdí automatické clearOnEndWork');
+  if(!cred.length||cred.some(x=>x.clearOnEndWork!==true))problems.push('credential store není pravdivě označen clearOnEndWork');
+  if(!life.includes('sessionApi.onEnd')||!life.includes('strictRemove(session,K.keySession)')||!life.includes('strictRemove(local,K.keyLocal)'))problems.push('suite handler není napojen na skutečné credential writery');
+  if(!life.includes('strictSet(local,K.cleaned,generation)')||!life.includes('strictSet(local,K.ack,generation)'))problems.push('lokální cleanup/ack tombstones nejsou explicitní');
   if(!Array.isArray(manifest.deletion?.clientControls)||!manifest.deletion.clientControls.includes('clearWorkingData()')||!manifest.deletion.clientControls.includes('clearKey()'))problems.push('mazací cesty nejsou explicitně deklarované');
   if(problems.length)bad('T51: data manifest truthfulness: '+problems.join('; '));
-  else ok('T51: data manifest odpovídá skutečným storage a mazacím cestám aplikace');
+  else ok('T51: data manifest odpovídá Platform 1.1.2 suite-session storage a mazacím cestám aplikace');
 }
 
 

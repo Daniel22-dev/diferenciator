@@ -1,8 +1,8 @@
 {
   "schema": "ghrab-data-manifest-v1",
   "appId": "differentiator",
-  "appVersion": "1.3.38",
-  "manifestVersion": 4,
+  "appVersion": "1.3.40",
+  "manifestVersion": 5,
   "dataCategories": [
     "settings",
     "application-content",
@@ -37,7 +37,7 @@
       ],
       "sensitivity": "secret",
       "authority": "client-direct-mode-only",
-      "clearOnEndWork": false
+      "clearOnEndWork": true
     },
     {
       "kind": "localStorage",
@@ -47,7 +47,7 @@
       ],
       "sensitivity": "secret",
       "authority": "client-direct-mode-only",
-      "clearOnEndWork": false
+      "clearOnEndWork": true
     },
     {
       "kind": "cacheStorage",
@@ -58,6 +58,53 @@
       ],
       "sensitivity": "non-content-cache",
       "authority": "client",
+      "clearOnEndWork": false
+    },
+    {
+      "kind": "localStorage",
+      "category": "manual-preferences",
+      "patterns": [
+        "ghrab-differentiator-manual-progress",
+        "ghrab-manual-theme"
+      ],
+      "sensitivity": "non-content",
+      "authority": "client",
+      "clearOnEndWork": false
+    },
+    {
+      "kind": "localStorage",
+      "category": "studio-handoff-shared",
+      "patterns": [
+        "ghrab.platform.handoff.v2",
+        "ghrab.handoff.v1"
+      ],
+      "sensitivity": "application-content",
+      "authority": "shared-platform-target-scoped",
+      "clearOnEndWork": true,
+      "ownershipRule": "delete only when handoff target appId/target equals differentiator"
+    },
+    {
+      "kind": "localStorage",
+      "category": "pilot-events-shared",
+      "patterns": [
+        "ghrab.pilot.events.v2"
+      ],
+      "sensitivity": "diagnostics-metadata",
+      "authority": "shared-platform",
+      "clearOnEndWork": false,
+      "contentNote": "Differentiator writes materialId metadata only; no sourceText/tasks/prompts/results."
+    },
+    {
+      "kind": "localStorage",
+      "category": "suite-session-lifecycle",
+      "patterns": [
+        "ghrab.differentiator.suite-session-observed.v1",
+        "ghrab.differentiator.suite-session-cleaned.v1",
+        "ghrab.differentiator.suite-session-ack.v1",
+        "ghrab.differentiator.suite-session-seen.v1"
+      ],
+      "sensitivity": "non-content-security-tombstone",
+      "authority": "client-platform-lifecycle",
       "clearOnEndWork": false
     }
   ],
@@ -94,7 +141,7 @@
   "sharedDevice": {
     "supported": true,
     "defaultInSchoolProfile": true,
-    "control": "UI clearWorkingData + clearKey; school profile removes local provider keys"
+    "control": "GHRAB Platform 1.1.2 suite-session handler clears working memory, session/local provider-key remnants and target-scoped Studio handoff; preferences remain."
   },
   "storageNamespace": {
     "schema": "ghrab-storage-namespace-v1",
@@ -110,5 +157,18 @@
     ],
     "acceptsLegacyJson": true,
     "checksumRequiredForEnvelope": true
+  },
+  "suiteSession": {
+    "schema": "ghrab-suite-session-v1",
+    "platformVersion": "1.1.2",
+    "handler": "GHRAB_PLATFORM.session.onEnd",
+    "cleanupFunction": "GHRABDifferentiatorSuiteSession.cleanupForSuiteEnd",
+    "acknowledgement": {
+      "observedKey": "ghrab.differentiator.suite-session-observed.v1",
+      "cleanedKey": "ghrab.differentiator.suite-session-cleaned.v1",
+      "ackKey": "ghrab.differentiator.suite-session-ack.v1",
+      "platformSeenKey": "ghrab.differentiator.suite-session-seen.v1",
+      "rule": "ack is persisted only after cleanup and verification; handler returns ok:false on any cleanup/verification failure"
+    }
   }
 }
