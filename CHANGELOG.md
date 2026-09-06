@@ -1,3 +1,9 @@
+## 1.3.42 — Platform 1.1.2 Studio manifest alignment (2026-09-06)
+
+- Zdrojový Studio manifest byl srovnán s reálnou Platformou 1.1.2 a rozsahem `>=1.1.2 <2.0.0`.
+- Cache v manifestové šabloně je nově verzována přes `__APP_VERSION__`, aby source fallback AI Studia nemohl nést starou verzi.
+- Produkční suite-session cleanup ani storage ownership se nemění.
+
 ## 1.3.41 — Suite-session runtime initialization hotfix (2026-09-05)
 
 - Opraven `ReferenceError: GHRAB_PLATFORM is not defined` při časném načtení lifecycle handleru.

@@ -1,14 +1,14 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.41  
+**Aktuální verze:** 1.3.42  
 
-1.3.41 je hotfix kandidáta pro koordinovanou migraci na GHRAB Platform 1.1.2. Opravuje časnou inicializaci suite-session lifecycle bez změny storage ownership, cleanup policy nebo pedagogické logiky.
+1.3.42 je hotfix kandidáta pro koordinovanou migraci na GHRAB Platform 1.1.2. Opravuje časnou inicializaci suite-session lifecycle bez změny storage ownership, cleanup policy nebo pedagogické logiky.
 **Platforma:** GHRAB Platform 1.1.2 · etapa P5
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.41
+- **Verze:** 1.3.42
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž

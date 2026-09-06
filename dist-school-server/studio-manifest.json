@@ -5,7 +5,7 @@
     "cs": "Diferenciátor",
     "en": "Differentiator"
   },
-  "version": "1.3.41",
+  "version": "1.3.42",
   "status": {
     "cs": "Připraveno k řízenému pilotu",
     "en": "Ready for controlled pilot"
@@ -44,9 +44,9 @@
     "materialSchema": "ghrab-material-v1",
     "studioBridge": "2.0",
     "platformContract": "ghrab-platform-v1",
-    "platformRange": ">=1.1.0 <2.0.0"
+    "platformRange": ">=1.1.2 <2.0.0"
   },
-  "publishedAt": "2026-09-05T15:50:29.654Z",
+  "publishedAt": "2026-09-06T12:08:00.344Z",
   "aiCore": {
     "schema": "ghrab-ai-app-integration-v1",
     "status": "integrated-p1",
@@ -79,7 +79,7 @@
     "accessibilityContract": "ghrab-a11y-v1",
     "performanceContract": "ghrab-performance-v1",
     "moduleContract": "ghrab-lazy-modules-v1",
-    "cacheName": "ghrab-differentiator-v1.3.41"
+    "cacheName": "ghrab-differentiator-v1.3.42"
   },
   "deploymentProfile": "school-server",
   "serverReadyPhase": "P3"
