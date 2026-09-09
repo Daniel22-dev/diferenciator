@@ -1,0 +1,131 @@
+
+> ghrab-diferenciator@1.3.44 qa:profiles
+> node scripts/qa-ai-profiles.mjs
+
+{
+  "schema": "ghrab-ai-profile-gate-v1",
+  "appId": "differentiator",
+  "appVersion": "1.3.44",
+  "expectedProfiles": [
+    "economy",
+    "balanced",
+    "quality"
+  ],
+  "checks": [
+    {
+      "id": "ui.exact-three-profiles",
+      "ok": true,
+      "detail": "economy,balanced,quality"
+    },
+    {
+      "id": "ui.provider-neutral",
+      "ok": true,
+      "detail": "no provider model IDs/free model input"
+    },
+    {
+      "id": "ui.shared-school-direct",
+      "ok": true,
+      "detail": "shared profile controls follow provider-specific key block"
+    },
+    {
+      "id": "state.profile-only",
+      "ok": true,
+      "detail": "provider-neutral state"
+    },
+    {
+      "id": "integration.no-model-override",
+      "ok": true,
+      "detail": "Core chooses provider model from runtime profile map"
+    },
+    {
+      "id": "api.request-uses-selected-profile",
+      "ok": true,
+      "detail": "selected profile reaches request"
+    },
+    {
+      "id": "api.legacy-migration-only",
+      "ok": true,
+      "detail": "legacy provider IDs migrate to profiles"
+    },
+    {
+      "id": "operations.all-three-allowed",
+      "ok": true,
+      "detail": "7 operations"
+    },
+    {
+      "id": "direct.mode",
+      "ok": true,
+      "detail": "direct-gemini"
+    },
+    {
+      "id": "direct.profile-keys",
+      "ok": true,
+      "detail": "economy,balanced,quality"
+    },
+    {
+      "id": "direct.profile-models-distinct",
+      "ok": true,
+      "detail": "economy=gemini-3.5-flash-lite | balanced=gemini-3.6-flash | quality=gemini-3.7-flash"
+    },
+    {
+      "id": "direct.provider-is-runtime-only",
+      "ok": true,
+      "detail": "direct runtime owns Gemini IDs"
+    },
+    {
+      "id": "direct.profile-capability-order",
+      "ok": true,
+      "detail": "economy=gemini-3.5-flash-lite#0 | balanced=gemini-3.6-flash#1 | quality=gemini-3.7-flash#2"
+    },
+    {
+      "id": "direct.profile-thinking-levels",
+      "ok": true,
+      "detail": "economy=minimal/low/medium/high | balanced=minimal/low/medium/high | quality=low/medium/high"
+    },
+    {
+      "id": "direct.quality-thinking-compat",
+      "ok": true,
+      "detail": "quality excludes minimal; integration normalizes unsupported levels"
+    },
+    {
+      "id": "direct.fallback-economy",
+      "ok": true,
+      "detail": "fallback uses economy profile model"
+    },
+    {
+      "id": "timeout.direct-multimodal",
+      "ok": true,
+      "detail": "120000 ms"
+    },
+    {
+      "id": "timeout.direct-school-aligned",
+      "ok": true,
+      "detail": "direct=120000 | school=120000"
+    },
+    {
+      "id": "school.mode",
+      "ok": true,
+      "detail": "school-gateway"
+    },
+    {
+      "id": "school.provider-neutral",
+      "ok": true,
+      "detail": "no provider/model in school runtime"
+    },
+    {
+      "id": "index.loads-runtime",
+      "ok": true,
+      "detail": "runtime loaded before app"
+    },
+    {
+      "id": "school.build-swaps-runtime",
+      "ok": true,
+      "detail": "school build activates provider-neutral runtime"
+    }
+  ],
+  "summary": {
+    "passed": 22,
+    "failed": 0
+  },
+  "status": "passed"
+}

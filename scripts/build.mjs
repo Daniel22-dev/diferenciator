@@ -6,6 +6,7 @@ import {gzipSync} from 'node:zlib';
 import {join,dirname,relative} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {verifySwCoreAssets} from './sw-assets.mjs';
+import {resolveBuildTime} from './lib/build-time.mjs';
 const ROOT=join(dirname(fileURLToPath(import.meta.url)),'..'),SRC=join(ROOT,'src'),DIST=join(ROOT,'dist');
 const APP_NAME='Diferenciátor pracovních listů a testů',APP_ID='differentiator',CORE_VERSION='1.0.0';
 const CORE_DIR=join(ROOT,'vendor',`ghrab-ai-core-${CORE_VERSION}`),CORE_FILE=`ghrab-ai-core-${CORE_VERSION}.js`,CORE_MANIFEST=`ghrab-ai-core-manifest-${CORE_VERSION}.json`;
@@ -23,12 +24,12 @@ if(/(?:window|globalThis)\.GHRAB_AI\s*=|registerAdapter\s*\(/.test(appJs))fail('
 const js=readFileSync(join(CORE_DIR,CORE_FILE),'utf8')+'\n;\n'+appJs;
 const out=tpl.split(TOKENS.css).join(css).split(TOKENS.body).join(body).split(TOKENS.js).join(js);if(out.includes('==SEM_BUILD_VLOZI_'))fail('ve výstupu zůstal build token');
 writeFileSync(join(DIST,'index.html'),out);rmSync(tplPath);rmSync(join(DIST,'styles.css'));rmSync(join(DIST,'body.html'));rmSync(jsDir,{recursive:true});rmSync(join(DIST,'README_PWA.md'),{force:true});
-let hash='';try{hash=execSync('git rev-parse --short HEAD',{cwd:ROOT,stdio:['ignore','pipe','ignore']}).toString().trim()}catch{}
+let hash=String(process.env.GHRAB_BUILD_HASH||'').trim();if(hash&&!/^[0-9a-f]{7,40}$/i.test(hash))fail('GHRAB_BUILD_HASH musí být 7-40 hex znaků');if(!hash){try{hash=execSync('git rev-parse --short HEAD',{cwd:ROOT,stdio:['ignore','pipe','ignore']}).toString().trim()}catch{}}
 function* htmlFiles(dir){for(const n of readdirSync(dir)){const p=join(dir,n);if(statSync(p).isDirectory())yield* htmlFiles(p);else if(n.endsWith('.html'))yield p}}
 if(hash){const re=/(build:\s*)(['"])__BUILD__\2/g;for(const f of htmlFiles(DIST)){const x=readFileSync(f,'utf8');writeFileSync(f,x.replace(re,`$1$2${hash}$2`))}}
 const html=readFileSync(join(DIST,'index.html'),'utf8'),sw=readFileSync(join(DIST,'sw.js'),'utf8');const rel=html.match(/version:\s*['"]([\d.]+)['"]/),swm=sw.match(/APP_VERSION\s*=\s*['"]([\d.]+)['"]/);if(!rel||!swm||rel[1]!==swm[1])fail('nesouhlasí verze RELEASE a service workeru');
 const operations=JSON.parse(readFileSync(join(DIST,'ai-operations.json'),'utf8'));if(operations.appId!==APP_ID||operations.appVersion!==rel[1]||operations.coreVersion!==CORE_VERSION||operations.operations.length!==7)fail('neplatný ai-operations.json');for(const op of operations.operations)if(!appJs.includes(`'${op.operation}'`)&&!appJs.includes(`"${op.operation}"`))fail('integrace neobsahuje operaci '+op.operation);
-const smt=join(DIST,'studio-manifest.template.json');if(existsSync(smt)){const text=readFileSync(smt,'utf8').replaceAll('__APP_VERSION__',rel[1]).replaceAll('__BUILD_TIME__',new Date().toISOString());const manifest=JSON.parse(text);if(manifest.aiCore?.coreVersion!==CORE_VERSION||manifest.aiCore?.serverReady!==true||manifest.aiCore?.conformancePassed!==true)fail('studio-manifest nemá P1 AI Core metadata');writeFileSync(join(DIST,'studio-manifest.json'),text);rmSync(smt)}
+const smt=join(DIST,'studio-manifest.template.json');if(existsSync(smt)){const text=readFileSync(smt,'utf8').replaceAll('__APP_VERSION__',rel[1]).replaceAll('__BUILD_TIME__',resolveBuildTime());const manifest=JSON.parse(text);if(manifest.aiCore?.coreVersion!==CORE_VERSION||manifest.aiCore?.serverReady!==true||manifest.aiCore?.conformancePassed!==true)fail('studio-manifest nemá P1 AI Core metadata');writeFileSync(join(DIST,'studio-manifest.json'),text);rmSync(smt)}
 writeFileSync(join(DIST,'.nojekyll'),'');log(`${APP_NAME}: verze ${rel[1]} · Core ${CORE_VERSION} SHA-256 OK · ${operations.operations.length} operací · ${appJsFiles.length} kritických JS částí + lazy interní testy`);
 
 // P2: canonical cross-application platform post-processing.

@@ -1,0 +1,302 @@
+
+> ghrab-diferenciator@1.3.43 qa:quality
+> node scripts/qa-performance-budget-freeze.mjs && node scripts/qa-p3-quality.mjs && npm run qa:regressions
+
+[budget-freeze] PASS: 7 stropů zmrazeno od 1.3.24
+{
+  "schema": "ghrab-p3-quality-result-v1",
+  "appId": "differentiator",
+  "appVersion": "1.3.43",
+  "contracts": {
+    "accessibility": "ghrab-a11y-v1",
+    "performance": "ghrab-performance-v1",
+    "modules": "ghrab-lazy-modules-v1"
+  },
+  "metrics": {
+    "schema": "ghrab-performance-report-v1",
+    "appId": "differentiator",
+    "appVersion": "1.3.43",
+    "platformVersion": "1.1.2",
+    "measuredAt": "2026-09-09T09:41:14.762Z",
+    "distBytes": 991589,
+    "jsBytes": 302954,
+    "cssBytes": 24284,
+    "htmlBytes": 541502,
+    "fileCount": 43,
+    "fullHtmlCount": 2,
+    "entryHtmlBytes": 489990,
+    "entryCriticalBytes": 622840,
+    "largestInlineScriptBytes": 373358,
+    "precacheBytes": 831338,
+    "precacheAssetCount": 30,
+    "largestFileBytes": 489990,
+    "largestFilePath": "index.html",
+    "duplicateLargeBytes": 0
+  },
+  "budget": {
+    "distBytes": 1050000,
+    "entryHtmlBytes": 490000,
+    "entryCriticalBytes": 670000,
+    "largestInlineScriptBytes": 380000,
+    "precacheBytes": 970000,
+    "largestFileBytes": 490000,
+    "duplicateLargeBytes": 30000
+  },
+  "precacheAssets": [
+    "access/access-gate.css",
+    "access/error-reporter-adapter.js",
+    "access/error-reporter.css",
+    "access/error-reporter.js",
+    "access/reporter-bootstrap.js",
+    "assets/brand/school-logo.png",
+    "config/brand-manifest.json",
+    "config/platform-manifest.json",
+    "ghrab-platform.consumer.json",
+    "ghrab/ghrab-app-registry-v2.schema.json",
+    "ghrab/ghrab-artifact-envelope-v1.schema.json",
+    "ghrab/ghrab-platform-manifest-1.1.2.json",
+    "ghrab/ghrab-platform.css",
+    "icons/icon-192.png",
+    "icons/icon-32.png",
+    "icons/icon-512.png",
+    "icons/icon-maskable-512.png",
+    "index.html",
+    "manifest.webmanifest",
+    "modules/algorithm-trace-engine.js",
+    "modules/chemistry-engine.js",
+    "modules/cross-subject-engine.js",
+    "modules/educational-renderers.js",
+    "modules/geojson-engine.js",
+    "modules/map-presets.js",
+    "modules/multimedia.js",
+    "modules/office-rich.js",
+    "modules/reaction-engine.js",
+    "modules/school-cas.js",
+    "modules/tex-math.js"
+  ],
+  "duplicateGroups": [],
+  "checks": [
+    {
+      "id": "dist.exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "platform.version",
+      "ok": true,
+      "detail": "1.1.2"
+    },
+    {
+      "id": "contract.a11y",
+      "ok": true,
+      "detail": "ghrab-a11y-v1"
+    },
+    {
+      "id": "contract.performance",
+      "ok": true,
+      "detail": "ghrab-performance-v1"
+    },
+    {
+      "id": "contract.modules",
+      "ok": true,
+      "detail": "ghrab-lazy-modules-v1"
+    },
+    {
+      "id": "platform.runtime",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "platform.styles",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.reduced-motion",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.focus-visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.skip-link",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.html-documents",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "id": "a11y.lang:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.viewport:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.zoom:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.title:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.main:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.runtime:index.html",
+      "ok": true,
+      "detail": "platform=1; engine=0"
+    },
+    {
+      "id": "a11y.lang:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.viewport:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.zoom:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.title:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.main:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.runtime:manual/index.html",
+      "ok": true,
+      "detail": "platform=1; engine=0"
+    },
+    {
+      "id": "budget.distBytes",
+      "ok": true,
+      "detail": "991589 <= 1050000"
+    },
+    {
+      "id": "budget.entryHtmlBytes",
+      "ok": true,
+      "detail": "489990 <= 490000"
+    },
+    {
+      "id": "budget.entryCriticalBytes",
+      "ok": true,
+      "detail": "622840 <= 670000"
+    },
+    {
+      "id": "budget.largestInlineScriptBytes",
+      "ok": true,
+      "detail": "373358 <= 380000"
+    },
+    {
+      "id": "budget.precacheBytes",
+      "ok": true,
+      "detail": "831338 <= 970000"
+    },
+    {
+      "id": "budget.largestFileBytes",
+      "ok": true,
+      "detail": "489990 <= 490000"
+    },
+    {
+      "id": "budget.duplicateLargeBytes",
+      "ok": true,
+      "detail": "0 <= 30000"
+    },
+    {
+      "id": "budget.minimum-count",
+      "ok": true,
+      "detail": "7"
+    }
+  ],
+  "warnings": [],
+  "summary": {
+    "total": 31,
+    "passed": 31,
+    "failed": 0,
+    "warnings": 0
+  }
+}
+
+> ghrab-diferenciator@1.3.43 qa:regressions
+> node scripts/qa-differentiator-regressions.mjs
+
+Regresní brána Diferenciátoru 1.3.43
+  ✓ T1: 1 přímých volání GHRAB_PLATFORM odpovídá vendor API
+  ✓ T3: právě jedna kanonická ghrab-platform.consumer.json
+  ✓ T4: platforma 1.1.2, rozsah >=1.1.2 <2.0.0
+  ✓ T5: 157 HTML ID napojeno nebo výslovně statických
+  ✓ T8: RELEASE.changes souvisle 1.3.43–1.3.21
+  ✓ T9: pedagogická UX pravidla a cílová úroveň jsou vynucené
+  ✓ T10: kontrola je selektivní a výsledkové akce jsou zjednodušené
+  ✓ T11: DOCX import zachovává text i vložené obrázky
+  ✓ T12: checkboxy kontroly/PDF mají vlastní light/dark vzhled
+  ✓ T13: výrazný nadpis, bodování, řešení PDF a omezený auditní tok jsou chráněné
+  ✓ T14: bez duplicitního postupu, bez prostoru pro browserové URL/datum a s názvem PDF podle testu
+  ✓ T15: gymnaziální ročník je jednoznačný a bodování má 4 režimy včetně lokálního editoru
+  ✓ T16: skutečné obrazové podklady se zachovávají, zatímco úlohy v obrázku mají samostatný rekonstrukční režim
+  ✓ T17: Word Equation, STEM typografie, lokální výpočtové kontroly a browser/PDF gate jsou zapojené
+  ✓ T18: scan preflight, lokální úpravy, PDF+snímek a oddělená AI čtecí kopie jsou zapojené
+  ✓ T19: 13 předmětových domén, univerzální validace, tabulky a browser/PDF gate jsou zapojené
+  ✓ integrační regresní pojistka: bez starého bypassu a duplicitního schématu
+  ✓ T20: runtime deployment konfigurace nejsou v CORE_ASSETS a oba buildy ověřují existenci precache assetů
+  ✓ T21: kosmetické scrollování je izolováno přes safeScrollIntoView
+  ✓ T22: pouze ?test nebo #test aktivuje interní testovací režim
+  ✓ T23: kanonické storage klíče jsou primární, legacy dpl_* pouze migrační fallback
+  ✓ T24: tisk má idempotentní afterprint + timeout cleanup
+  ✓ T25: ročník čtyřletého gymnázia nemá duplicitní label/detail
+  ✓ T26: potvrzený mrtvý kód obrazové vrstvy zůstává odstraněný
+  ✓ T27: direct runtime hlídá kompatibilní thinking level pro Důkladný profil
+  ✓ T28: každý přímý P5 CI gate explicitně instaluje poppler-utils a qa:stem hlásí chybějící/selhaný pdftotext
+  ✓ T29: push/PR/deploy CI neobsahuje live Gemini provider smoke ani provider secret
+  ✓ T30: BODY fixture chrání rekonstrukci task-image, deduplikaci vizuálů, bodování a opt-in extensions
+  ✓ T31: Pages používá auditované immutable action piny a 3 bounded retry pokusy s fail-closed koncem
+  ✓ T32: strict parallel variant chrání počty položek/bodovatelnost, checkbox layout a akční image-quality UX
+  ✓ T33: obrazové volby + pořadí jsou vysvětlené, scoring je lokálně opravitelný a teacher/Markdown cleanup je přítomen
+  ✓ T34: DOCX pořadí, Flexible, Total points a význam Normální verze jsou sjednocené
+  ✓ T35: pure-PDF struktura, 12 rovnic v tabulce a STEM závorky/dvojtečka jsou chráněné regresí
+  ✓ T36: multimedia browser QA čeká na skutečný Chromium page target a nemá okamžitý /json race
+  ✓ T37: všechny hlavní Chromium QA runnery čekají na použitelný page WebSocket target
+  ✓ T38: P3/P4 jsou ruční, P5 je jediný automatický plný gate a deploy čeká na jeho úspěch bez opakování P5
+  ✓ T39: písemná aritmetika drží kompaktní mřížku, EDU_ARITH se počítá do Strict kontraktu a duplicitní layout se blokuje
+  ✓ T40: režimy Bez/Ruční bodování čistí AI bodování z instrukcí i názvu úlohy a nechávají časový limit
+  ✓ T41: všechny externí GitHub Actions jsou připnuté na 40znakové commit SHA
+  ✓ T42: AI Core instrukce oddělují nedůvěryhodný školní obsah od pravidel aplikace a tajných údajů
+  ✓ T43: P5 obsahuje tajemství-nevypisující scan zdrojů i obou buildů
+  ✓ T44: secret scan pokrývá root .env* i gzip build artefakty a failuje při nečitelném gzipu
+  ✓ T45: zdroj a teacher context jsou oddělené od aplikačních instrukcí, JSON-escaped a kryté otráveným korpusem
+  ✓ T46: worksheet-generation dostává instrukce, source a teacher-context odděleně bez indexOf nad importovaným obsahem
+  ✓ T47: dplData povoluje jen pevné labely a neznámý label degraduje na source
+  ✓ T48: oba aktivní deployment profily používají aktuální podepsaný access bundle AI Studia
+  ✓ T49: každý detekovaný e-mail vyvolá nový preflight a lze jej jen anonymizovat nebo požadavek zrušit
+  ✓ T50: návratový handoff odkaz je omezen na nakonfigurovaný Studio origin a cestu
+  ✓ T51: data manifest odpovídá Platform 1.1.2 suite-session storage a mazacím cestám aplikace
+  ✓ T52: všech 7 produkčních AI cest má explicitní trusted instructions a markerový obsah zůstává daty
+  ✓ T53: neznámý privacy stav nemá fail-open návrat a končí PREFLIGHT_BLOCKED
+  ✓ T54: návrat do Studia zahazuje query, fragment i userinfo z handoffu
+  ✓ T55: performance budget je svázán s čerstvým SHA-256 build manifestem, ne s pořadím QA reportů
+  ✓ T56: deterministické validační hlášky necitují cizí/modelový obsah a používají pouze číslo řádku
+CELKEM: regresní brána zelená.

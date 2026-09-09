@@ -1,0 +1,7 @@
+SOURCE_DATE_EPOCH=1788955200
+first build: PASS
+second build: PASS
+diff -qr exit=0
+0 differences: byte-identical dist and dist-school-server
+dist/index.html 489996 bytes
+dist-school-server/index.html 489954 bytes

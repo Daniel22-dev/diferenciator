@@ -1,0 +1,11 @@
+DIFFERENTIATOR 1.3.46 — SCA / DEPENDENCY SUMMARY
+
+- package-lock.json is present and pins resolved package versions/integrities.
+- CycloneDX 1.5 SBOM generated: 67 lockfile package paths / 67 components / 67 unique purls, all with hashes.
+- nested dependency coverage is explicitly checked; rrweb-cssom@0.8.0 is present and the former phantom cssstyle@0.8.0 is forbidden.
+- immutable GitHub Action pinning is covered by the existing regression gate.
+- Claude round 3 independently completed clean npm ci and live npm audit on 1.3.45 with 0 vulnerabilities at all severities; dependency versions are unchanged in 1.3.46.
+- this local 1.3.46 sandbox could not repeat the connected registry check because npm ci timed out, so current connected vulnerability intelligence is intentionally NOT promoted to PASS here.
+- the independent round-4 reviewer/CI should run clean npm ci and live registry SCA against 1.3.46 and confirm SBOM/lockfile 67/67 consistency.
+
+SH-APP-09 SBOM inventory is PASS locally. SH-APP-08 remains AMBER for production assurance until current connected vulnerability intelligence is repeated in the independent/CI environment and continuous vulnerability management exists.

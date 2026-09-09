@@ -1,0 +1,50 @@
+DIFFERENTIATOR 1.3.46 — GARP 2.5.1 THREAT MODEL
+
+Protected assets
+- teacher/session identity in school-server mode;
+- source educational material, which may include student content;
+- AI prompts/results and generated worksheets/tests;
+- direct-mode provider key in client storage when the standalone profile is used;
+- platform/access/runtime configuration and signed release metadata;
+- integrity of exported learning materials.
+
+Trust boundaries / attack surfaces
+1. Browser UI and imported files (DOCX/XLSX/PPTX/PDF/images/audio/video/GeoJSON and text).
+2. AI boundary: direct Gemini in the public profile; same-origin school gateway in the school profile.
+3. Shared AI Studio handoff/localStorage and suite-session lifecycle.
+4. Service worker, browser HTTP cache and Cache Storage.
+5. Build/supply chain: npm lockfile, vendored GHRAB AI Core 1.0.0, GHRAB Platform 1.1.2, GitHub Actions.
+6. School-server auth/session/gateway endpoints; LIVE behavior is outside this PREP-only audit.
+
+Principal threats
+- prompt injection / instruction smuggling from imported material;
+- sensitive data disclosure to provider or logs;
+- XSS/unsafe rendering from AI or imported content;
+- malicious/oversized files and resource exhaustion;
+- stale/revoked platform/access/runtime bytes served from SW Cache Storage, browser HTTP cache or an unintended pre-guard route;
+- source/deployment drift, dependency drift, release tampering or rollback;
+- persistence of provider credentials or handoff content on shared devices;
+- over-consumption through repeated AI calls;
+- server misconfiguration, rate-limit/session/TLS/egress failures (LIVE-only).
+
+Key controls already present
+- GARP 2.3 AIR structural checks and prompt/data boundary controls;
+- centralized AI Core integration and operation registry;
+- explicit request/part/output/time/retry budgets;
+- school profile strips direct-provider endpoint and provider model configuration;
+- suite-session cleanup and client deletion controls;
+- CSP/header contract, secret scanner, XSS sink gate, file/subject regression suites;
+- GHRAB Platform conformance and vendored integrity checks.
+
+New 1.3.46 controls — N20/N21/N22 class closure
+- the critical-security guard is the first routing decision for a fetch: before it, the checker permits only request.method/request.url, event.request and URL origin/pathname needed to reach the guard; routing-sensitive Request/FetchEvent/URL reads, pre-guard respondWith/network/cache effects, deferred async scheduling, or multiple fetch handlers are fail-closed;
+- the whole fetch-handler route is executed in an instrumented VM for all 11 authoritative critical assets, including server-only assets not yet physically present in the deployment; after a positive guard the critical branch may not re-read routing metadata and must produce exactly one routing effect, networkOnlyNoStore;
+- the trusted networkOnlyNoStore sink is independently executed and must make exactly one fetch of the same request with cache:'no-store' and zero Cache API accesses/writes;
+- any Cache API write found inside networkOnlyNoStore is classified CRITICAL;
+- security-critical assets remain excluded from SW precache and routed network-only before cacheFirst/networkFirst paths;
+- canonical GARP 2.5.1 R2 checker, 13 application mutation controls and 66/66 canonical selftests cover the above invariants;
+- CycloneDX SBOM, build provenance, evidence manifest and signed release-integrity PREP artifact bind the release chain;
+- authoritative security-critical asset list, explicit AI-boundary inventory and vendored consistency manifest are release-gated.
+
+Residual / LIVE-only risk
+- served headers, TLS, reverse-proxy/session behavior, rate limiting, egress policy, DAST, revocation behavior, alerting and production key custody are NOT TESTED until school-server deployment.

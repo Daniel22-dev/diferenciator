@@ -1,0 +1,5 @@
+{
+  "status": "PASS",
+  "output": "security/evidence/round-1/supply-chain/build-provenance.json",
+  "subjectSha256": "a375425c5d06cf65a0bfa16d976a9e3649317b4773641e4fc1feade971b0256f"
+}

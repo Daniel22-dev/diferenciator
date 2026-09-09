@@ -1,0 +1,15 @@
+{
+  "schema": "ghrab-trust-root-v1",
+  "note": "PREP-only public trust root for Diferenciator 1.3.46 GARP 2.5.1 round-4 independent review. Disposable private key is excluded from all candidate/deployment artifacts.",
+  "updatedAt": "2026-09-09T18:45:00.000Z",
+  "keys": [
+    {
+      "keyId": "differentiator-prep-2026-09-09-D",
+      "algorithm": "Ed25519",
+      "status": "active",
+      "notBefore": "2026-09-09T00:00:00.000Z",
+      "notAfter": "2026-10-09T23:59:59.000Z",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA0l8i4Mxfq2zZdjBUrmPjLOFYzqVsYceZEhq6UDp5BCc=\n-----END PUBLIC KEY-----\n"
+    }
+  ]
+}

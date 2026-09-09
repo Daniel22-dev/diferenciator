@@ -1,0 +1,6 @@
+{
+  "status": "VERIFIED",
+  "algorithm": "Ed25519",
+  "keyId": "differentiator-prep-2026-09-09-D",
+  "keyStatus": "active"
+}

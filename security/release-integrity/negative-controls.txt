@@ -1,0 +1,11 @@
+DIFFERENCIATOR 1.3.46 — FINAL PREP NEGATIVE CONTROLS
+
+NC1|exit=1|PASS(fail-closed)
+NC2|exit=1|PASS(fail-closed)
+NC3|exit=1|PASS(fail-closed)
+NC4|exit=1|PASS(fail-closed)
+NC5|exit=1|PASS(fail-closed)
+NC6|exit=1|PASS(fail-closed)
+NC7|exit=1|PASS(fail-closed)
+NC8|exit=1|PASS(fail-closed)
+NC9|SW class hardening|PASS: app baseline +13 mutations are fail-closed; additional 22/22 class sweep is fail-closed (see security/evidence/round-4/sw).

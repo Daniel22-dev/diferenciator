@@ -1,0 +1,18 @@
+{
+  "status": "FAIL",
+  "errors": [
+    "inventory-drift-untracked:src/js/99-round3-untracked-ai.js"
+  ],
+  "files": 20,
+  "aggregate": "4dd8482e793292d235ba787a99fdb0d8bb7ee9169a8dfce211dae1f9d10fcce8",
+  "expected": "4dd8482e793292d235ba787a99fdb0d8bb7ee9169a8dfce211dae1f9d10fcce8",
+  "inventory": "/mnt/data/diff_round3/security/ai-boundary-files.json",
+  "detectedCandidates": 21,
+  "untracked": [
+    "src/js/99-round3-untracked-ai.js"
+  ],
+  "inventoryEntriesNotDetectorMatched": [],
+  "verifierRevision": "garp-2.5.1-r3-ai-inventory-drift-hotfix"
+}
+
+exit_code=1

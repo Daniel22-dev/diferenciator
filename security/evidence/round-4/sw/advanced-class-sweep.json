@@ -1,0 +1,182 @@
+{
+  "status": "PASS",
+  "count": 22,
+  "results": [
+    {
+      "id": "BP11-destination-networkFirst",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 18,
+      "pass": true
+    },
+    {
+      "id": "BP12-mode-networkFirst",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 18,
+      "pass": true
+    },
+    {
+      "id": "BP13-clientId-networkFirst",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 18,
+      "pass": true
+    },
+    {
+      "id": "BP14-url-search-networkFirst",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 18,
+      "pass": true
+    },
+    {
+      "id": "BP15-referrer-networkFirst",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 18,
+      "pass": true
+    },
+    {
+      "id": "BP16-destination-caches-match",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 18,
+      "pass": true
+    },
+    {
+      "id": "EX-credentials",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 16,
+      "pass": true
+    },
+    {
+      "id": "EX-cache",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 16,
+      "pass": true
+    },
+    {
+      "id": "EX-integrity",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 16,
+      "pass": true
+    },
+    {
+      "id": "EX-headers",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 16,
+      "pass": true
+    },
+    {
+      "id": "EX-resultingClientId",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 16,
+      "pass": true
+    },
+    {
+      "id": "EX-url-hash",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 16,
+      "pass": true
+    },
+    {
+      "id": "EX-direct-respondWith",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 18,
+      "pass": true
+    },
+    {
+      "id": "EX-ignored-networkFirst",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 16,
+      "pass": true
+    },
+    {
+      "id": "EX-ignored-fetch",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 16,
+      "pass": true
+    },
+    {
+      "id": "EX-promise-deferred",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": "fetch-handler-not-safe-for-bounded-eval",
+      "findings": 6,
+      "pass": true
+    },
+    {
+      "id": "POST-networkFirst-side-effect",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 16,
+      "pass": true
+    },
+    {
+      "id": "POST-preloadResponse-deferred",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 16,
+      "pass": true
+    },
+    {
+      "id": "MULTI-direct-listener",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": "fetch-handler-registration-ambiguous",
+      "findings": 6,
+      "pass": true
+    },
+    {
+      "id": "MULTI-computed-listener",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": "fetch-handler-registration-ambiguous",
+      "findings": 6,
+      "pass": true
+    },
+    {
+      "id": "N21-no-no-store",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 6,
+      "pass": true
+    },
+    {
+      "id": "N22-sink-cache-put",
+      "exit": 1,
+      "status": "FAIL",
+      "reason": null,
+      "findings": 8,
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+STATUS: NOT TESTED in this remediation sandbox.
+A clean npm ci attempt was environment-limited/timed out, so browser, axe and P5 results are not promoted for 1.3.46 here.
+Independent Prompt E must rerun clean npm ci, browser suites, AXE_REQUIRED=1 and qa:p5:ci over 1.3.46.
+Claude round 3 independently passed those suites over 1.3.45, but that PASS is not transferred to 1.3.46.

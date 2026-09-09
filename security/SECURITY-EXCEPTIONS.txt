@@ -1,0 +1,23 @@
+DIFFERENTIATOR 1.3.46 — SECURITY EXCEPTIONS / DEBTS
+
+E-01  CLEAN NPM INSTALL / BROWSER QA
+Status: NOT TESTED locally for 1.3.46 in this audit sandbox.
+Reason: npm ci did not complete before the sandbox network timeout. This is an environment limitation, not an application PASS or FAIL.
+Independent context: Claude round 3 completed clean npm ci plus browser/axe/P5 on 1.3.45; 1.3.46 changes are GARP/QA/build hardening plus version metadata, but those results are not transferred as a PASS for 1.3.46.
+Required closure: clean npm ci from package-lock + browser/axe/runtime P5 suite on 1.3.46 in the independent review/CI runner.
+
+E-02  DAST / SERVED HEADERS
+Status: NOT TESTED.
+Required closure: execute against the actual school-server URL after deployment, validate response headers/CSP/TLS/session behavior and malicious-input cases.
+
+E-03  SHIELD-LIVE / RI-LIVE
+Status: NOT TESTED.
+Required closure: production-like server evidence including key custody, revocation/rollback, rate limit, egress, alerting and signed deployment verification.
+
+E-04  D2 PROVIDER RETENTION / DATA-GOVERNANCE EVIDENCE
+Status: AMBER.
+Required closure: document approved school AI gateway/provider processing/retention policy before real student content is allowed.
+
+E-05  REBUILD BYTE EQUIVALENCE
+Status: CLOSED / PASS in PREP.
+Evidence: two builds with SOURCE_DATE_EPOCH=1788955200 and the same explicit GHRAB_BUILD_HASH are byte-identical across dist + dist-school-server. GHRAB_BUILD_HASH permits reproduction outside a git working copy.

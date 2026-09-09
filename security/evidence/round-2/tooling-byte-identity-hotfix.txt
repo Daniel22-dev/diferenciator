@@ -1,0 +1,16 @@
+check-sw-security-freeze.mjs BYTE-IDENTICAL
+check-vendored-consistency.mjs BYTE-IDENTICAL
+create-build-provenance.mjs BYTE-IDENTICAL
+create-evidence-manifest.mjs BYTE-IDENTICAL
+create-release-integrity.mjs BYTE-IDENTICAL
+release-gate.mjs BYTE-IDENTICAL
+scan-deployment-leaks.mjs BYTE-IDENTICAL
+selftest-garp251.mjs BYTE-IDENTICAL
+sign-release-integrity.mjs BYTE-IDENTICAL
+verify-ai-assurance-fingerprint.mjs BYTE-IDENTICAL
+verify-build-provenance.mjs BYTE-IDENTICAL
+verify-evidence-manifest.mjs BYTE-IDENTICAL
+verify-release-integrity.mjs BYTE-IDENTICAL
+verify-release-registry.mjs BYTE-IDENTICAL
+verify-release-signature.mjs BYTE-IDENTICAL
+TOTAL 15/15 BYTE-IDENTICAL

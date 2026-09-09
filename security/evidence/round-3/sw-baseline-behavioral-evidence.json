@@ -1,0 +1,342 @@
+{
+  "status": "PASS",
+  "serviceWorker": "dist-school-server/sw.js",
+  "criticalListSource": "security/security-critical-assets.json",
+  "precachedEntries": 23,
+  "precacheSources": [
+    {
+      "source": "addAll:expression",
+      "entries": [
+        "./",
+        "./index.html",
+        "./manifest.webmanifest",
+        "./access/access-gate.css",
+        "./access/reporter-bootstrap.js",
+        "./access/error-reporter.js",
+        "./access/error-reporter.css",
+        "./access/error-reporter-adapter.js",
+        "./modules/office-rich.js",
+        "./modules/educational-renderers.js",
+        "./modules/map-presets.js",
+        "./icons/icon-32.png",
+        "./icons/icon-192.png",
+        "./icons/icon-512.png",
+        "./icons/icon-maskable-512.png",
+        "./config/brand-manifest.json",
+        "./config/platform-manifest.json",
+        "./assets/brand/school-logo.png",
+        "./ghrab-platform.consumer.json"
+      ]
+    },
+    {
+      "source": "map-add:GHRAB_PLATFORM_P3_ASSETS",
+      "entries": [
+        "./ghrab/ghrab-platform.css",
+        "./ghrab/ghrab-artifact-envelope-v1.schema.json",
+        "./ghrab/ghrab-app-registry-v2.schema.json",
+        "./ghrab/ghrab-platform-manifest-1.1.2.json",
+        "./assets/brand/school-logo.png",
+        "./ghrab-platform.consumer.json"
+      ]
+    }
+  ],
+  "unresolvedCacheWrites": [],
+  "cacheFirstDetected": true,
+  "structuralNetworkOnlyGuard": true,
+  "structuralGuard": {
+    "pass": true,
+    "condition": "isSecurityCriticalRequest(url, scopePath)",
+    "hasRespondWithNetworkOnly": true,
+    "hasReturn": true,
+    "branchBeforeCacheFirst": true
+  },
+  "behavioralGuard": {
+    "status": "PASS",
+    "checkedAuthoritative": 11,
+    "checkedDeployed": 5,
+    "cases": [
+      {
+        "path": "access/app-guard.js",
+        "authority": "app-guard",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "access/access-control.js",
+        "authority": "access-control",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "ghrab/ghrab-platform.js",
+        "authority": "ghrab/ghrab-platform.js",
+        "source": "authoritative-list",
+        "inDeployment": true,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "access/deployment-config.js",
+        "authority": "access/deployment-config.js",
+        "source": "authoritative-list",
+        "inDeployment": true,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "access/revoked-access.json",
+        "authority": "revoked-access.json",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "runtime-config.js",
+        "authority": "runtime-config.js",
+        "source": "authoritative-list",
+        "inDeployment": true,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "config/deployment.json",
+        "authority": "config/deployment.json",
+        "source": "authoritative-list",
+        "inDeployment": true,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "config/deployment.school-server.json",
+        "authority": "config/deployment.school-server.json",
+        "source": "authoritative-list",
+        "inDeployment": true,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "release-integrity.json",
+        "authority": "release-integrity.json",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "release-integrity.sig",
+        "authority": "release-integrity.sig",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "integrity-status.json",
+        "authority": "integrity-status",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expected": true,
+        "actual": true
+      },
+      {
+        "path": "index.html",
+        "source": "negative-control",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "path": "assets/app.js",
+        "source": "negative-control",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "path": "manual/index.html",
+        "source": "negative-control",
+        "expected": false,
+        "actual": false
+      }
+    ],
+    "falseNegatives": [],
+    "falsePositives": []
+  },
+  "fetchRouteBehavior": {
+    "status": "PASS",
+    "checkedAuthoritative": 11,
+    "checkedDeployed": 5,
+    "cases": [
+      {
+        "path": "access/app-guard.js",
+        "authority": "app-guard",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      },
+      {
+        "path": "access/access-control.js",
+        "authority": "access-control",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      },
+      {
+        "path": "ghrab/ghrab-platform.js",
+        "authority": "ghrab/ghrab-platform.js",
+        "source": "authoritative-list",
+        "inDeployment": true,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      },
+      {
+        "path": "access/deployment-config.js",
+        "authority": "access/deployment-config.js",
+        "source": "authoritative-list",
+        "inDeployment": true,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      },
+      {
+        "path": "access/revoked-access.json",
+        "authority": "revoked-access.json",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      },
+      {
+        "path": "runtime-config.js",
+        "authority": "runtime-config.js",
+        "source": "authoritative-list",
+        "inDeployment": true,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      },
+      {
+        "path": "config/deployment.json",
+        "authority": "config/deployment.json",
+        "source": "authoritative-list",
+        "inDeployment": true,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      },
+      {
+        "path": "config/deployment.school-server.json",
+        "authority": "config/deployment.school-server.json",
+        "source": "authoritative-list",
+        "inDeployment": true,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      },
+      {
+        "path": "release-integrity.json",
+        "authority": "release-integrity.json",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      },
+      {
+        "path": "release-integrity.sig",
+        "authority": "release-integrity.sig",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      },
+      {
+        "path": "integrity-status.json",
+        "authority": "integrity-status",
+        "source": "authoritative-list",
+        "inDeployment": false,
+        "expectedRoute": "networkOnlyNoStore",
+        "respondCalls": [
+          "networkOnlyNoStore"
+        ],
+        "returnedAsync": false,
+        "error": null,
+        "pass": true
+      }
+    ],
+    "failed": []
+  },
+  "criticalAssetsInDeployment": [
+    "access/deployment-config.js",
+    "config/deployment.json",
+    "config/deployment.school-server.json",
+    "ghrab/ghrab-platform.js",
+    "runtime-config.js"
+  ],
+  "authoritativeCriticalAssets": [
+    "app-guard",
+    "access-control",
+    "ghrab/ghrab-platform.js",
+    "access/deployment-config.js",
+    "revoked-access.json",
+    "runtime-config.js",
+    "config/deployment.json",
+    "config/deployment.school-server.json",
+    "release-integrity.json",
+    "release-integrity.sig",
+    "integrity-status"
+  ],
+  "findings": [],
+  "checkerRevision": "garp-2.5.1-r3-fetch-handler-route-hotfix",
+  "note": "Static bounded Cache API analysis plus bounded behavioral evaluation of both isSecurityCriticalRequest and the complete recognized fetch handler. PASS requires every authoritative critical-list entry, including server-only entries absent from this deployment, to be classified critical and routed exactly once through networkOnlyNoStore; deployed critical assets must also be absent from recognized Cache API write paths. Does not replace SIM-07 or live revocation tests."
+}

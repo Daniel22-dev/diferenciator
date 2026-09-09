@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "sbomPath": "security/sbom/differentiator-1.3.44.cdx.json",
+  "expectedLockPackages": 67,
+  "components": 67,
+  "uniquePurl": 67,
+  "rrwebCssom08": true,
+  "phantomCssstyle08": false,
+  "errors": []
+}

@@ -1,0 +1,4 @@
+DIFFERENTIATOR 1.3.46 — DAST SUMMARY
+Status: NOT TESTED.
+Reason: no real school-server endpoint is part of this local migration.
+Required: served-header/CSP/TLS/session tests plus endpoint abuse, rate-limit and authorization checks after deployment.

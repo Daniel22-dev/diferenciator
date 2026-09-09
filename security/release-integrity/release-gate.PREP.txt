@@ -1,0 +1,80 @@
+{
+  "gate": "GARP-2.5.1-RELEASE-GATE-R2",
+  "profile": "prep",
+  "status": "GREEN",
+  "serviceWorker": "/mnt/data/diff_round4/dist-school-server/sw.js",
+  "criticalAssetList": "/mnt/data/diff_round4/security/security-critical-assets.json",
+  "stepsRun": 9,
+  "steps": [
+    {
+      "step": "deployment-leaks",
+      "script": "scan-deployment-leaks.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"root\": \"/mnt/data/diff_round4/dist-school-server\",\n  \"info\": [\n    \"INFO-binary-not-scanned:assets/brand/school-logo.png\",\n    \"INFO-binary-not-scanned:icons/icon-192.png\",\n    \"INFO-binary-not-scanned:icons/icon-32.png\",\n    \"INFO-binary-not-scanned:icons/icon-512.png\",\n    \"INFO-binary-not-scanned:icons/icon-maskable-512.png\",\n    \"INFO-binary-not-scanned:internal-tests.js.gz\"\n  ]\n}"
+    },
+    {
+      "step": "release-integrity",
+      "script": "verify-release-integrity.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"VERIFIED\",\n  \"files\": 46,\n  \"artifactDigest\": \"14633495e3b1a4c032f343ef709e2381a4cacf0b6ea5e8a962d94322fac5a47d\"\n}"
+    },
+    {
+      "step": "release-signature",
+      "script": "verify-release-signature.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"VERIFIED\",\n  \"algorithm\": \"Ed25519\",\n  \"keyId\": \"differentiator-prep-2026-09-09-D\",\n  \"keyStatus\": \"active\"\n}"
+    },
+    {
+      "step": "release-registry",
+      "script": "verify-release-registry.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"APPROVED\",\n  \"appId\": \"differentiator\",\n  \"version\": \"1.3.46\",\n  \"artifactDigest\": \"14633495e3b1a4c032f343ef709e2381a4cacf0b6ea5e8a962d94322fac5a47d\",\n  \"keyId\": \"differentiator-prep-2026-09-09-D\"\n}"
+    },
+    {
+      "step": "build-provenance",
+      "script": "verify-build-provenance.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"subjectSha256\": \"2d39f6c880ca419454d86d97828677d5331e7fd86a8d37005754295603cd6e75\",\n  \"builderId\": \"local-untrusted-builder\",\n  \"sourceRevision\": null,\n  \"warnings\": [\n    \"builder=local-untrusted-builder (PREP only, nikdy skolni release)\"\n  ]\n}"
+    },
+    {
+      "step": "evidence-manifest",
+      "script": "verify-evidence-manifest.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"files\": 41,\n  \"externalFiles\": 5\n}"
+    },
+    {
+      "step": "ai-assurance-fingerprint",
+      "script": "verify-ai-assurance-fingerprint.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"errors\": [],\n  \"files\": 20,\n  \"aggregate\": \"e6447a59ff46f373ecef59fa4cac30afe1f35c5a55170676e51cc09876b593e0\",\n  \"expected\": \"e6447a59ff46f373ecef59fa4cac30afe1f35c5a55170676e51cc09876b593e0\",\n  \"inventory\": \"/mnt/data/diff_round4/security/ai-boundary-files.json\",\n  \"detectedCandidates\": 20,\n  \"untracked\": [],\n  \"inventoryEntriesNotDetectorMatched\": [],\n  \"verifierRevision\": \"garp-2.5.1-r3-ai-inventory-drift-hotfix\"\n}"
+    },
+    {
+      "step": "sw-security-freeze",
+      "script": "check-sw-security-freeze.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"serviceWorker\": \"/mnt/data/diff_round4/dist-school-server/sw.js\",\n  \"criticalListSource\": \"/mnt/data/diff_round4/security/security-critical-assets.json\",\n  \"precachedEntries\": 23,\n  \"precacheSources\": [\n    {\n      \"source\": \"addAll:expression\",\n      \"entries\": [\n        \"./\",\n        \"./index.html\",\n        \"./manifest.webmanifest\",\n        \"./access/access-gate.css\",\n        \"./access/reporter-bootstrap.js\",\n        \"./access/error-reporter.js\",\n        \"./access/error-reporter.css\",\n        \"./access/error-reporter-adapter.js\",\n        \"./modules/office-rich.js\",\n        \"./modules/educational-renderers.js\",\n        \"./modules/map-presets.js\",\n        \"./icons/icon-32.png\",\n        \"./icons/icon-192.png\",\n        \"./icons/icon-512.png\",\n        \"./icons/icon-maskable-512.png\",\n        \"./config/brand-manifest.json\",\n        \"./config/platform-manifest.json\",\n        \"./assets/brand/school-logo.png\",\n        \"./ghrab-platform.consumer.json\"\n      ]\n    },\n    {\n      \"source\": \"map-add:GHRAB_PLATFORM_P3_ASSETS\",\n      \"entries\": [\n        \"./ghrab/ghrab-platform.css\",\n        \"./ghrab/ghrab-artifact-envelope-v1.schema.json\",\n        \"./ghrab/ghrab-app-re"
+    },
+    {
+      "step": "vendored-consistency",
+      "script": "check-vendored-consistency.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"canonicalRoot\": \"..\",\n  \"components\": [\n    {\n      \"id\": \"platform-js\",\n      \"sha256\": \"199d03d9dc9263a9e74ed1f1102df0324f3b63e78704f1c70aeacec5feec530c\"\n    },\n    {\n      \"id\": \"platform-css\",\n      \"sha256\": \"eb465488df46f3d1672d721094800b0be3eb1278924b7699873a483f130b07ad\"\n    },\n    {\n      \"id\": \"school-logo\",\n      \"sha256\": \"300396a48cc36d8c2abda0aea673273d4d985476ba88fb0430630ef89ac86770\"\n    },\n    {\n      \"id\": \"error-reporter\",\n      \"sha256\": \"db0a22f9934d3dd62db4a1ca3c7dcbbde509eea1db1f5b209765684da6aec1ec\"\n    }\n  ],\n  \"checkedCopies\": 9,\n  \"drift\": 0,\n  \"findings\": []\n}"
+    }
+  ],
+  "skippedSteps": [
+    {
+      "step": "assurance-links",
+      "reason": "verifier-not-present-in-this-tooling-profile"
+    }
+  ],
+  "note": "PREP profil muze pouzit lokalni builder. Vystup vzdy uvadi stepsRun a skippedSteps; GREEN bez uvedeni rozsahu se nesmi interpretovat jako plny SHIELD-PREP. Pokud deployment obsahuje service worker, SW kontrola a autoritativni critical-asset list jsou povinne. Neni to school-server LIVE GREEN."
+}

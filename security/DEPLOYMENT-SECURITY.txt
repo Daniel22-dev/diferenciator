@@ -1,0 +1,20 @@
+DIFFERENTIATOR 1.3.46 — DEPLOYMENT SECURITY HANDOFF
+
+Preferred school profile:
+- same-origin path /apps/diferenciator/;
+- server-session authentication;
+- AI only through /api/v1/ai/generate;
+- no local provider keys in school profile;
+- school build CSP must not permit direct generativelanguage.googleapis.com connection.
+
+Required production controls before approval:
+1. Serve deployment artifact only after independent Prompt E review.
+2. Verify release-integrity.json + release-integrity.sig against the production trust root before activation.
+3. Keep production signing private key outside source, build artifact and web root.
+4. Enforce HTTPS, secure session cookies, authorization and CSRF/session controls at the server/reverse proxy.
+5. Enforce server-side request size, timeout, retry, rate-limit/concurrency and egress policy independent of client hints.
+6. Do not cache runtime/auth/revocation/integrity/platform security assets. The included SW routes them network-only/no-store.
+7. Enable safe audit/incident logging without prompt/student-content logging by default.
+8. Execute SHIELD-LIVE / RI-LIVE, DAST and SIM-07 before real student data.
+
+security/security-critical-assets.json is verification metadata, not a secret. It must accompany source/audit tooling so the release gate can verify the service worker fail-closed.

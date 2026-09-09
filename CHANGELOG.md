@@ -50,6 +50,41 @@
 
 # Changelog
 
+## 1.3.46 — GARP 2.5.1 SHIELD kolo 4: uzavření N20–N22 tříd (2026-09-09)
+
+- N20 HIGH: SW checker vynucuje minimální kritickou cestu. Před `isSecurityCriticalRequest` jsou povolena jen data nutná pro method/origin/scope; jakékoli jiné routing-sensitive čtení, síťový/cache side effect, `respondWith`, async plánování nebo více fetch handlerů je fail-closed. Po kladném guardu nesmí kritická větev znovu rozhodovat podle Request/FetchEvent/URL metadat ani provést jiný routing efekt: jediný povolený efekt je právě jeden `networkOnlyNoStore`. Tím jsou blokovány BP11–BP16 i sousední pre/post-guard, async a multi-handler varianty.
+- N21 MEDIUM: `networkOnlyNoStore` je samostatně behaviorálně vyhodnocen a PASS vyžaduje právě jeden `fetch` stejného requestu s `{cache:'no-store'}` a nulový přístup do Cache API.
+- N22 LOW: Cache API write uvnitř `networkOnlyNoStore` je klasifikován jako CRITICAL místo neurčitého unresolved write.
+- Aplikační SW mutation sada je rozšířena na 13 negativních kontrol; kanonický selftest na 66/66.
+- Pedagogická logika, AI operace a uživatelské workflow se nemění.
+
+## 1.3.45 — GARP 2.5.1 SHIELD kolo 3: uzavření N14/N15 tříd (2026-09-09)
+
+- N14 HIGH: SW checker už neověřuje jen predikát `isSecurityCriticalRequest`; v omezeném VM behaviorálně spouští celý rozpoznaný fetch handler a každý autoritativní kritický asset musí být přesně jednou routován přes `networkOnlyNoStore`. Negovaný guard i větev bez `respondWith`/`return` jsou blokující.
+- N16/N17: PASS výstup obsahuje pozitivní behavioral evidence a checker testuje i kritické serverové assety, které ještě nejsou fyzicky v deploymentu.
+- N15 MEDIUM: kanonický `verify-ai-assurance-fingerprint.mjs` sám detekuje nové neevidované AI-boundary soubory; release gate už proto nemůže zůstat GREEN jen proto, že aplikace lokálně spustila přísnější generator.
+- N18/N19: security crosswalk odpovídá pěti SW mutation controls a P3 browser harness používá dynamicky rezervovaný loopback port s delším startup oknem.
+- Build podporuje také `GHRAB_BUILD_HASH`, aby mohl být deterministicky reprodukován i mimo git working copy.
+- GARP selftest rozšířen na 53/53 PASS. Pedagogická logika aplikace se nemění.
+
+## 1.3.44 — GARP 2.5.1 SHIELD opravné kolo po nezávislém auditu (2026-09-09)
+
+- N6 HIGH: service-worker checker nově behavioralně ověřuje skutečnou návratovou hodnotu `isSecurityCriticalRequest` pro všechny nasazené kritické assety; jednorádková mutace s `./` už nemůže projít PASS.
+- N7 MEDIUM: SBOM správně rozlišuje vnořené `node_modules` a eviduje `rrweb-cssom@0.8.0` místo neexistujícího `cssstyle@0.8.0`.
+- N8/N11: AI assurance používá explicitní inventář hranice, samostatný verifier a blokující kontrolu v rozšířeném PREP gate.
+- N9: SW security freeze je součástí postbuild/build-school-server, takže regrese padá už při buildu.
+- N10: evidence manifest v2 umí kryptograficky svázat autoritativní policy soubory mimo evidence adresář.
+- Build podporuje `SOURCE_DATE_EPOCH`/`GHRAB_BUILD_TIME` pro reprodukovatelné časové metadata.
+- Pedagogická logika aplikace se nemění. Produkční SHIELD-LIVE / RI-LIVE zůstává NOT TESTED.
+
+
+## 1.3.43 — 2026-09-09
+
+- GARP 2.5.1 SHIELD delta migrace bez změny pedagogické logiky.
+- Service worker: bezpečnostně kritické runtime/platform assety jsou explicitně network-only + no-store a nejsou součástí precache.
+- Přidána GARP 2.5.1 release-integrity, evidence, SBOM, provenance a negativní kontrolní vrstva.
+- Produkční SHIELD-LIVE / RI-LIVE zůstává NOT TESTED do nasazení na školní server.
+
 ## 1.3.35 — GARP finální hardening po 2. kole Claude (2026-08-26)
 
 - E1 potvrzen a opraven: `worksheet-generation` už nedělí smíšený prompt zpětně pomocí markerů v textu. PromptBuilder předává důvěryhodné instrukce, `source` a `teacher-context` jako samostatné části; produkční AI volání je neskládá zpět podle markerů a importovaný materiál nemůže změnit svůj štítek vložením textu `UČITELSKÝ KONTEXT (JSON):`.

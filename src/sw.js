@@ -1,14 +1,13 @@
 const GHRAB_SW_CONTRACT='ghrab-service-worker-v1';
 /* GHRAB service-worker contract v1 · update activation is user-controlled. */
-const APP_VERSION = "1.3.42";
-const CACHE_NAME = "ghrab-differentiator-v1.3.42";
+const APP_VERSION = "1.3.46";
+const CACHE_NAME = "ghrab-differentiator-v1.3.46";
 const CACHE_PREFIXES = ["ghrab-differentiator-v", "diferenciator-"];
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./access/access-gate.css",
-  "./access/deployment-config.js",
   "./access/reporter-bootstrap.js",
   "./access/error-reporter.js",
   "./access/error-reporter.css",
@@ -71,6 +70,25 @@ async function networkFirst(request, fallbackUrl = '') {
   }
 }
 
+async function networkOnlyNoStore(request) {
+  return fetch(request, { cache: 'no-store' });
+}
+
+function isSecurityCriticalRequest(url, scopePath) {
+  const relative = url.pathname.slice(scopePath.length);
+  return relative === 'runtime-config.js' ||
+    relative === 'config/deployment.json' ||
+    relative === 'config/deployment.school-server.json' ||
+    relative === 'access/deployment-config.js' ||
+    relative === 'ghrab/ghrab-platform.js' ||
+    relative === 'release-integrity.json' ||
+    relative === 'release-integrity.sig' ||
+    relative === 'integrity-status.json' ||
+    relative.endsWith('/app-guard.js') ||
+    relative.endsWith('/access-control.js') ||
+    relative.endsWith('/revoked-access.json');
+}
+
 async function cacheFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
@@ -95,7 +113,12 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   const scopePath = new URL('./', self.location.href).pathname;
-  if (!url.pathname.startsWith(scopePath) || request.cache === 'no-store' || isRuntimeRequest(url, scopePath)) return;
+  if (!url.pathname.startsWith(scopePath)) return;
+  if (isSecurityCriticalRequest(url, scopePath)) {
+    event.respondWith(networkOnlyNoStore(request));
+    return;
+  }
+  if (request.cache === 'no-store' || isRuntimeRequest(url, scopePath)) return;
   if (request.mode === 'navigate') {
     const fallback = new URL(url.pathname.includes('/manual/') ? 'manual/index.html' : 'index.html', self.registration.scope).href;
     event.respondWith(networkFirst(request, fallback));

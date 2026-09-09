@@ -1,0 +1,1118 @@
+===== npm run qa:profiles =====
+
+> ghrab-diferenciator@1.3.43 qa:profiles
+> node scripts/qa-ai-profiles.mjs
+
+{
+  "schema": "ghrab-ai-profile-gate-v1",
+  "appId": "differentiator",
+  "appVersion": "1.3.43",
+  "expectedProfiles": [
+    "economy",
+    "balanced",
+    "quality"
+  ],
+  "checks": [
+    {
+      "id": "ui.exact-three-profiles",
+      "ok": true,
+      "detail": "economy,balanced,quality"
+    },
+    {
+      "id": "ui.provider-neutral",
+      "ok": true,
+      "detail": "no provider model IDs/free model input"
+    },
+    {
+      "id": "ui.shared-school-direct",
+      "ok": true,
+      "detail": "shared profile controls follow provider-specific key block"
+    },
+    {
+      "id": "state.profile-only",
+      "ok": true,
+      "detail": "provider-neutral state"
+    },
+    {
+      "id": "integration.no-model-override",
+      "ok": true,
+      "detail": "Core chooses provider model from runtime profile map"
+    },
+    {
+      "id": "api.request-uses-selected-profile",
+      "ok": true,
+      "detail": "selected profile reaches request"
+    },
+    {
+      "id": "api.legacy-migration-only",
+      "ok": true,
+      "detail": "legacy provider IDs migrate to profiles"
+    },
+    {
+      "id": "operations.all-three-allowed",
+      "ok": true,
+      "detail": "7 operations"
+    },
+    {
+      "id": "direct.mode",
+      "ok": true,
+      "detail": "direct-gemini"
+    },
+    {
+      "id": "direct.profile-keys",
+      "ok": true,
+      "detail": "economy,balanced,quality"
+    },
+    {
+      "id": "direct.profile-models-distinct",
+      "ok": true,
+      "detail": "economy=gemini-3.5-flash-lite | balanced=gemini-3.6-flash | quality=gemini-3.7-flash"
+    },
+    {
+      "id": "direct.provider-is-runtime-only",
+      "ok": true,
+      "detail": "direct runtime owns Gemini IDs"
+    },
+    {
+      "id": "direct.profile-capability-order",
+      "ok": true,
+      "detail": "economy=gemini-3.5-flash-lite#0 | balanced=gemini-3.6-flash#1 | quality=gemini-3.7-flash#2"
+    },
+    {
+      "id": "direct.profile-thinking-levels",
+      "ok": true,
+      "detail": "economy=minimal/low/medium/high | balanced=minimal/low/medium/high | quality=low/medium/high"
+    },
+    {
+      "id": "direct.quality-thinking-compat",
+      "ok": true,
+      "detail": "quality excludes minimal; integration normalizes unsupported levels"
+    },
+    {
+      "id": "direct.fallback-economy",
+      "ok": true,
+      "detail": "fallback uses economy profile model"
+    },
+    {
+      "id": "timeout.direct-multimodal",
+      "ok": true,
+      "detail": "120000 ms"
+    },
+    {
+      "id": "timeout.direct-school-aligned",
+      "ok": true,
+      "detail": "direct=120000 | school=120000"
+    },
+    {
+      "id": "school.mode",
+      "ok": true,
+      "detail": "school-gateway"
+    },
+    {
+      "id": "school.provider-neutral",
+      "ok": true,
+      "detail": "no provider/model in school runtime"
+    },
+    {
+      "id": "index.loads-runtime",
+      "ok": true,
+      "detail": "runtime loaded before app"
+    },
+    {
+      "id": "school.build-swaps-runtime",
+      "ok": true,
+      "detail": "school build activates provider-neutral runtime"
+    }
+  ],
+  "summary": {
+    "passed": 22,
+    "failed": 0
+  },
+  "status": "passed"
+}
+EXIT=0
+
+===== npm run qa:regressions =====
+
+> ghrab-diferenciator@1.3.43 qa:regressions
+> node scripts/qa-differentiator-regressions.mjs
+
+Regresní brána Diferenciátoru 1.3.43
+  ✓ T1: 1 přímých volání GHRAB_PLATFORM odpovídá vendor API
+  ✓ T3: právě jedna kanonická ghrab-platform.consumer.json
+  ✓ T4: platforma 1.1.2, rozsah >=1.1.2 <2.0.0
+  ✓ T5: 157 HTML ID napojeno nebo výslovně statických
+  ✓ T8: RELEASE.changes souvisle 1.3.43–1.3.21
+  ✓ T9: pedagogická UX pravidla a cílová úroveň jsou vynucené
+  ✓ T10: kontrola je selektivní a výsledkové akce jsou zjednodušené
+  ✓ T11: DOCX import zachovává text i vložené obrázky
+  ✓ T12: checkboxy kontroly/PDF mají vlastní light/dark vzhled
+  ✓ T13: výrazný nadpis, bodování, řešení PDF a omezený auditní tok jsou chráněné
+  ✓ T14: bez duplicitního postupu, bez prostoru pro browserové URL/datum a s názvem PDF podle testu
+  ✓ T15: gymnaziální ročník je jednoznačný a bodování má 4 režimy včetně lokálního editoru
+  ✓ T16: skutečné obrazové podklady se zachovávají, zatímco úlohy v obrázku mají samostatný rekonstrukční režim
+  ✓ T17: Word Equation, STEM typografie, lokální výpočtové kontroly a browser/PDF gate jsou zapojené
+  ✓ T18: scan preflight, lokální úpravy, PDF+snímek a oddělená AI čtecí kopie jsou zapojené
+  ✓ T19: 13 předmětových domén, univerzální validace, tabulky a browser/PDF gate jsou zapojené
+  ✓ integrační regresní pojistka: bez starého bypassu a duplicitního schématu
+  ✓ T20: runtime deployment konfigurace nejsou v CORE_ASSETS a oba buildy ověřují existenci precache assetů
+  ✓ T21: kosmetické scrollování je izolováno přes safeScrollIntoView
+  ✓ T22: pouze ?test nebo #test aktivuje interní testovací režim
+  ✓ T23: kanonické storage klíče jsou primární, legacy dpl_* pouze migrační fallback
+  ✓ T24: tisk má idempotentní afterprint + timeout cleanup
+  ✓ T25: ročník čtyřletého gymnázia nemá duplicitní label/detail
+  ✓ T26: potvrzený mrtvý kód obrazové vrstvy zůstává odstraněný
+  ✓ T27: direct runtime hlídá kompatibilní thinking level pro Důkladný profil
+  ✓ T28: každý přímý P5 CI gate explicitně instaluje poppler-utils a qa:stem hlásí chybějící/selhaný pdftotext
+  ✓ T29: push/PR/deploy CI neobsahuje live Gemini provider smoke ani provider secret
+  ✓ T30: BODY fixture chrání rekonstrukci task-image, deduplikaci vizuálů, bodování a opt-in extensions
+  ✓ T31: Pages používá auditované immutable action piny a 3 bounded retry pokusy s fail-closed koncem
+  ✓ T32: strict parallel variant chrání počty položek/bodovatelnost, checkbox layout a akční image-quality UX
+  ✓ T33: obrazové volby + pořadí jsou vysvětlené, scoring je lokálně opravitelný a teacher/Markdown cleanup je přítomen
+  ✓ T34: DOCX pořadí, Flexible, Total points a význam Normální verze jsou sjednocené
+  ✓ T35: pure-PDF struktura, 12 rovnic v tabulce a STEM závorky/dvojtečka jsou chráněné regresí
+  ✓ T36: multimedia browser QA čeká na skutečný Chromium page target a nemá okamžitý /json race
+  ✓ T37: všechny hlavní Chromium QA runnery čekají na použitelný page WebSocket target
+  ✓ T38: P3/P4 jsou ruční, P5 je jediný automatický plný gate a deploy čeká na jeho úspěch bez opakování P5
+  ✓ T39: písemná aritmetika drží kompaktní mřížku, EDU_ARITH se počítá do Strict kontraktu a duplicitní layout se blokuje
+  ✓ T40: režimy Bez/Ruční bodování čistí AI bodování z instrukcí i názvu úlohy a nechávají časový limit
+  ✓ T41: všechny externí GitHub Actions jsou připnuté na 40znakové commit SHA
+  ✓ T42: AI Core instrukce oddělují nedůvěryhodný školní obsah od pravidel aplikace a tajných údajů
+  ✓ T43: P5 obsahuje tajemství-nevypisující scan zdrojů i obou buildů
+  ✓ T44: secret scan pokrývá root .env* i gzip build artefakty a failuje při nečitelném gzipu
+  ✓ T45: zdroj a teacher context jsou oddělené od aplikačních instrukcí, JSON-escaped a kryté otráveným korpusem
+  ✓ T46: worksheet-generation dostává instrukce, source a teacher-context odděleně bez indexOf nad importovaným obsahem
+  ✓ T47: dplData povoluje jen pevné labely a neznámý label degraduje na source
+  ✓ T48: oba aktivní deployment profily používají aktuální podepsaný access bundle AI Studia
+  ✓ T49: každý detekovaný e-mail vyvolá nový preflight a lze jej jen anonymizovat nebo požadavek zrušit
+  ✓ T50: návratový handoff odkaz je omezen na nakonfigurovaný Studio origin a cestu
+  ✓ T51: data manifest odpovídá Platform 1.1.2 suite-session storage a mazacím cestám aplikace
+  ✓ T52: všech 7 produkčních AI cest má explicitní trusted instructions a markerový obsah zůstává daty
+  ✓ T53: neznámý privacy stav nemá fail-open návrat a končí PREFLIGHT_BLOCKED
+  ✓ T54: návrat do Studia zahazuje query, fragment i userinfo z handoffu
+  ✓ T55: performance budget je svázán s čerstvým SHA-256 build manifestem, ne s pořadím QA reportů
+  ✓ T56: deterministické validační hlášky necitují cizí/modelový obsah a používají pouze číslo řádku
+CELKEM: regresní brána zelená.
+EXIT=0
+
+===== npm run qa:all-subjects =====
+
+> ghrab-diferenciator@1.3.43 qa:all-subjects
+> node scripts/qa-all-subjects.mjs
+
+{
+  "schema": "ghrab-differentiator-all-subject-static-v1",
+  "version": "1.3.43",
+  "checks": [
+    {
+      "id": "matrix.schema",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "matrix.domains",
+      "ok": true,
+      "detail": "13"
+    },
+    {
+      "id": "matrix.examples",
+      "ok": true,
+      "detail": "75"
+    },
+    {
+      "id": "matrix.earth-science",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "matrix.content-primitives",
+      "ok": true,
+      "detail": "91"
+    },
+    {
+      "id": "primitive.blind-maps",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.circuits",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.staff-notation-image",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.structural-formula-image",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.source-scans",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.spreadsheet-cells-and-formulas",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-electrical-circuit-schematic",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.tex-to-mathml-gymnasium-notation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.school-cas-verification",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.office-drawingml-shapes-connectors",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-directed-flow-diagram",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-history-geology-timeline",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-punnett-pedigree-genetics",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-physics-vector-lens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-bounded-algorithm-trace",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-reaction-balance-stoichiometry",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.preserved-image-semantic-annotation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.timeline-period-uncertainty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-free-body-diagram",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.map",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.graph",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.timeline",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.circuit",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.molecule",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.artwork",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.source",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "formats.rich-office",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "formats.office-failsafe",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "formats.multimedia-direct",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "formats.multimedia-safety",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "formats.partial-native-visuals",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "modes.test-worksheet",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.language",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.math",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.physics",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.chemistry",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.biology",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.geography",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.history",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.civics",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.informatics",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.music",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.art",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.pe",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.humanities",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.answer-key-coverage",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.unreadable-source-markers",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.tables",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.unicode",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.visual-assets",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.scan-input",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.pdf-output",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.school-gateway",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.subjectDomainKind",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.subjectGenerationPromptLines",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.educationalVisualPromptLines",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.subjectQualityPromptLines",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.subjectValidationIssues",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.appendEducationalRichText",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.renderEducationalTextHtml",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.readPptxRich",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.readXlsxRich",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.readDocxNativeObjects",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.mediaItems",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.detectMultimediaFile",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.prepareMultimediaFile",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "hook.generation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "hook.quality",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "hook.validation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "hook.answer-key",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.table",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.deterministic",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.geojson",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.chem-validation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.tex-mathml",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.cas",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.cross-subject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.trace-no-eval",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.reaction-charge",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.annotation-original",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.blank-map",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.escape",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.parallel-invariant",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "xlsx.chart-data",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "pptx.chart-data",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "pptx.embedded-images",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "xlsx.embedded-images",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "summary": {
+    "passed": 92,
+    "failed": 0
+  },
+  "status": "passed"
+}
+EXIT=0
+
+===== npm run qa:multimedia =====
+
+> ghrab-diferenciator@1.3.43 qa:multimedia
+> node scripts/qa-multimedia.mjs
+
+{
+  "schema": "ghrab-differentiator-multimedia-qa-v1",
+  "checks": [
+    {
+      "name": "detect listen.mp3",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detect listen.wav",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detect clip.m4a",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detect movie.mp4",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detect movie.webm",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detect movie.mov",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reject unrelated",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "prepare audio",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "source size bound",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "inline size bound",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "student marker protocol",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "transcript leak guard",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "teacher-side media parts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "print/PDF media callout",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "project media persistence",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rollback preserves prior media",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "answer-key-generation accepts document",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "worksheet-quality-audit accepts document",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "worksheet-quality-revision accepts document",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "total": 19,
+  "passed": 19,
+  "failed": 0,
+  "status": "passed"
+}
+EXIT=0
+
+===== npm run qa:specialists =====
+
+> ghrab-diferenciator@1.3.43 qa:specialists
+> node scripts/qa-specialist-engines.mjs
+
+{
+  "schema": "ghrab-differentiator-specialist-engines-v5",
+  "checks": [
+    {
+      "name": "cas.implicit",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cas.identity",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cas.derivative",
+      "ok": true,
+      "detail": "((3*(x^2))+cos(x))"
+    },
+    {
+      "name": "cas.quadratic",
+      "ok": true,
+      "detail": "{\"kind\":\"quadratic\",\"discriminant\":1,\"roots\":[2,3]}"
+    },
+    {
+      "name": "cas.reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cas.linear-system",
+      "ok": true,
+      "detail": "{\"kind\":\"unique\",\"variables\":[\"x\",\"y\"],\"solution\":{\"x\":2,\"y\":1}}"
+    },
+    {
+      "name": "cas.evaluate-expected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.ethanol",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.ring",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.reject-overvalence",
+      "ok": true,
+      "detail": "[\"Atom c (C) překračuje běžnou školní valenci: 5 > 4.\"]"
+    },
+    {
+      "name": "chem.smiles-charge",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.isotope-hydrogen",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.lewis",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.reject-electrons",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "geo.featurecollection",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "geo.bounds",
+      "ok": true,
+      "detail": "[14,49,16,50]"
+    },
+    {
+      "name": "geo.simplify",
+      "ok": true,
+      "detail": "8"
+    },
+    {
+      "name": "cross.flow",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.flow-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.flow-duplicate",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.timeline",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.timeline-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.annotation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.annotation-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.punnett",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.punnett-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.punnett-invalid-expected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.pedigree",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.pedigree-duplicate",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-vectors",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-vector-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-lens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-lens-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-fbd",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-fbd-newton-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.execute",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.compile-blocks",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.reject-function",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.limit",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.floor-division",
+      "ok": true,
+      "detail": "{\"title\":\"\",\"indexBase\":0,\"program\":[{\"line\":1,\"text\":\"b = 7 // 2\"},{\"line\":2,\"text\":\"PRINT b\"}],\"trace\":[{\"step\":1,\"line\":1,\"statement\":\"b = 7 // 2\",\"variables\":{\"b\":3},\"output\":[]},{\"step\":2,\"line\":2,\"statement\":\"PRINT b\",\"variables\":{\"b\":3},\"output\":[\"3\"]}],\"variables\":{\"b\":3},\"output\":[\"3\"],\"errors\":[]}"
+    },
+    {
+      "name": "trace.double-slash-in-string",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "trace.negative-modulo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.array-equality",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.float-display",
+      "ok": true,
+      "detail": "[\"0.3\"]"
+    },
+    {
+      "name": "trace.configurable-limit",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "trace.bubble-sort-10",
+      "ok": true,
+      "detail": "{\"errors\":[],\"steps\":236,\"A\":[1,2,3,4,5,6,7,8,9,10]}"
+    },
+    {
+      "name": "reaction.formula-hydrate",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reaction.balance",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reaction.charge",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reaction.stoich",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reaction.reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reaction.reject-unknown-element",
+      "ok": true,
+      "detail": "[\"Neznámý symbol prvku: A\"]"
+    },
+    {
+      "name": "reaction.reject-ambiguous",
+      "ok": true,
+      "detail": "[\"Rovnice není jednoznačně vyčíslitelná; doplň chybějící látku nebo zadej očekávané koeficienty.\"]"
+    },
+    {
+      "name": "reaction.ambiguous-expected",
+      "ok": true,
+      "detail": "{\"source\":\"C + O2 -> CO + CO2\",\"left\":[{\"raw\":\"C\",\"formula\":\"C\",\"atoms\":{\"C\":1},\"charge\":0,\"molarMass\":12.011,\"givenCoefficient\":null},{\"raw\":\"O2\",\"formula\":\"O2\",\"atoms\":{\"O\":2},\"charge\":0,\"molarMass\":31.998,\"givenCoefficient\":null}],\"right\":[{\"raw\":\"CO\",\"formula\":\"CO\",\"atoms\":{\"C\":1,\"O\":1},\"charge\":0,\"molarMass\":28.009999999999998,\"givenCoefficient\":null},{\"raw\":\"CO2\",\"formula\":\"CO2\",\"atoms\":{\"C\":1,\"O\":2},\"charge\":0,\"molarMass\":44.009,\"givenCoefficient\":null}],\"coefficients\":[4,3,2,2],\"leftCoefficients\":[4,3],\"rightCoefficients\":[2,2],\"elements\":[\"C\",\"O\"],\"atomBalance\":{\"C\":{\"left\":4,\"right\":4},\"O\":{\"left\":6,\"right\":6}},\"chargeBalance\":null,\"errors\":[]}"
+    },
+    {
+      "name": "reaction.valid-element-case",
+      "ok": true,
+      "detail": "{\"source\":\"NaOH + HCl -> NaCl + H2O\",\"left\":[{\"raw\":\"NaOH\",\"formula\":\"NaOH\",\"atoms\":{\"Na\":1,\"O\":1,\"H\":1},\"charge\":0,\"molarMass\":39.997,\"givenCoefficient\":null},{\"raw\":\"HCl\",\"formula\":\"HCl\",\"atoms\":{\"H\":1,\"Cl\":1},\"charge\":0,\"molarMass\":36.458000000000006,\"givenCoefficient\":null}],\"right\":[{\"raw\":\"NaCl\",\"formula\":\"NaCl\",\"atoms\":{\"Na\":1,\"Cl\":1},\"charge\":0,\"molarMass\":58.44,\"givenCoefficient\":null},{\"raw\":\"H2O\",\"formula\":\"H2O\",\"atoms\":{\"H\":2,\"O\":1},\"charge\":0,\"molarMass\":18.015,\"givenCoefficient\":null}],\"coefficients\":[1,1,1,1],\"leftCoefficients\":[1,1],\"rightCoefficients\":[1,1],\"elements\":[\"Cl\",\"H\",\"Na\",\"O\"],\"atomBalance\":{\"Cl\":{\"left\":1,\"right\":1},\"H\":{\"left\":2,\"right\":2},\"Na\":{\"left\":1,\"right\":1},\"O\":{\"left\":1,\"right\":1}},\"chargeBalance\":null,\"errors\":[]}"
+    },
+    {
+      "name": "tex.raw-delimiter-hook",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "passed": 56,
+  "total": 56,
+  "status": "passed"
+}
+EXIT=0
+
+===== node scripts/qa-p5-release.mjs =====
+{
+  "appId": "differentiator",
+  "appVersion": "1.3.43",
+  "axeRequired": false,
+  "summary": {
+    "total": 33,
+    "passed": 30,
+    "failed": 3
+  },
+  "status": "failed",
+  "failed": [
+    "report.quality.exists",
+    "report.browser.exists",
+    "report.runtime.exists"
+  ]
+}
+EXIT=1
+
+===== node scripts/qa-p5-acceptance.mjs =====
+{
+  "appId": "differentiator",
+  "appVersion": "1.3.43",
+  "status": "failed",
+  "summary": {
+    "total": 14,
+    "passed": 11,
+    "failed": 3
+  },
+  "failed": [
+    "file.dist/qa-p5-runtime-report.json",
+    "file.dist/qa-p3-browser-report.json",
+    "status.dist/qa-p5-release-report.json"
+  ]
+}
+EXIT=1
+

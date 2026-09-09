@@ -1,0 +1,53 @@
+DIFFERENTIATOR 1.3.46 — GARP 2.5.1 ASSURANCE CROSSWALK
+
+Status legend: PASS = reproduced locally; N/A = structurally not applicable; NOT TESTED = no valid evidence; AMBER = partial/prep evidence only.
+
+Legacy / AI gates
+- RT / application regression structure: PASS for locally executable static/unit suites; browser subset NOT TESTED in this sandbox.
+- SIM-07 service-worker update/recovery: NOT TESTED behaviorally; static SW freeze + 13 negative controls PASS; whole fetch-handler route and networkOnlyNoStore sink are behaviorally exercised in a bounded VM.
+- PC-01 path coverage for the 1.3.46 SW fix: PASS statically on deployed public + school profiles and 13 mutation controls.
+- AIR structural prompt-injection boundary campaign: PASS via qa-garp23-static; behavioral live-model AIR remains NOT TESTED.
+- Agentic controls SH-AG-01..15: N/A as an agentic runtime; capability classification AGENTIC=NO. Generic least-privilege/AI-output controls remain mapped under SH-AI/SH-APP.
+
+SH-APP
+- 01 threat model: PASS (SECURITY-THREAT-MODEL.txt)
+- 02 attack surface inventory: PASS (threat model + app card)
+- 03 auth/session: AMBER; client/school contracts exist, LIVE server behavior NOT TESTED
+- 04 injection/unsafe sinks: PASS static; browser/DAST NOT TESTED
+- 05 browser hardening: AMBER; source policy PASS, served headers NOT TESTED
+- 06 file/import/export: AMBER; existing deterministic suites locally exercised where dependency-free, full browser matrix NOT TESTED
+- 07 SAST: PASS bounded local static suite
+- 08 SCA: AMBER; lockfile/SBOM available, local live registry vulnerability query NOT TESTED; independent 1.3.44 audit reported 0 vulnerabilities
+- 09 SBOM: PASS
+- 10 DAST: NOT TESTED
+- 11 secret sweep: PASS on source/deployment scans
+- 12 exception register: PASS (SECURITY-EXCEPTIONS.txt)
+
+SH-SC
+- 01 source identity: PASS for frozen input ZIP SHA + generated build-input snapshot SHA
+- 02 source-control protection: NOT TESTED (repository settings not part of supplied artifact)
+- 03 pinned inputs: PASS for package-lock and immutable GitHub Action refs found in supplied source
+- 04 clean/isolated build: PASS for prior independent Prompt E clean npm ci; local re-run remains environment-limited
+- 05 build provenance: PASS PREP
+- 06 provenance verification: PASS PREP with --allow-local-builder
+- 07 rebuild equivalence: PASS locally with fixed SOURCE_DATE_EPOCH; two dist + dist-school-server builds are byte-identical with fixed SOURCE_DATE_EPOCH + GHRAB_BUILD_HASH
+- 08 source/deployment separation: PASS
+- 09 signed release: PASS PREP with disposable Ed25519 key; NOT production key
+- 10 key revocation/rotation: AMBER documentation only; LIVE key custody NOT TESTED
+- 11 release policy/bypass resistance: AMBER; patched canonical R2 N20–N22 hotfix gate is fail-closed locally, production CI enforcement remains outside this PREP artifact
+- 12 evidence manifest: PASS PREP; v2 binds external authority files
+
+SH-RUN / SH-DET
+- server/container/TLS/rate-limit/egress/alert/recovery controls: NOT TESTED unless directly evidenced by source contract. No PREP result is promoted to LIVE.
+- SH-RUN-09 resource budget: PASS client contract; server enforcement NOT TESTED.
+- SH-RUN-10 timeout/retry/cancel: PASS client contract; server circuit breaker NOT TESTED.
+- SH-RUN-13 fail-closed security assets: PASS static SW policy; server behavior NOT TESTED.
+
+SH-AI
+- prompt injection / untrusted-data separation: PASS structural, live-model red team NOT TESTED;
+- sensitive disclosure: AMBER due D2 data class and missing provider/server LIVE evidence;
+- excessive agency: N/A (no tools/agent loop);
+- AI supply chain/model drift: AMBER; model/profile config is explicit, provider-side change controls NOT TESTED;
+- unbounded consumption: PASS client budget / AMBER server enforcement;
+- output handling: PASS static XSS/renderer gates where executable; browser acceptance NOT TESTED;
+- kill/degrade behavior: AMBER; cancellation paths exist, server-side kill switch NOT TESTED.

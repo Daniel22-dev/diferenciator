@@ -1,0 +1,292 @@
+
+> ghrab-diferenciator@1.3.44 qa:specialists
+> node scripts/qa-specialist-engines.mjs
+
+{
+  "schema": "ghrab-differentiator-specialist-engines-v5",
+  "checks": [
+    {
+      "name": "cas.implicit",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cas.identity",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cas.derivative",
+      "ok": true,
+      "detail": "((3*(x^2))+cos(x))"
+    },
+    {
+      "name": "cas.quadratic",
+      "ok": true,
+      "detail": "{\"kind\":\"quadratic\",\"discriminant\":1,\"roots\":[2,3]}"
+    },
+    {
+      "name": "cas.reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cas.linear-system",
+      "ok": true,
+      "detail": "{\"kind\":\"unique\",\"variables\":[\"x\",\"y\"],\"solution\":{\"x\":2,\"y\":1}}"
+    },
+    {
+      "name": "cas.evaluate-expected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.ethanol",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.ring",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.reject-overvalence",
+      "ok": true,
+      "detail": "[\"Atom c (C) překračuje běžnou školní valenci: 5 > 4.\"]"
+    },
+    {
+      "name": "chem.smiles-charge",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.isotope-hydrogen",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.lewis",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "chem.reject-electrons",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "geo.featurecollection",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "geo.bounds",
+      "ok": true,
+      "detail": "[14,49,16,50]"
+    },
+    {
+      "name": "geo.simplify",
+      "ok": true,
+      "detail": "8"
+    },
+    {
+      "name": "cross.flow",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.flow-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.flow-duplicate",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.timeline",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.timeline-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.annotation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.annotation-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.punnett",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.punnett-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.punnett-invalid-expected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.pedigree",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.pedigree-duplicate",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-vectors",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-vector-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-lens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-lens-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-fbd",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cross.physics-fbd-newton-reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.execute",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.compile-blocks",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.reject-function",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.limit",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.floor-division",
+      "ok": true,
+      "detail": "{\"title\":\"\",\"indexBase\":0,\"program\":[{\"line\":1,\"text\":\"b = 7 // 2\"},{\"line\":2,\"text\":\"PRINT b\"}],\"trace\":[{\"step\":1,\"line\":1,\"statement\":\"b = 7 // 2\",\"variables\":{\"b\":3},\"output\":[]},{\"step\":2,\"line\":2,\"statement\":\"PRINT b\",\"variables\":{\"b\":3},\"output\":[\"3\"]}],\"variables\":{\"b\":3},\"output\":[\"3\"],\"errors\":[]}"
+    },
+    {
+      "name": "trace.double-slash-in-string",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "trace.negative-modulo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.array-equality",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trace.float-display",
+      "ok": true,
+      "detail": "[\"0.3\"]"
+    },
+    {
+      "name": "trace.configurable-limit",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "trace.bubble-sort-10",
+      "ok": true,
+      "detail": "{\"errors\":[],\"steps\":236,\"A\":[1,2,3,4,5,6,7,8,9,10]}"
+    },
+    {
+      "name": "reaction.formula-hydrate",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reaction.balance",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reaction.charge",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reaction.stoich",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reaction.reject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reaction.reject-unknown-element",
+      "ok": true,
+      "detail": "[\"Neznámý symbol prvku: A\"]"
+    },
+    {
+      "name": "reaction.reject-ambiguous",
+      "ok": true,
+      "detail": "[\"Rovnice není jednoznačně vyčíslitelná; doplň chybějící látku nebo zadej očekávané koeficienty.\"]"
+    },
+    {
+      "name": "reaction.ambiguous-expected",
+      "ok": true,
+      "detail": "{\"source\":\"C + O2 -> CO + CO2\",\"left\":[{\"raw\":\"C\",\"formula\":\"C\",\"atoms\":{\"C\":1},\"charge\":0,\"molarMass\":12.011,\"givenCoefficient\":null},{\"raw\":\"O2\",\"formula\":\"O2\",\"atoms\":{\"O\":2},\"charge\":0,\"molarMass\":31.998,\"givenCoefficient\":null}],\"right\":[{\"raw\":\"CO\",\"formula\":\"CO\",\"atoms\":{\"C\":1,\"O\":1},\"charge\":0,\"molarMass\":28.009999999999998,\"givenCoefficient\":null},{\"raw\":\"CO2\",\"formula\":\"CO2\",\"atoms\":{\"C\":1,\"O\":2},\"charge\":0,\"molarMass\":44.009,\"givenCoefficient\":null}],\"coefficients\":[4,3,2,2],\"leftCoefficients\":[4,3],\"rightCoefficients\":[2,2],\"elements\":[\"C\",\"O\"],\"atomBalance\":{\"C\":{\"left\":4,\"right\":4},\"O\":{\"left\":6,\"right\":6}},\"chargeBalance\":null,\"errors\":[]}"
+    },
+    {
+      "name": "reaction.valid-element-case",
+      "ok": true,
+      "detail": "{\"source\":\"NaOH + HCl -> NaCl + H2O\",\"left\":[{\"raw\":\"NaOH\",\"formula\":\"NaOH\",\"atoms\":{\"Na\":1,\"O\":1,\"H\":1},\"charge\":0,\"molarMass\":39.997,\"givenCoefficient\":null},{\"raw\":\"HCl\",\"formula\":\"HCl\",\"atoms\":{\"H\":1,\"Cl\":1},\"charge\":0,\"molarMass\":36.458000000000006,\"givenCoefficient\":null}],\"right\":[{\"raw\":\"NaCl\",\"formula\":\"NaCl\",\"atoms\":{\"Na\":1,\"Cl\":1},\"charge\":0,\"molarMass\":58.44,\"givenCoefficient\":null},{\"raw\":\"H2O\",\"formula\":\"H2O\",\"atoms\":{\"H\":2,\"O\":1},\"charge\":0,\"molarMass\":18.015,\"givenCoefficient\":null}],\"coefficients\":[1,1,1,1],\"leftCoefficients\":[1,1],\"rightCoefficients\":[1,1],\"elements\":[\"Cl\",\"H\",\"Na\",\"O\"],\"atomBalance\":{\"Cl\":{\"left\":1,\"right\":1},\"H\":{\"left\":2,\"right\":2},\"Na\":{\"left\":1,\"right\":1},\"O\":{\"left\":1,\"right\":1}},\"chargeBalance\":null,\"errors\":[]}"
+    },
+    {
+      "name": "tex.raw-delimiter-hook",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "passed": 56,
+  "total": 56,
+  "status": "passed"
+}

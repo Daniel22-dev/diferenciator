@@ -1,0 +1,255 @@
+{
+  "schema": "ghrab-release-integrity-v2",
+  "digestAlgorithmId": "ghrab-artifact-digest-v2",
+  "pathEncoding": "NFC",
+  "pathOrder": "utf8-bytewise",
+  "appId": "differentiator",
+  "version": "1.3.46",
+  "buildId": "8fd01a1ec584",
+  "createdAt": "2026-09-09T19:22:22.696Z",
+  "sourceCommit": null,
+  "sourcePackageSha256": "0b868def902404e57d644ea4ec802cd97a09f659f281033dd13cba22f1f7c4c8",
+  "deploymentPackageSha256": "2d39f6c880ca419454d86d97828677d5331e7fd86a8d37005754295603cd6e75",
+  "artifactDigest": "14633495e3b1a4c032f343ef709e2381a4cacf0b6ea5e8a962d94322fac5a47d",
+  "fileCount": 46,
+  "buildProvenanceSha256": "13edec45a50c149a65838557ace730f7f67dab0a7bdbcd474be145b139b17e80",
+  "sbomSha256": "06c02b0e923e49c8f809aa07ca19ebea125f0c373ac5971297fb3540bea8a39c",
+  "evidenceManifestSha256": "e9562eb18be6f24dd5affd5736eaf5bba4dc5b5849e4f9393ef9bec6b93af958",
+  "hashAlgorithm": "SHA-256",
+  "signature": {
+    "algorithm": "Ed25519",
+    "keyId": "differentiator-prep-2026-09-09-D"
+  },
+  "files": [
+    {
+      "path": ".nojekyll",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "access/access-gate.css",
+      "size": 2548,
+      "sha256": "c77854183dfbc0a39cbcbf5be99c7ed63dab792572e3bee778919f69badbab0d"
+    },
+    {
+      "path": "access/deployment-config.js",
+      "size": 9792,
+      "sha256": "d908b6db95ffb54984c003ddaebbd55ad54f9440a763aef13e5c973b50efc077"
+    },
+    {
+      "path": "access/error-reporter-adapter.js",
+      "size": 772,
+      "sha256": "e6478956274f99000499ec8754a429da4c7ff42620ac4f681bfb663e7ab22f19"
+    },
+    {
+      "path": "access/error-reporter.css",
+      "size": 16554,
+      "sha256": "7f78a6d81ac0d13e355229381bb435fe6fcb27cf7f8957a452e26b036ce958f9"
+    },
+    {
+      "path": "access/error-reporter.js",
+      "size": 74834,
+      "sha256": "db0a22f9934d3dd62db4a1ca3c7dcbbde509eea1db1f5b209765684da6aec1ec"
+    },
+    {
+      "path": "access/reporter-bootstrap.js",
+      "size": 874,
+      "sha256": "1635fff64cd17762eabffe27590b3e87cc732a0f28dc47d8e22ae775741a78b2"
+    },
+    {
+      "path": "ai-operations.json",
+      "size": 2154,
+      "sha256": "ee804793d9039a2db0006608ed4c8bbf6d8a5b7ad9094f26005892648c215a8e"
+    },
+    {
+      "path": "assets/brand/school-logo.png",
+      "size": 57922,
+      "sha256": "300396a48cc36d8c2abda0aea673273d4d985476ba88fb0430630ef89ac86770"
+    },
+    {
+      "path": "config/brand-manifest.json",
+      "size": 653,
+      "sha256": "d24bc618712f69a059ffd0c1eb2df74af8036507b73c3676a3b72f0bcd4df1a4"
+    },
+    {
+      "path": "config/data-manifest.json",
+      "size": 3984,
+      "sha256": "ba82154088bf024aab45750a32e10daecce5ddb5eebc9e9cc7f76d90b39a7e53"
+    },
+    {
+      "path": "config/deployment.json",
+      "size": 1808,
+      "sha256": "93ab499233406d5daa0a7fafd3d08cda133e7229697c4c33fe4883f62edd2063"
+    },
+    {
+      "path": "config/deployment.school-server.json",
+      "size": 1808,
+      "sha256": "93ab499233406d5daa0a7fafd3d08cda133e7229697c4c33fe4883f62edd2063"
+    },
+    {
+      "path": "config/platform-manifest.json",
+      "size": 2469,
+      "sha256": "b99dfc9706f66e6aaebed428a796f5457e8c8c7e38bf00ac4b98e5a1c7381afc"
+    },
+    {
+      "path": "config/release-acceptance.json",
+      "size": 1360,
+      "sha256": "8a109fcb6c681b1fa3ab4215410cc1deb2b22e1f902cb03df0290313c802f4ef"
+    },
+    {
+      "path": "ghrab-platform.consumer.json",
+      "size": 2646,
+      "sha256": "6de4eda3697106816d6904c809110c91f205e2dfefeee73a716b8307d8035c1f"
+    },
+    {
+      "path": "ghrab/ghrab-app-registry-v2.schema.json",
+      "size": 2666,
+      "sha256": "47c797999eb93fbd918b968b90a8f8545f938db486fe635b19efcc7936b5672f"
+    },
+    {
+      "path": "ghrab/ghrab-artifact-envelope-v1.schema.json",
+      "size": 1250,
+      "sha256": "8edeaaadd72c7bf60285440dd59eb31d0e7139755e1e4642d5ab457816e46d58"
+    },
+    {
+      "path": "ghrab/ghrab-platform-manifest-1.1.2.json",
+      "size": 1077,
+      "sha256": "760f1661b5a4349fc09d314d9da3d786356620680e038586cee28d98891f71a8"
+    },
+    {
+      "path": "ghrab/ghrab-platform.css",
+      "size": 5182,
+      "sha256": "eb465488df46f3d1672d721094800b0be3eb1278924b7699873a483f130b07ad"
+    },
+    {
+      "path": "ghrab/ghrab-platform.js",
+      "size": 58204,
+      "sha256": "199d03d9dc9263a9e74ed1f1102df0324f3b63e78704f1c70aeacec5feec530c"
+    },
+    {
+      "path": "icons/icon-192.png",
+      "size": 4907,
+      "sha256": "9809e681b068a24587cb8569fcb2c9f64bedc029b8f07fcb850e4e925188d5b6"
+    },
+    {
+      "path": "icons/icon-32.png",
+      "size": 1443,
+      "sha256": "0cec112acfe993d3a685e3546faca0f8e08625abb88bb6b571b7f1e40b4e1744"
+    },
+    {
+      "path": "icons/icon-512.png",
+      "size": 6480,
+      "sha256": "6a406877b5d959e863d79c79c89f5a6e6246835a556830d7962b22fc8fcb0f9b"
+    },
+    {
+      "path": "icons/icon-maskable-512.png",
+      "size": 6177,
+      "sha256": "7e07fb9fe2452abfda6d403d20de51cb5b6cd0e4df1bf255b02225f7c18384fb"
+    },
+    {
+      "path": "index.html",
+      "size": 489900,
+      "sha256": "47b870c29798655d469856b3a07cdff2da2704aa795efb3e017c5a240848c088"
+    },
+    {
+      "path": "internal-tests.js.gz",
+      "size": 22021,
+      "sha256": "ddcbafa6e9b894c698023340379c116b9047d309ea5f9a69c566c0b1133bc91b"
+    },
+    {
+      "path": "manifest.webmanifest",
+      "size": 1435,
+      "sha256": "faf376194d84658edb2f047443063450605f3139422459f2e828f6c967610e5d"
+    },
+    {
+      "path": "manual/index.html",
+      "size": 51512,
+      "sha256": "0dd96d4845a7e3fbbaf665de306802a18e6869d512dbce20ee7ba096925943fb"
+    },
+    {
+      "path": "modules/algorithm-trace-engine.js",
+      "size": 11152,
+      "sha256": "0e12add7dfff04219607d9a01df7993fa1d11587a16254e937c04b67c4e4546e"
+    },
+    {
+      "path": "modules/chemistry-engine.js",
+      "size": 6253,
+      "sha256": "913ddea9a28f17a1df6151d43e8f8e8d18d07164e4f87ffdcd67f91f8180430b"
+    },
+    {
+      "path": "modules/cross-subject-engine.js",
+      "size": 13362,
+      "sha256": "d1af125960b6cf7e338b9856f7be197cc7c7afb133a8dbba2f7b6b0991a6083d"
+    },
+    {
+      "path": "modules/educational-renderers.js",
+      "size": 42480,
+      "sha256": "2024e52b1a4fed4b51b7d58e3ff5ddf21514b57112c92142f24b499b929f3607"
+    },
+    {
+      "path": "modules/geojson-engine.js",
+      "size": 4043,
+      "sha256": "1cb02cf81ba5afedfe60bc8178d17657e5df14150a7cb99f889a02785d3089ed"
+    },
+    {
+      "path": "modules/map-presets.js",
+      "size": 24469,
+      "sha256": "b1317a67f3a94a334b123869a9128d710b907ec6422a4bfd106248f0af905158"
+    },
+    {
+      "path": "modules/multimedia.js",
+      "size": 1645,
+      "sha256": "64f7911c9cedc0026ac08db5de9c72160244ba3b6c41d479f1080df4641df1fd"
+    },
+    {
+      "path": "modules/office-rich.js",
+      "size": 15664,
+      "sha256": "11f8fd17d93cafc413ae4def95d097172548254430aaca496059084fbfffa516"
+    },
+    {
+      "path": "modules/reaction-engine.js",
+      "size": 11282,
+      "sha256": "e2353cf4281246a8ea5a91c4501aff5a76ab8aaf9b76cdb55bc23764a4447f67"
+    },
+    {
+      "path": "modules/school-cas.js",
+      "size": 12934,
+      "sha256": "924f668197b7501b4f72243680071088d06b87e87a46dcab71ec6bf66ae57631"
+    },
+    {
+      "path": "modules/tex-math.js",
+      "size": 8162,
+      "sha256": "746e756980bfeb0ce6afc9e691db2edb6f7fece8cc83924703430ff9fda65ace"
+    },
+    {
+      "path": "platform-build-info.json",
+      "size": 398,
+      "sha256": "a1c53c9dc3f713ad9d54410a8271b24d2dfaf52815d2cf49507e77c609e3f72d"
+    },
+    {
+      "path": "runtime-config.js",
+      "size": 633,
+      "sha256": "b5b34de974a9040adf29a0b055f53833ab92a5e5fdda548cac55c35d36125ad7"
+    },
+    {
+      "path": "runtime-config.school-server.js",
+      "size": 633,
+      "sha256": "b5b34de974a9040adf29a0b055f53833ab92a5e5fdda548cac55c35d36125ad7"
+    },
+    {
+      "path": "server-ready-build-info.json",
+      "size": 573,
+      "sha256": "4c001299d189104970f5121a18f77a9f2d05c41cb590c19f5859f8d504ef8362"
+    },
+    {
+      "path": "studio-manifest.json",
+      "size": 2700,
+      "sha256": "7de75cc264ed8cf5d76630fed3509bd7e90f44692dc25a2a89a2b9f75032cf02"
+    },
+    {
+      "path": "sw.js",
+      "size": 5836,
+      "sha256": "fd62996dbc245e455f41d7fa016735266dfd2810b56dba0f74909d9693eb07b4"
+    }
+  ]
+}

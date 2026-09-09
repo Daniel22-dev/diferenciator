@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "checks": 48,
+  "passed": 48,
+  "failed": []
+}

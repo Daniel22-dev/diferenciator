@@ -1,0 +1,475 @@
+
+> ghrab-diferenciator@1.3.45 qa:all-subjects
+> node scripts/qa-all-subjects.mjs
+
+{
+  "schema": "ghrab-differentiator-all-subject-static-v1",
+  "version": "1.3.45",
+  "checks": [
+    {
+      "id": "matrix.schema",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "matrix.domains",
+      "ok": true,
+      "detail": "13"
+    },
+    {
+      "id": "matrix.examples",
+      "ok": true,
+      "detail": "75"
+    },
+    {
+      "id": "matrix.earth-science",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "matrix.content-primitives",
+      "ok": true,
+      "detail": "91"
+    },
+    {
+      "id": "primitive.blind-maps",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.circuits",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.staff-notation-image",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.structural-formula-image",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.source-scans",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.spreadsheet-cells-and-formulas",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-electrical-circuit-schematic",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.tex-to-mathml-gymnasium-notation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.school-cas-verification",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.office-drawingml-shapes-connectors",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-directed-flow-diagram",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-history-geology-timeline",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-punnett-pedigree-genetics",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-physics-vector-lens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-bounded-algorithm-trace",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-reaction-balance-stoichiometry",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.preserved-image-semantic-annotation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.timeline-period-uncertainty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "primitive.deterministic-free-body-diagram",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.map",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.graph",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.timeline",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.circuit",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.molecule",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.artwork",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.source",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "formats.rich-office",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "formats.office-failsafe",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "formats.multimedia-direct",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "formats.multimedia-safety",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "formats.partial-native-visuals",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "modes.test-worksheet",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.language",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.math",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.physics",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.chemistry",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.biology",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.geography",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.history",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.civics",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.informatics",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.music",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.art",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.pe",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "domain.humanities",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.answer-key-coverage",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.unreadable-source-markers",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.tables",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.unicode",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.visual-assets",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.scan-input",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.pdf-output",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "cross.school-gateway",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.subjectDomainKind",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.subjectGenerationPromptLines",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.educationalVisualPromptLines",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.subjectQualityPromptLines",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.subjectValidationIssues",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.appendEducationalRichText",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.renderEducationalTextHtml",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.readPptxRich",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.readXlsxRich",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.readDocxNativeObjects",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.mediaItems",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.detectMultimediaFile",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "code.prepareMultimediaFile",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "hook.generation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "hook.quality",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "hook.validation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "hook.answer-key",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.table",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.deterministic",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.geojson",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.chem-validation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.tex-mathml",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.cas",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.cross-subject",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.trace-no-eval",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.reaction-charge",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.annotation-original",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.blank-map",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "render.escape",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "visual.parallel-invariant",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "xlsx.chart-data",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "pptx.chart-data",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "pptx.embedded-images",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "xlsx.embedded-images",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "summary": {
+    "passed": 92,
+    "failed": 0
+  },
+  "status": "passed"
+}

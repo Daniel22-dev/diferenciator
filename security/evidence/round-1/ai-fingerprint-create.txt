@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "output": "security/evidence/ai-assurance-fingerprint.json",
+  "files": 20,
+  "aggregate": "6c52aecbd48fc2d19054015768e1d64c41fdd8f38ba10da1f1a5fab543d24de1"
+}

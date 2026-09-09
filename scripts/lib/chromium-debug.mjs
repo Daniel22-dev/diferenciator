@@ -1,4 +1,18 @@
+import net from 'node:net';
 import { setTimeout as sleep } from 'node:timers/promises';
+
+export async function reserveLoopbackPort() {
+  return await new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.unref();
+    server.once('error', reject);
+    server.listen({ host: '127.0.0.1', port: 0, exclusive: true }, () => {
+      const address = server.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+      server.close(error => error ? reject(error) : resolve(port));
+    });
+  });
+}
 
 export async function waitChromiumPageTarget(portOrBase, options = {}) {
   const attempts = Number(options.attempts || 400);

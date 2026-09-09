@@ -1,6 +1,6 @@
 {
   "name": "ghrab-diferenciator",
-  "version": "1.3.42",
+  "version": "1.3.46",
   "private": true,
   "description": "Diferenciátor pracovních listů a testů — samostatná PWA pro GitHub Pages",
   "type": "module",
@@ -9,9 +9,9 @@
     "pretest": "npm run build",
     "test": "npm run qa:profiles && npm run qa:regressions && npm run qa:all-subjects && npm run qa:profiles:browser && npm run qa:visuals && npm run qa:scan && npm run qa:stem && npm run qa:all-subjects:browser && npm run qa:office-rich && npm run qa:multimedia && npm run qa:multimedia:browser && npm run qa:specialists && npm run qa:renderers && node scripts/test.mjs",
     "test:reporter": "node scripts/test-error-reporter.mjs",
-    "build:school-server": "npm run build && node scripts/build-school-profile.mjs",
+    "build:school-server": "npm run build && node scripts/build-school-profile.mjs && node security/garp25/tools/check-sw-security-freeze.mjs dist-school-server/sw.js dist-school-server security/security-critical-assets.json",
     "verify:platform": "node scripts/ghrab-platform-conformance.mjs",
-    "postbuild": "node scripts/ghrab-platform-conformance.mjs",
+    "postbuild": "node scripts/ghrab-platform-conformance.mjs && node security/garp25/tools/check-sw-security-freeze.mjs dist/sw.js dist security/security-critical-assets.json",
     "qa:platform": "node scripts/ghrab-platform-conformance.mjs",
     "test:p2": "npm run build && npm run qa:platform",
     "qa:quality": "node scripts/qa-performance-budget-freeze.mjs && node scripts/qa-p3-quality.mjs && npm run qa:regressions",
@@ -45,7 +45,7 @@
     "qa:all-subjects:browser": "node scripts/qa-all-subjects-browser.mjs",
     "qa:all-subjects:school": "node scripts/qa-all-subjects-browser.mjs --school",
     "qa:budget-freeze": "node scripts/qa-performance-budget-freeze.mjs",
-    "qa:school-build": "node scripts/build-school-profile.mjs",
+    "qa:school-build": "node scripts/build-school-profile.mjs && node security/garp25/tools/check-sw-security-freeze.mjs dist-school-server/sw.js dist-school-server security/security-critical-assets.json",
     "qa:office-rich": "node scripts/qa-office-rich-browser.mjs",
     "qa:multimedia": "node scripts/qa-multimedia.mjs",
     "qa:renderers": "node scripts/qa-renderers-browser.mjs",
@@ -55,7 +55,14 @@
     "qa:garp23": "npm run qa:garp23:static && npm run qa:garp23:runtime",
     "qa:garp23:static": "node scripts/qa-garp23-static.mjs",
     "qa:garp23:runtime": "node scripts/qa-garp23-red-team.mjs",
-    "qa:suite-session": "node scripts/qa-suite-session-lifecycle.mjs"
+    "qa:suite-session": "node scripts/qa-suite-session-lifecycle.mjs",
+    "qa:garp25:sw": "node scripts/qa-garp25-sw-policy.mjs",
+    "qa:garp25:sbom": "node scripts/generate-cyclonedx-sbom.mjs",
+    "qa:garp25:ai-fingerprint": "node scripts/generate-ai-assurance-fingerprint.mjs --check",
+    "qa:garp25:vendored": "node security/garp25/tools/check-vendored-consistency.mjs security/vendored-consistency.json",
+    "qa:garp25:tooling": "node security/garp25/tools/selftest-garp251.mjs",
+    "qa:garp25:static": "npm run qa:garp25:tooling && npm run qa:garp23:static && npm run qa:suite-session && npm run qa:secrets && npm run qa:xss && npm run qa:budget-freeze && npm run qa:garp25:sw && npm run qa:garp25:vendored && npm run qa:garp25:ai-fingerprint && npm run qa:garp25:sbom && npm run qa:garp25:sbom-coverage",
+    "qa:garp25:sbom-coverage": "node scripts/qa-garp25-sbom-coverage.mjs"
   },
   "engines": {
     "node": ">=18"

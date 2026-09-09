@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "files": 20,
+  "aggregate": "4dd8482e793292d235ba787a99fdb0d8bb7ee9169a8dfce211dae1f9d10fcce8",
+  "expected": "4dd8482e793292d235ba787a99fdb0d8bb7ee9169a8dfce211dae1f9d10fcce8",
+  "inventory": "/mnt/data/diff_round3/security/ai-boundary-files.json",
+  "detectedCandidates": 20,
+  "untracked": [],
+  "inventoryEntriesNotDetectorMatched": [],
+  "verifierRevision": "garp-2.5.1-r3-ai-inventory-drift-hotfix"
+}

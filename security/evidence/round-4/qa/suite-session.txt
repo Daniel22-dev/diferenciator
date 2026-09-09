@@ -1,0 +1,192 @@
+
+> ghrab-diferenciator@1.3.46 qa:suite-session
+> node scripts/qa-suite-session-lifecycle.mjs
+
+[Diferenciátor] Suite-session cleanup selhal. Error: synthetic-remove-failure:ghrab.differentiator.ai.key.session.v1
+    at Store.removeItem (file:///mnt/data/diff_round4/scripts/qa-suite-session-lifecycle.mjs:10:344)
+    at strictRemove (21-suite-session-lifecycle.js:3:271)
+    at cleanupForSuiteEnd (21-suite-session-lifecycle.js:7:317)
+    at sessionApi.onEnd.replay (21-suite-session-lifecycle.js:9:223)
+    at notify (file:///mnt/data/diff_round4/scripts/qa-suite-session-lifecycle.mjs:17:141)
+    at Object.end (file:///mnt/data/diff_round4/scripts/qa-suite-session-lifecycle.mjs:18:913)
+    at file:///mnt/data/diff_round4/scripts/qa-suite-session-lifecycle.mjs:53:133
+{
+  "schema": "ghrab-suite-session-qa-v1",
+  "appId": "differentiator",
+  "appVersion": "1.3.46",
+  "platformVersion": "1.1.2",
+  "syntheticOnly": true,
+  "mode": "deterministic-multi-context-simulation",
+  "cases": [
+    {
+      "id": "late-platform-init-no-reference-error",
+      "pass": true,
+      "initialSafe": true,
+      "handlerInstalled": true,
+      "cleanup": {
+        "ok": true,
+        "generation": "late-g"
+      }
+    },
+    {
+      "id": "platform-1.1.2-contract-source",
+      "pass": true
+    },
+    {
+      "id": "open-child-suite-end",
+      "pass": true,
+      "generation": "g-1788981525501-k9mgq3v72zb",
+      "state": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": ""
+        },
+        "sessionKey": null,
+        "localKey": null,
+        "handoff": null,
+        "generation": "g-1788981525501-k9mgq3v72zb",
+        "observed": "g-1788981525501-k9mgq3v72zb",
+        "cleaned": "g-1788981525501-k9mgq3v72zb",
+        "ack": "g-1788981525501-k9mgq3v72zb",
+        "seen": "g-1788981525501-k9mgq3v72zb"
+      }
+    },
+    {
+      "id": "delayed-open-replay",
+      "pass": true,
+      "state": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": ""
+        },
+        "sessionKey": "NEW-AFTER",
+        "localKey": null,
+        "handoff": null,
+        "generation": "delayed-g",
+        "observed": "delayed-g",
+        "cleaned": "delayed-g",
+        "ack": "delayed-g",
+        "seen": "delayed-g"
+      }
+    },
+    {
+      "id": "multi-tab",
+      "pass": true,
+      "generation": "g-1788981525564-jh6mymw9zg",
+      "tabA": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": ""
+        },
+        "sessionKey": null,
+        "localKey": null,
+        "handoff": null,
+        "generation": "g-1788981525564-jh6mymw9zg",
+        "observed": "g-1788981525564-jh6mymw9zg",
+        "cleaned": "g-1788981525564-jh6mymw9zg",
+        "ack": "g-1788981525564-jh6mymw9zg",
+        "seen": "g-1788981525564-jh6mymw9zg"
+      },
+      "tabB": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": ""
+        },
+        "sessionKey": null,
+        "localKey": null,
+        "handoff": null,
+        "generation": "g-1788981525564-jh6mymw9zg",
+        "observed": "g-1788981525564-jh6mymw9zg",
+        "cleaned": "g-1788981525564-jh6mymw9zg",
+        "ack": "g-1788981525564-jh6mymw9zg",
+        "seen": "g-1788981525564-jh6mymw9zg"
+      }
+    },
+    {
+      "id": "browser-back-forward",
+      "pass": true,
+      "generation": "g-1788981525586-zc4cgyza0s8",
+      "state": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": ""
+        },
+        "sessionKey": null,
+        "localKey": null,
+        "handoff": null,
+        "generation": "g-1788981525586-zc4cgyza0s8",
+        "observed": "g-1788981525586-zc4cgyza0s8",
+        "cleaned": "g-1788981525586-zc4cgyza0s8",
+        "ack": "g-1788981525586-zc4cgyza0s8",
+        "seen": "g-1788981525586-zc4cgyza0s8"
+      }
+    },
+    {
+      "id": "fail-closed",
+      "pass": true,
+      "generation": "g-1788981525627-qbe1zhv7v6",
+      "state": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": "FAIL-secret"
+        },
+        "sessionKey": "FAIL-secret",
+        "localKey": "FAIL-local-secret",
+        "handoff": "{\"schema\":\"ghrab-studio-handoff-v2\",\"target\":{\"appId\":\"differentiator\"},\"payload\":{\"value\":{\"content\":{\"sourceText\":\"FAIL\"}}}}",
+        "generation": "g-1788981525627-qbe1zhv7v6",
+        "observed": "g-1788981525627-qbe1zhv7v6",
+        "cleaned": null,
+        "ack": null,
+        "seen": null
+      }
+    },
+    {
+      "id": "negative-control-disabled-handler",
+      "pass": true,
+      "expectedSecurityOutcome": "FAIL",
+      "observedSecurityOutcome": "FAIL",
+      "generation": "g-1788981525650-ghd5s46bob",
+      "state": {
+        "memory": {
+          "paste": "NEG-paste",
+          "base": "NEG-base",
+          "subject": "NEG-subject",
+          "working": true,
+          "keyMemory": "NEG-secret"
+        },
+        "sessionKey": "NEG-secret",
+        "localKey": "NEG-local-secret",
+        "handoff": "{\"schema\":\"ghrab-studio-handoff-v2\",\"target\":{\"appId\":\"differentiator\"},\"payload\":{\"value\":{\"content\":{\"sourceText\":\"NEG\"}}}}",
+        "generation": "g-1788981525650-ghd5s46bob",
+        "observed": null,
+        "cleaned": null,
+        "ack": null,
+        "seen": null
+      }
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  },
+  "status": "passed"
+}

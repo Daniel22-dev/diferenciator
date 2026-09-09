@@ -1,0 +1,19 @@
+DIFFERENCIATOR 1.3.46 — ITEMS NOT PROMOTED TO PASS
+
+PREP evidence is not LIVE evidence.
+
+NOT TESTED locally in this remediation sandbox:
+- clean npm ci completion (environment/network-limited timeout);
+- browser/axe/full P5 over 1.3.46;
+- DAST against an actually served school-server deployment;
+- actual served CSP/HSTS/COOP/CORP/Permissions-Policy, TLS and reverse-proxy behavior;
+- server auth/session/revocation, rate limiting, concurrency, circuit breaker and egress;
+- SIM-07 real service-worker update/recovery behavior;
+- behavioral AIR against the production model/provider;
+- RI-LIVE production trust root/key custody/revocation;
+- SHIELD-LIVE alerting/OOB watchdog/incident and recovery drills;
+- source-control branch protection and production CI/builder trust.
+
+Independent context only: Claude round 3 passed clean npm ci, browser suites, axe and full P5 over 1.3.45. Those results are not transferred to 1.3.46. Prompt E round 4 must rerun them on 1.3.46.
+
+School-server production remains NOT APPROVED by this PREP artifact.

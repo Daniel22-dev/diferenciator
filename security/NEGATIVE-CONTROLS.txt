@@ -1,0 +1,42 @@
+DIFFERENTIATOR 1.3.46 — NEGATIVE CONTROLS
+
+NC-01 SW critical precache mutation
+Inject ./ghrab/ghrab-platform.js into CORE_ASSETS. Expected: canonical checker non-zero / CRITICAL.
+
+NC-02 SW structural guard removal
+Rename/remove isSecurityCriticalRequest while cache routing remains. Expected: non-zero.
+
+NC-03 SW behavioral predicate mutation
+Mutate critical path comparisons so the predicate returns false for authoritative entries. Expected: non-zero.
+
+NC-04 SW negated guard
+Negate isSecurityCriticalRequest in the fetch handler. Expected: non-zero.
+
+NC-05 SW missing respondWith/return
+Call networkOnlyNoStore without terminating the critical branch through event.respondWith + return. Expected: non-zero.
+
+NC-06 SW pre-guard routing/respondWith
+Add a branch before the security guard that routes by request/event/URL state or calls event.respondWith. Expected: non-zero. This covers the N20 class, not only request.destination.
+
+NC-07 SW trusted sink without cache:no-store
+Remove cache:'no-store' from networkOnlyNoStore. Expected: non-zero.
+
+NC-08 SW trusted sink touches Cache API
+Open/write/read Cache Storage from networkOnlyNoStore. Expected: non-zero; direct writes are classified CRITICAL.
+
+NC-09 AI assurance hash mutation
+Mutate a fingerprinted AI/prompt-boundary source file. Expected: canonical verifier/release gate FAIL until restored.
+
+NC-10 AI inventory drift
+Add a new src/js AI-boundary candidate outside security/ai-boundary-files.json. Expected: canonical verifier/release gate FAIL with inventory-drift-untracked.
+
+NC-11 Vendored platform drift
+Mutate any checked dist GHRAB platform byte. Expected: check-vendored-consistency.mjs FAIL.
+
+NC-12 Release payload tamper / unexpected file / rollback
+Mutate payload, add a file, or present a registry with a higher approved version. Expected: release-integrity/registry verification FAIL.
+
+NC-13 Signature/trust-root tamper
+Mutate release-integrity.json/.sig, use a foreign key, or mark the key revoked/expired. Expected: signature verification FAIL.
+
+All controls use synthetic/disposable copies. No real student data is used.

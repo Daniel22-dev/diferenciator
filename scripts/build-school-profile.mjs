@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { verifySwCoreAssets } from "./sw-assets.mjs";
+import { resolveBuildTime } from "./lib/build-time.mjs";
 
 const root = process.cwd();
 const sourceDist = path.join(root, "dist");
@@ -94,7 +95,7 @@ writeJson(path.join(targetDist, "server-ready-build-info.json"), {
   version: pkg.version,
   phase: "P3",
   profile: "school-server",
-  builtAt: new Date().toISOString(),
+  builtAt: resolveBuildTime(),
   activeAuthMode: deployment.authMode,
   activeAiTransport: deployment.aiTransport,
   telemetryMode: deployment.telemetryMode,

@@ -1,0 +1,75 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "id": "baseline",
+      "pass": true,
+      "exit": 0
+    },
+    {
+      "id": "GHNC-SW-PRECACHE-CRITICAL",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-GUARD-REMOVED",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-GUARD-BEHAVIOR-FALSE",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-GUARD-NEGATED",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-GUARD-NO-RESPOND",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-PRE-GUARD-RESPOND",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-SINK-NO-STORE",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-SINK-CACHES",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-PRE-GUARD-EFFECT",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-MULTIPLE-FETCH-HANDLERS",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-PRE-GUARD-ASYNC-EFFECT",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-CRITICAL-BRANCH-SIDE-EFFECT",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-CRITICAL-BRANCH-ASYNC-SOURCE",
+      "pass": true,
+      "exit": 1
+    }
+  ]
+}

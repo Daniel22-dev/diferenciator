@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "output": "security/sbom/differentiator-1.3.45.cdx.json",
+  "components": 67,
+  "uniquePurl": 67,
+  "withHashes": 67
+}

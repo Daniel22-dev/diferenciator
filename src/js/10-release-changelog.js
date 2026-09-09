@@ -1,11 +1,15 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.42',
-  date: '2026-09-06',
-  build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
+  version: '1.3.46',
+  date: '2026-09-09',
+  build: '__BUILD__', // build id
   status: 'řízený pilot',
   changes: [
-    '1.3.42: Platform 1.1.2 Studio manifest alignment.',
+    '1.3.46: GARP R4.',
+    '1.3.45: GARP R3.',
+    '1.3.44: GARP.',
+    '1.3.43: GARP delta.',
+    '1.3.42: P1.',
     '1.3.41: Runtime hotfix.',
     '1.3.40: Platform 1.1.2 suite-session.',
     '1.3.39: GARP 2.3.',

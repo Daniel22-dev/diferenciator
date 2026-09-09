@@ -1,0 +1,18 @@
+DIFFERENTIATOR 1.3.46 — AI RESOURCE BUDGET
+
+Client/runtime limits evidenced in source:
+- request timeout: 120000 ms;
+- request body max: 18,874,368 bytes;
+- individual part max: 12,582,912 bytes;
+- direct profile gateway retries: 0;
+- school profile gateway retries: 1;
+- direct-provider max output cap: 60,000 tokens;
+- operation hints: 4,096–32,768 output tokens;
+- worksheet generation / repair / revision: maxProviderRequestsPerWorkflow = 12.
+
+Cancellation/error behavior:
+- AI Core integration exposes AbortController/AbortSignal handling and user cancellation paths in the existing implementation; static/behavioral local tests remain the authoritative app evidence.
+
+Not proven in PREP:
+- server-wide per-user concurrency, global rate limits, circuit breaker, provider quota enforcement and process/container CPU/memory limits.
+These remain SH-RUN-LIVE items and must not be inferred from client configuration.

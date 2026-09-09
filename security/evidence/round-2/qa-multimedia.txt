@@ -1,0 +1,108 @@
+
+> ghrab-diferenciator@1.3.44 qa:multimedia
+> node scripts/qa-multimedia.mjs
+
+{
+  "schema": "ghrab-differentiator-multimedia-qa-v1",
+  "checks": [
+    {
+      "name": "detect listen.mp3",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detect listen.wav",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detect clip.m4a",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detect movie.mp4",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detect movie.webm",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detect movie.mov",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reject unrelated",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "prepare audio",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "source size bound",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "inline size bound",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "student marker protocol",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "transcript leak guard",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "teacher-side media parts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "print/PDF media callout",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "project media persistence",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rollback preserves prior media",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "answer-key-generation accepts document",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "worksheet-quality-audit accepts document",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "worksheet-quality-revision accepts document",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "total": 19,
+  "passed": 19,
+  "failed": 0,
+  "status": "passed"
+}

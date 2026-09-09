@@ -1,0 +1,11 @@
+GARP APPLICATION CARD — DIFFERENTIATOR
+App ID: differentiator
+Version: 1.3.46
+GARP target: 2.5.1 SHIELD, TOOLING R2
+Migration mode: Prompt D — delta migration of an existing app
+Data class: D2 — student/school content may occur in imported material and AI prompts/results; no autonomous student grading decision is made.
+Agentic classification: NO — AI calls generate/analyse content; no tool/MCP/shell capability or autonomous action loop is exposed to the model.
+Primary deployment target assessed here: school-server PREP artifact (same-origin server session + /api/v1/ai/generate gateway).
+Public direct-provider profile remains present for standalone operation and is not promoted to school-server production approval by this migration.
+Real student data used in this audit: NO.
+Production school-server approval: NO / NOT TESTED until SHIELD-LIVE and RI-LIVE evidence exists.

@@ -1,0 +1,505 @@
+
+> ghrab-diferenciator@1.3.43 qa:garp25:static
+> npm run qa:garp25:tooling && npm run qa:garp23:static && npm run qa:suite-session && npm run qa:secrets && npm run qa:xss && npm run qa:budget-freeze && npm run qa:garp25:sw && npm run qa:garp25:vendored && npm run qa:garp25:ai-fingerprint
+
+
+> ghrab-diferenciator@1.3.43 qa:garp25:tooling
+> node security/garp25/tools/selftest-garp251.mjs
+
+{
+  "status": "PASS",
+  "checks": 43,
+  "passed": 43,
+  "failed": []
+}
+
+> ghrab-diferenciator@1.3.43 qa:garp23:static
+> node scripts/qa-garp23-static.mjs
+
+{
+  "schema": "garp-2.3-static-evidence-v1",
+  "appVersion": "1.3.43",
+  "markerFingerprint": "5ff7363455c43aa0",
+  "airStructuralVariants": 24,
+  "mutationFamilies": [
+    "case",
+    "spacing",
+    "multilingual",
+    "encoded",
+    "unicode",
+    "quoted-history"
+  ],
+  "callSites": [
+    {
+      "file": "20-zaklad-ui-projekty.js",
+      "count": 1
+    },
+    {
+      "file": "30-api-gemini.js",
+      "count": 1
+    },
+    {
+      "file": "40-vystup-pdf-kvalita.js",
+      "count": 5
+    },
+    {
+      "file": "50-interni-testy.js",
+      "count": 2
+    }
+  ],
+  "results": [
+    {
+      "id": "AIR12-STRUCTURAL-24",
+      "status": "PASS",
+      "detail": "24 variant / 6 mutation families executed through actual dplData"
+    },
+    {
+      "id": "AIR12-INSTRUCTION-BOUNDARY",
+      "status": "PASS",
+      "detail": "96 marker/operation cases; untrusted text never enters instructions"
+    },
+    {
+      "id": "PRIVACY-UNKNOWN-DECISION-FAIL-CLOSED",
+      "status": "PASS",
+      "detail": "unexpected privacy decision throws PREFLIGHT_BLOCKED"
+    },
+    {
+      "id": "AIR-NEGATIVE-CONTROL",
+      "status": "PASS",
+      "detail": "clean result passes; compromised deterministic mock fails"
+    },
+    {
+      "id": "PRIVACY-NO-DECISION-CACHE",
+      "status": "PASS",
+      "detail": "no cross-request privacy decision cache"
+    },
+    {
+      "id": "PRIVACY-NO-CONTINUE-BRANCH",
+      "status": "PASS",
+      "detail": "email detection can only anonymize or cancel"
+    },
+    {
+      "id": "PRIVACY-AI-EGRESS-SINGLE-SINK",
+      "status": "PASS",
+      "detail": "single application AI egress sink in AI Core integration"
+    },
+    {
+      "id": "HANDOFF-URL-REJECT-EXTERNAL",
+      "status": "PASS",
+      "detail": "external handoff URL falls back to configured Studio"
+    },
+    {
+      "id": "HANDOFF-URL-ALLOW-DESCENDANT",
+      "status": "PASS",
+      "detail": "same-origin configured Studio descendant is accepted"
+    },
+    {
+      "id": "HANDOFF-URL-STRIP-QUERY-FRAGMENT",
+      "status": "PASS",
+      "detail": "untrusted query and fragment are removed"
+    },
+    {
+      "id": "MANIFEST-APP-VERSION",
+      "status": "PASS",
+      "detail": "data manifest version matches candidate"
+    },
+    {
+      "id": "MANIFEST-KEY-STORES",
+      "status": "PASS",
+      "detail": "direct-mode credential stores declared"
+    },
+    {
+      "id": "MANIFEST-DELETION-CONTROLS",
+      "status": "PASS",
+      "detail": "declared deletion controls exist by name"
+    },
+    {
+      "id": "PC01-AI-EGRESS",
+      "status": "PASS",
+      "detail": "no application JS bypasses central AI Core generate sink"
+    },
+    {
+      "id": "PC01-CALL-SITES",
+      "status": "PASS",
+      "detail": "callGemini call sites enumerated for path coverage"
+    },
+    {
+      "id": "PC01-ALL-PRODUCTION-CALLS-TRUSTED-INSTRUCTIONS",
+      "status": "PASS",
+      "detail": "7 production callGemini sites / 7 explicit appInstructions"
+    },
+    {
+      "id": "QA-BUILD-FILE-MANIFEST",
+      "status": "PASS",
+      "detail": "performance budget is bound to fresh build file manifest, not directory order"
+    },
+    {
+      "id": "VALIDATION-NO-UNTRUSTED-ECHO",
+      "status": "PASS",
+      "detail": "deterministic validation messages use neutral line references instead of echoing untrusted fragments"
+    },
+    {
+      "id": "CANARY-BUILD-SWEEP",
+      "status": "PASS",
+      "detail": "no exact fresh canary in source/build/test fixtures"
+    }
+  ],
+  "status": "PASS"
+}
+
+> ghrab-diferenciator@1.3.43 qa:suite-session
+> node scripts/qa-suite-session-lifecycle.mjs
+
+[Diferenciátor] Suite-session cleanup selhal. Error: synthetic-remove-failure:ghrab.differentiator.ai.key.session.v1
+    at Store.removeItem (file:///mnt/data/diff_work/diferenciator-main/scripts/qa-suite-session-lifecycle.mjs:10:344)
+    at strictRemove (21-suite-session-lifecycle.js:3:271)
+    at cleanupForSuiteEnd (21-suite-session-lifecycle.js:7:317)
+    at sessionApi.onEnd.replay (21-suite-session-lifecycle.js:9:223)
+    at notify (file:///mnt/data/diff_work/diferenciator-main/scripts/qa-suite-session-lifecycle.mjs:17:141)
+    at Object.end (file:///mnt/data/diff_work/diferenciator-main/scripts/qa-suite-session-lifecycle.mjs:18:913)
+    at file:///mnt/data/diff_work/diferenciator-main/scripts/qa-suite-session-lifecycle.mjs:53:133
+{
+  "schema": "ghrab-suite-session-qa-v1",
+  "appId": "differentiator",
+  "appVersion": "1.3.43",
+  "platformVersion": "1.1.2",
+  "syntheticOnly": true,
+  "mode": "deterministic-multi-context-simulation",
+  "cases": [
+    {
+      "id": "late-platform-init-no-reference-error",
+      "pass": true,
+      "initialSafe": true,
+      "handlerInstalled": true,
+      "cleanup": {
+        "ok": true,
+        "generation": "late-g"
+      }
+    },
+    {
+      "id": "platform-1.1.2-contract-source",
+      "pass": true
+    },
+    {
+      "id": "open-child-suite-end",
+      "pass": true,
+      "generation": "g-1788946805279-r4qfjfls1ui",
+      "state": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": ""
+        },
+        "sessionKey": null,
+        "localKey": null,
+        "handoff": null,
+        "generation": "g-1788946805279-r4qfjfls1ui",
+        "observed": "g-1788946805279-r4qfjfls1ui",
+        "cleaned": "g-1788946805279-r4qfjfls1ui",
+        "ack": "g-1788946805279-r4qfjfls1ui",
+        "seen": "g-1788946805279-r4qfjfls1ui"
+      }
+    },
+    {
+      "id": "delayed-open-replay",
+      "pass": true,
+      "state": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": ""
+        },
+        "sessionKey": "NEW-AFTER",
+        "localKey": null,
+        "handoff": null,
+        "generation": "delayed-g",
+        "observed": "delayed-g",
+        "cleaned": "delayed-g",
+        "ack": "delayed-g",
+        "seen": "delayed-g"
+      }
+    },
+    {
+      "id": "multi-tab",
+      "pass": true,
+      "generation": "g-1788946805342-umyksznbanf",
+      "tabA": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": ""
+        },
+        "sessionKey": null,
+        "localKey": null,
+        "handoff": null,
+        "generation": "g-1788946805342-umyksznbanf",
+        "observed": "g-1788946805342-umyksznbanf",
+        "cleaned": "g-1788946805342-umyksznbanf",
+        "ack": "g-1788946805342-umyksznbanf",
+        "seen": "g-1788946805342-umyksznbanf"
+      },
+      "tabB": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": ""
+        },
+        "sessionKey": null,
+        "localKey": null,
+        "handoff": null,
+        "generation": "g-1788946805342-umyksznbanf",
+        "observed": "g-1788946805342-umyksznbanf",
+        "cleaned": "g-1788946805342-umyksznbanf",
+        "ack": "g-1788946805342-umyksznbanf",
+        "seen": "g-1788946805342-umyksznbanf"
+      }
+    },
+    {
+      "id": "browser-back-forward",
+      "pass": true,
+      "generation": "g-1788946805364-xuqo90w4n8c",
+      "state": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": ""
+        },
+        "sessionKey": null,
+        "localKey": null,
+        "handoff": null,
+        "generation": "g-1788946805364-xuqo90w4n8c",
+        "observed": "g-1788946805364-xuqo90w4n8c",
+        "cleaned": "g-1788946805364-xuqo90w4n8c",
+        "ack": "g-1788946805364-xuqo90w4n8c",
+        "seen": "g-1788946805364-xuqo90w4n8c"
+      }
+    },
+    {
+      "id": "fail-closed",
+      "pass": true,
+      "generation": "g-1788946805405-wzy9tdquxo",
+      "state": {
+        "memory": {
+          "paste": "",
+          "base": "",
+          "subject": "",
+          "working": false,
+          "keyMemory": "FAIL-secret"
+        },
+        "sessionKey": "FAIL-secret",
+        "localKey": "FAIL-local-secret",
+        "handoff": "{\"schema\":\"ghrab-studio-handoff-v2\",\"target\":{\"appId\":\"differentiator\"},\"payload\":{\"value\":{\"content\":{\"sourceText\":\"FAIL\"}}}}",
+        "generation": "g-1788946805405-wzy9tdquxo",
+        "observed": "g-1788946805405-wzy9tdquxo",
+        "cleaned": null,
+        "ack": null,
+        "seen": null
+      }
+    },
+    {
+      "id": "negative-control-disabled-handler",
+      "pass": true,
+      "expectedSecurityOutcome": "FAIL",
+      "observedSecurityOutcome": "FAIL",
+      "generation": "g-1788946805427-6iri79y9cr",
+      "state": {
+        "memory": {
+          "paste": "NEG-paste",
+          "base": "NEG-base",
+          "subject": "NEG-subject",
+          "working": true,
+          "keyMemory": "NEG-secret"
+        },
+        "sessionKey": "NEG-secret",
+        "localKey": "NEG-local-secret",
+        "handoff": "{\"schema\":\"ghrab-studio-handoff-v2\",\"target\":{\"appId\":\"differentiator\"},\"payload\":{\"value\":{\"content\":{\"sourceText\":\"NEG\"}}}}",
+        "generation": "g-1788946805427-6iri79y9cr",
+        "observed": null,
+        "cleaned": null,
+        "ack": null,
+        "seen": null
+      }
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  },
+  "status": "passed"
+}
+
+> ghrab-diferenciator@1.3.43 qa:secrets
+> node scripts/qa-security-secrets.mjs
+
+{
+  "schema": "ghrab-secret-scan-v1",
+  "status": "passed",
+  "scannedRoots": [
+    ".github",
+    "src",
+    "scripts",
+    "config",
+    "dist",
+    "dist-school-server"
+  ]
+}
+
+> ghrab-diferenciator@1.3.43 qa:xss
+> node scripts/qa-p5-xss-sinks.mjs
+
+{
+  "schema": "ghrab-p5-xss-sink-audit-v1",
+  "appId": "differentiator",
+  "counts": {
+    "innerHTML": 57,
+    "insertAdjacentHTML": 1,
+    "outerHTML": 0,
+    "documentWrite": 0,
+    "eval": 0,
+    "newFunction": 0
+  },
+  "baseline": {
+    "innerHTML": 62,
+    "insertAdjacentHTML": 1,
+    "outerHTML": 0,
+    "documentWrite": 0,
+    "eval": 0,
+    "newFunction": 0
+  },
+  "csp": {
+    "unsafeInlineScript": true,
+    "unsafeInlineStyle": true
+  },
+  "evidence": [
+    {
+      "file": "src/access/error-reporter.js",
+      "kind": "innerHTML",
+      "count": 2
+    },
+    {
+      "file": "src/index.template.html",
+      "kind": "innerHTML",
+      "count": 1
+    },
+    {
+      "file": "src/js/20-zaklad-ui-projekty.js",
+      "kind": "innerHTML",
+      "count": 8
+    },
+    {
+      "file": "src/js/20-zaklad-ui-projekty.js",
+      "kind": "insertAdjacentHTML",
+      "count": 1
+    },
+    {
+      "file": "src/js/30-api-gemini.js",
+      "kind": "innerHTML",
+      "count": 2
+    },
+    {
+      "file": "src/js/40-vystup-pdf-kvalita.js",
+      "kind": "innerHTML",
+      "count": 26
+    },
+    {
+      "file": "src/js/50-interni-testy.js",
+      "kind": "innerHTML",
+      "count": 10
+    },
+    {
+      "file": "src/js/60-pwa-start.js",
+      "kind": "innerHTML",
+      "count": 4
+    },
+    {
+      "file": "src/manual/index.html",
+      "kind": "innerHTML",
+      "count": 4
+    }
+  ],
+  "limitations": [
+    "This is a regression inventory, not proof that every HTML sink is safe.",
+    "Current inline-script architecture may still require unsafe-inline until CSP refactoring."
+  ],
+  "failures": [],
+  "status": "passed"
+}
+
+> ghrab-diferenciator@1.3.43 qa:budget-freeze
+> node scripts/qa-performance-budget-freeze.mjs
+
+[budget-freeze] PASS: 7 stropů zmrazeno od 1.3.24
+
+> ghrab-diferenciator@1.3.43 qa:garp25:sw
+> node scripts/qa-garp25-sw-policy.mjs
+
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "id": "baseline",
+      "pass": true,
+      "exit": 0
+    },
+    {
+      "id": "GHNC-SW-PRECACHE-CRITICAL",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "id": "GHNC-SW-GUARD-REMOVED",
+      "pass": true,
+      "exit": 1
+    }
+  ]
+}
+
+> ghrab-diferenciator@1.3.43 qa:garp25:vendored
+> node security/garp25/tools/check-vendored-consistency.mjs security/vendored-consistency.json
+
+{
+  "status": "FAIL",
+  "canonicalRoot": "..",
+  "components": [
+    {
+      "id": "platform-js",
+      "sha256": "199d03d9dc9263a9e74ed1f1102df0324f3b63e78704f1c70aeacec5feec530c"
+    },
+    {
+      "id": "platform-css",
+      "sha256": "eb465488df46f3d1672d721094800b0be3eb1278924b7699873a483f130b07ad"
+    },
+    {
+      "id": "school-logo",
+      "sha256": "300396a48cc36d8c2abda0aea673273d4d985476ba88fb0430630ef89ac86770"
+    },
+    {
+      "id": "error-reporter",
+      "sha256": "db0a22f9934d3dd62db4a1ca3c7dcbbde509eea1db1f5b209765684da6aec1ec"
+    }
+  ],
+  "checkedCopies": 9,
+  "drift": 1,
+  "findings": [
+    {
+      "severity": "HIGH",
+      "appId": "differentiator",
+      "component": "school-logo",
+      "issue": "DRIFT",
+      "detail": "src/assets/brand/school-logo.png",
+      "observed": "d959a733165c399c034037d87d2f1f889fd7b002724b24aeba27df6a04698234",
+      "expected": "300396a48cc36d8c2abda0aea673273d4d985476ba88fb0430630ef89ac86770"
+    }
+  ]
+}

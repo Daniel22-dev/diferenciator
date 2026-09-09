@@ -97,7 +97,7 @@ if (fs.existsSync(swPath)) {
   check(sw.includes('ghrab-service-worker-v1'), 'service worker contract marker');
   check(sw.includes('CACHE_PREFIXES'), 'service worker legacy cleanup list');
   check(sw.includes('GHRAB_SKIP_WAITING'), 'service worker update protocol');
-  check(sw.includes('ghrab/ghrab-platform.js'), 'service worker platform precache');
+  check(sw.includes('isSecurityCriticalRequest') && sw.includes('ghrab/ghrab-platform.js') && sw.includes('networkOnlyNoStore'), 'service worker platform security route');
   check(sw.includes('GHRAB_PLATFORM_P3_ASSETS'), 'service worker P3 asset list');
   const firstInstall = sw.indexOf("addEventListener('install'");
   const firstActivate = sw.indexOf("addEventListener('activate'");

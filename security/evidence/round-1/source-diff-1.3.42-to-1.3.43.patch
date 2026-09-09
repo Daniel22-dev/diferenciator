@@ -1,0 +1,2322 @@
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/APP-differentiator-GARP.txt ./APP-differentiator-GARP.txt
+--- /mnt/data/diff_baseline_1.3.42/APP-differentiator-GARP.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./APP-differentiator-GARP.txt	2026-09-09 09:39:15.211045742 +0000
+@@ -0,0 +1,11 @@
++GARP APPLICATION CARD — DIFFERENTIATOR
++App ID: differentiator
++Version: 1.3.43
++GARP target: 2.5.1 SHIELD, TOOLING R2
++Migration mode: Prompt D — delta migration of an existing app
++Data class: D2 — student/school content may occur in imported material and AI prompts/results; no autonomous student grading decision is made.
++Agentic classification: NO — AI calls generate/analyse content; no tool/MCP/shell capability or autonomous action loop is exposed to the model.
++Primary deployment target assessed here: school-server PREP artifact (same-origin server session + /api/v1/ai/generate gateway).
++Public direct-provider profile remains present for standalone operation and is not promoted to school-server production approval by this migration.
++Real student data used in this audit: NO.
++Production school-server approval: NO / NOT TESTED until SHIELD-LIVE and RI-LIVE evidence exists.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/CHANGELOG.md ./CHANGELOG.md
+--- /mnt/data/diff_baseline_1.3.42/CHANGELOG.md	2026-09-06 13:01:30.000000000 +0000
++++ ./CHANGELOG.md	2026-09-09 09:37:11.911528445 +0000
+@@ -50,6 +50,14 @@
+ 
+ # Changelog
+ 
++
++## 1.3.43 — 2026-09-09
++
++- GARP 2.5.1 SHIELD delta migrace bez změny pedagogické logiky.
++- Service worker: bezpečnostně kritické runtime/platform assety jsou explicitně network-only + no-store a nejsou součástí precache.
++- Přidána GARP 2.5.1 release-integrity, evidence, SBOM, provenance a negativní kontrolní vrstva.
++- Produkční SHIELD-LIVE / RI-LIVE zůstává NOT TESTED do nasazení na školní server.
++
+ ## 1.3.35 — GARP finální hardening po 2. kole Claude (2026-08-26)
+ 
+ - E1 potvrzen a opraven: `worksheet-generation` už nedělí smíšený prompt zpětně pomocí markerů v textu. PromptBuilder předává důvěryhodné instrukce, `source` a `teacher-context` jako samostatné části; produkční AI volání je neskládá zpět podle markerů a importovaný materiál nemůže změnit svůj štítek vložením textu `UČITELSKÝ KONTEXT (JSON):`.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/README.md ./README.md
+--- /mnt/data/diff_baseline_1.3.42/README.md	2026-09-06 13:01:30.000000000 +0000
++++ ./README.md	2026-09-09 09:37:11.910964976 +0000
+@@ -1,14 +1,14 @@
+ # Diferenciátor pracovních listů a testů
+ 
+-**Aktuální verze:** 1.3.42  
++**Aktuální verze:** 1.3.43  
+ 
+-1.3.42 je hotfix kandidáta pro koordinovanou migraci na GHRAB Platform 1.1.2. Opravuje časnou inicializaci suite-session lifecycle bez změny storage ownership, cleanup policy nebo pedagogické logiky.
++1.3.43 je GARP 2.5.1 SHIELD delta kandidát. Doplňuje release-integrity/evidence tooling a fail-closed freshness ochranu bezpečnostně kritických assetů bez změny pedagogické logiky.
+ **Platforma:** GHRAB Platform 1.1.2 · etapa P5
+ 
+ 
+ Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
+ 
+-- **Verze:** 1.3.42
++- **Verze:** 1.3.43
+ - **Doporučený název repozitáře:** `diferenciator`
+ - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
+ - **Vlastník:** Daniel Baláž
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/RELEASE-NOTES-1.3.43-GARP2.5.1-SHIELD.md ./RELEASE-NOTES-1.3.43-GARP2.5.1-SHIELD.md
+--- /mnt/data/diff_baseline_1.3.42/RELEASE-NOTES-1.3.43-GARP2.5.1-SHIELD.md	1970-01-01 00:00:00.000000000 +0000
++++ ./RELEASE-NOTES-1.3.43-GARP2.5.1-SHIELD.md	2026-09-09 09:43:40.814030033 +0000
+@@ -0,0 +1,21 @@
++# Diferenciátor 1.3.43 — GARP 2.5.1 SHIELD delta
++
++Datum: 2026-09-09
++
++## Co se mění
++- Bez změny pedagogické logiky aplikace.
++- Service worker nově zachází s runtime/deployment/access/GHRAB platform/integrity assety fail-closed: network-only + `cache: no-store` před cache-first cestou.
++- Build post-processing už bezpečnostně kritický `ghrab/ghrab-platform.js` nevrací do P3 precache.
++- Přidána kanonická GARP 2.5.1 TOOLING R2 vrstva, security-critical asset list, SW mutation controls, evidence manifest, CycloneDX SBOM, build provenance a PREP signed release integrity.
++- Zdrojové logo bylo zarovnáno s kanonickou kopií GHRAB Platform 1.1.2; výsledný vizuální asset v buildu je shodný s platformním zdrojem pravdy.
++
++## Ověření
++- GARP R2 tooling selftest 43/43 PASS.
++- GARP statická sada PASS.
++- Quality 31/31 PASS a regresní gate zelený.
++- Doménové dependency-free sady: AI profiles 22/22, all-subject 92/92, multimedia 19/19, specialist engines 56/56.
++- SW checker public + school profile PASS; dva záměrné SW bypassy jsou správně odmítnuty.
++- PREP release gate GREEN.
++
++## Co zůstává NOT TESTED
++Clean `npm ci` a Chromium/axe/runtime browser sada v tomto sandboxu kvůli nedostupnému npm balíčku; dále DAST, SHIELD-LIVE, RI-LIVE a produkční key custody na školním serveru.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/ghrab-platform.consumer.json ./ghrab-platform.consumer.json
+--- /mnt/data/diff_baseline_1.3.42/ghrab-platform.consumer.json	2026-09-06 13:01:30.000000000 +0000
++++ ./ghrab-platform.consumer.json	2026-09-09 09:37:11.413220320 +0000
+@@ -2,7 +2,7 @@
+   "schema": "ghrab-platform-consumer-v1",
+   "appId": "differentiator",
+   "appName": "Diferenciátor",
+-  "appVersion": "1.3.42",
++  "appVersion": "1.3.43",
+   "platform": {
+     "version": "1.1.2",
+     "contract": "ghrab-platform-v1",
+@@ -81,7 +81,7 @@
+     ]
+   },
+   "cache": {
+-    "name": "ghrab-differentiator-v1.3.42",
++    "name": "ghrab-differentiator-v1.3.43",
+     "updateMessage": "GHRAB_SKIP_WAITING"
+   },
+   "html": {
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/package-lock.json ./package-lock.json
+--- /mnt/data/diff_baseline_1.3.42/package-lock.json	2026-09-06 13:01:30.000000000 +0000
++++ ./package-lock.json	2026-09-09 09:37:11.398761100 +0000
+@@ -1,12 +1,12 @@
+ {
+   "name": "ghrab-diferenciator",
+-  "version": "1.3.42",
++  "version": "1.3.43",
+   "lockfileVersion": 3,
+   "requires": true,
+   "packages": {
+     "": {
+       "name": "ghrab-diferenciator",
+-      "version": "1.3.42",
++      "version": "1.3.43",
+       "devDependencies": {
+         "axe-core": "4.12.1",
+         "jsdom": "24.1.3",
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/package.json ./package.json
+--- /mnt/data/diff_baseline_1.3.42/package.json	2026-09-06 13:01:30.000000000 +0000
++++ ./package.json	2026-09-09 09:38:19.585663009 +0000
+@@ -1,6 +1,6 @@
+ {
+   "name": "ghrab-diferenciator",
+-  "version": "1.3.42",
++  "version": "1.3.43",
+   "private": true,
+   "description": "Diferenciátor pracovních listů a testů — samostatná PWA pro GitHub Pages",
+   "type": "module",
+@@ -55,7 +55,13 @@
+     "qa:garp23": "npm run qa:garp23:static && npm run qa:garp23:runtime",
+     "qa:garp23:static": "node scripts/qa-garp23-static.mjs",
+     "qa:garp23:runtime": "node scripts/qa-garp23-red-team.mjs",
+-    "qa:suite-session": "node scripts/qa-suite-session-lifecycle.mjs"
++    "qa:suite-session": "node scripts/qa-suite-session-lifecycle.mjs",
++    "qa:garp25:sw": "node scripts/qa-garp25-sw-policy.mjs",
++    "qa:garp25:sbom": "node scripts/generate-cyclonedx-sbom.mjs",
++    "qa:garp25:ai-fingerprint": "node scripts/generate-ai-assurance-fingerprint.mjs --check",
++    "qa:garp25:vendored": "node security/garp25/tools/check-vendored-consistency.mjs security/vendored-consistency.json",
++    "qa:garp25:tooling": "node security/garp25/tools/selftest-garp251.mjs",
++    "qa:garp25:static": "npm run qa:garp25:tooling && npm run qa:garp23:static && npm run qa:suite-session && npm run qa:secrets && npm run qa:xss && npm run qa:budget-freeze && npm run qa:garp25:sw && npm run qa:garp25:vendored && npm run qa:garp25:ai-fingerprint"
+   },
+   "engines": {
+     "node": ">=18"
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/reporter-test.config.json ./reporter-test.config.json
+--- /mnt/data/diff_baseline_1.3.42/reporter-test.config.json	2026-09-06 13:01:30.000000000 +0000
++++ ./reporter-test.config.json	2026-09-09 09:37:11.415063843 +0000
+@@ -2,7 +2,7 @@
+   "distEntry": "dist/index.html",
+   "appId": "differentiator",
+   "appName": "Diferenciátor",
+-  "version": "1.3.42",
++  "version": "1.3.43",
+   "reporterPath": "src/access/error-reporter.js",
+   "stylePath": "src/access/error-reporter.css",
+   "adapterPath": "src/access/error-reporter-adapter.js",
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/scripts/apply-ghrab-platform.mjs ./scripts/apply-ghrab-platform.mjs
+--- /mnt/data/diff_baseline_1.3.42/scripts/apply-ghrab-platform.mjs	2026-09-06 13:01:30.000000000 +0000
++++ ./scripts/apply-ghrab-platform.mjs	2026-09-09 09:39:55.342640259 +0000
+@@ -197,7 +197,7 @@
+ if (fs.existsSync(swPath)) {
+   let sw = fs.readFileSync(swPath, 'utf8');
+   sw = sw.replace(/\n\/\* GHRAB_PLATFORM_P3_START \*\/[\s\S]*?\/\* GHRAB_PLATFORM_P3_END \*\/\n?/g, '\n');
+-  const platformAssets = [
++  const platformAssetsRaw = [
+     './ghrab/ghrab-platform.js',
+     './ghrab/ghrab-platform.css',
+     './ghrab/ghrab-artifact-envelope-v1.schema.json',
+@@ -206,6 +206,18 @@
+     './assets/brand/school-logo.png',
+     './ghrab-platform.consumer.json',
+   ];
++  const criticalListPath = path.join(root, 'security', 'security-critical-assets.json');
++  const securityCritical = fs.existsSync(criticalListPath) ? JSON.parse(fs.readFileSync(criticalListPath, 'utf8')) : [];
++  if (!Array.isArray(securityCritical)) throw new Error('security/security-critical-assets.json musí být JSON array');
++  const normSecurityPath = value => String(value || '').replace(/^\.\//, '').replace(/^\//, '');
++  const isSecurityCriticalAsset = value => {
++    const v = normSecurityPath(value);
++    return securityCritical.some(item => {
++      const c = normSecurityPath(item);
++      return c && (v.includes(c) || c.includes(v));
++    });
++  };
++  const platformAssets = platformAssetsRaw.filter(asset => !isSecurityCriticalAsset(asset));
+   const hasUpdateProtocol = sw.includes('GHRAB_SKIP_WAITING');
+   sw += `\n/* GHRAB_PLATFORM_P3_START */\nconst GHRAB_PLATFORM_P3_ASSETS=${JSON.stringify(platformAssets)};\nself.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(${JSON.stringify(consumer.cache.name)});const results=await Promise.allSettled(GHRAB_PLATFORM_P3_ASSETS.map(asset=>cache.add(asset)));const failed=results.filter(item=>item.status==='rejected');if(failed.length)throw new Error('GHRAB Platform P3 precache selhal: '+failed.length);})()));\n${hasUpdateProtocol ? '' : "self.addEventListener('message',event=>{if(event.data?.type==='GHRAB_SKIP_WAITING')self.skipWaiting();});\n"}/* GHRAB_PLATFORM_P3_END */\n`;
+   fs.writeFileSync(swPath, sw);
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/scripts/generate-ai-assurance-fingerprint.mjs ./scripts/generate-ai-assurance-fingerprint.mjs
+--- /mnt/data/diff_baseline_1.3.42/scripts/generate-ai-assurance-fingerprint.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./scripts/generate-ai-assurance-fingerprint.mjs	2026-09-09 09:38:18.960021419 +0000
+@@ -0,0 +1,13 @@
++#!/usr/bin/env node
++import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node:crypto';
++const root=process.cwd(); const out='security/evidence/ai-assurance-fingerprint.json'; const check=process.argv.includes('--check');
++const tokens=/GHRAB_AI|dplData\s*\(|callGemini|school-gateway|direct-gemini|systemInstruction|system_instruction|prompt|aiTransport|wrapUntrusted|AIR-/i;
++function walk(dir){if(!fs.existsSync(dir))return[];let out=[];for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())out.push(...walk(p));else if(e.isFile())out.push(p)}return out}
++let files=[...walk('src/js'),...walk('src/config'),'src/runtime-config.js','src/runtime-config.school-server.js','src/ai-operations.json','ghrab-ai-core.consumer.json',...walk('vendor/ghrab-ai-core-1.0.0')].filter(p=>fs.existsSync(p));
++files=[...new Set(files)].filter(p=>{try{return tokens.test(fs.readFileSync(p,'utf8'))}catch{return false}}).sort();
++const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
++const rows=files.map(p=>({path:p.replaceAll('\\','/'),sha256:sha(fs.readFileSync(p))}));
++const aggregate=sha(Buffer.from(rows.map(r=>`${r.sha256}  ${r.path}`).join('\n')+'\n'));
++const obj={schema:'ghrab-ai-assurance-fingerprint-v1',appId:'differentiator',appVersion:JSON.parse(fs.readFileSync('package.json','utf8')).version,algorithm:'SHA-256',aggregate,files:rows};
++if(check){if(!fs.existsSync(out)){console.error(JSON.stringify({status:'FAIL',error:'fingerprint-missing'}));process.exit(1)}const prev=JSON.parse(fs.readFileSync(out,'utf8'));const ok=prev.aggregate===obj.aggregate&&JSON.stringify(prev.files)===JSON.stringify(obj.files);console[ok?'log':'error'](JSON.stringify({status:ok?'PASS':'FAIL',files:rows.length,aggregate,expected:prev.aggregate},null,2));process.exit(ok?0:1)}
++fs.mkdirSync(path.dirname(out),{recursive:true});fs.writeFileSync(out,JSON.stringify(obj,null,2)+'\n');console.log(JSON.stringify({status:'PASS',output:out,files:rows.length,aggregate},null,2));
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/scripts/generate-cyclonedx-sbom.mjs ./scripts/generate-cyclonedx-sbom.mjs
+--- /mnt/data/diff_baseline_1.3.42/scripts/generate-cyclonedx-sbom.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./scripts/generate-cyclonedx-sbom.mjs	2026-09-09 09:38:18.959593204 +0000
+@@ -0,0 +1,29 @@
++#!/usr/bin/env node
++import fs from 'node:fs';
++import path from 'node:path';
++import crypto from 'node:crypto';
++const root=process.cwd();
++const outArg=process.argv[2]||`security/sbom/differentiator-${JSON.parse(fs.readFileSync('package.json','utf8')).version}.cdx.json`;
++const lock=JSON.parse(fs.readFileSync(path.join(root,'package-lock.json'),'utf8'));
++const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
++function nameFromPath(p,meta){
++  if(meta?.name) return meta.name;
++  const m=String(p).match(/node_modules\/(.+)$/); if(!m) return pkg.name;
++  const parts=m[1].split('/'); return parts[0].startsWith('@')?`${parts[0]}/${parts[1]}`:parts[0];
++}
++function hashFromSri(sri){
++  if(!sri) return [];
++  const first=String(sri).split(/\s+/)[0]; const m=first.match(/^(sha(?:256|384|512))-(.+)$/i); if(!m)return [];
++  try{return [{alg:m[1].toUpperCase().replace('SHA','SHA-'),content:Buffer.from(m[2],'base64').toString('hex')}]}catch{return []}
++}
++const components=[];
++for(const [p,m] of Object.entries(lock.packages||{})){
++  if(!p||!p.startsWith('node_modules/')||!m?.version) continue;
++  const name=nameFromPath(p,m); const scope=pkg.devDependencies?.[name]?'optional':'required';
++  const purl=`pkg:npm/${encodeURIComponent(name).replace('%40','@').replace('%2F','%2F')}@${m.version}`;
++  components.push({type:'library',name,version:String(m.version),purl,scope,hashes:hashFromSri(m.integrity),properties:[{name:'ghrab:lockfilePath',value:p}]});
++}
++components.sort((a,b)=>a.purl.localeCompare(b.purl,'en'));
++const bom={bomFormat:'CycloneDX',specVersion:'1.5',serialNumber:`urn:uuid:${crypto.randomUUID()}`,version:1,metadata:{timestamp:new Date().toISOString(),component:{type:'application',name:pkg.name,version:pkg.version}},components};
++fs.mkdirSync(path.dirname(outArg),{recursive:true}); fs.writeFileSync(outArg,JSON.stringify(bom,null,2)+'\n');
++console.log(JSON.stringify({status:'PASS',output:outArg,components:components.length,uniquePurl:new Set(components.map(x=>x.purl)).size,withHashes:components.filter(x=>x.hashes.length).length},null,2));
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/scripts/ghrab-platform-conformance.mjs ./scripts/ghrab-platform-conformance.mjs
+--- /mnt/data/diff_baseline_1.3.42/scripts/ghrab-platform-conformance.mjs	2026-09-06 13:01:30.000000000 +0000
++++ ./scripts/ghrab-platform-conformance.mjs	2026-09-09 09:39:55.342809434 +0000
+@@ -97,7 +97,7 @@
+   check(sw.includes('ghrab-service-worker-v1'), 'service worker contract marker');
+   check(sw.includes('CACHE_PREFIXES'), 'service worker legacy cleanup list');
+   check(sw.includes('GHRAB_SKIP_WAITING'), 'service worker update protocol');
+-  check(sw.includes('ghrab/ghrab-platform.js'), 'service worker platform precache');
++  check(sw.includes('isSecurityCriticalRequest') && sw.includes('ghrab/ghrab-platform.js') && sw.includes('networkOnlyNoStore'), 'service worker platform security route');
+   check(sw.includes('GHRAB_PLATFORM_P3_ASSETS'), 'service worker P3 asset list');
+   const firstInstall = sw.indexOf("addEventListener('install'");
+   const firstActivate = sw.indexOf("addEventListener('activate'");
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/scripts/qa-garp23-static.mjs ./scripts/qa-garp23-static.mjs
+--- /mnt/data/diff_baseline_1.3.42/scripts/qa-garp23-static.mjs	2026-09-06 13:01:30.000000000 +0000
++++ ./scripts/qa-garp23-static.mjs	2026-09-09 09:37:11.417131609 +0000
+@@ -111,7 +111,7 @@
+ const manifest=JSON.parse(read('src/config/data-manifest.json'));
+ const stores=manifest.stores||[];
+ const exact=(kind,p)=>stores.some(s=>s.kind===kind&&Array.isArray(s.patterns)&&s.patterns.includes(p));
+-check('MANIFEST-APP-VERSION',manifest.appVersion==='1.3.42','data manifest version matches candidate');
++check('MANIFEST-APP-VERSION',manifest.appVersion==='1.3.43','data manifest version matches candidate');
+ check('MANIFEST-KEY-STORES',exact('sessionStorage','ghrab.differentiator.ai.key.session.v1')&&exact('localStorage','ghrab.differentiator.ai.key.local.v1'),'direct-mode credential stores declared');
+ check('MANIFEST-DELETION-CONTROLS',Array.isArray(manifest.deletion?.clientControls)&&['clearWorkingData()','clearPreferenceData()','clearKey()'].every(x=>manifest.deletion.clientControls.includes(x)),'declared deletion controls exist by name');
+ 
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/scripts/qa-garp25-sw-policy.mjs ./scripts/qa-garp25-sw-policy.mjs
+--- /mnt/data/diff_baseline_1.3.42/scripts/qa-garp25-sw-policy.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./scripts/qa-garp25-sw-policy.mjs	2026-09-09 09:38:18.961387599 +0000
+@@ -0,0 +1,14 @@
++#!/usr/bin/env node
++import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import {spawnSync} from 'node:child_process';
++const root=process.cwd(), checker=path.join(root,'security/garp25/tools/check-sw-security-freeze.mjs'), list=path.join(root,'security/security-critical-assets.json');
++const deploy=path.join(root,'dist-school-server'), sw=path.join(deploy,'sw.js');
++function run(swPath){return spawnSync(process.execPath,[checker,swPath,deploy,list],{encoding:'utf8'})}
++const base=run(sw); const cases=[{id:'baseline',pass:base.status===0,exit:base.status}];
++const raw=fs.readFileSync(sw,'utf8'); const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'dpl-garp25-sw-'));
++try{
++  const p1=path.join(tmp,'sw-precache-critical.js'); fs.writeFileSync(p1,raw.replace('const CORE_ASSETS = [','const CORE_ASSETS = [\n  "./ghrab/ghrab-platform.js",'));
++  const r1=run(p1); cases.push({id:'GHNC-SW-PRECACHE-CRITICAL',pass:r1.status!==0,exit:r1.status});
++  const p2=path.join(tmp,'sw-no-structural-guard.js'); fs.writeFileSync(p2,raw.replaceAll('isSecurityCriticalRequest','isSecurityCriticalRequest_MUTATED'));
++  const r2=run(p2); cases.push({id:'GHNC-SW-GUARD-REMOVED',pass:r2.status!==0,exit:r2.status});
++} finally {fs.rmSync(tmp,{recursive:true,force:true})}
++const ok=cases.every(c=>c.pass); console[ok?'log':'error'](JSON.stringify({status:ok?'PASS':'FAIL',cases},null,2));process.exit(ok?0:1);
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/scripts/qa-suite-session-lifecycle.mjs ./scripts/qa-suite-session-lifecycle.mjs
+--- /mnt/data/diff_baseline_1.3.42/scripts/qa-suite-session-lifecycle.mjs	2026-09-06 13:01:30.000000000 +0000
++++ ./scripts/qa-suite-session-lifecycle.mjs	2026-09-09 09:37:11.418769032 +0000
+@@ -5,7 +5,7 @@
+ const root=path.resolve('.');
+ const lifecycle=fs.readFileSync(path.join(root,'src/js/21-suite-session-lifecycle.js'),'utf8');
+ const platform=fs.readFileSync(path.join(root,'vendor/ghrab-platform-1.1.2/ghrab-platform.js'),'utf8');
+-const report={schema:'ghrab-suite-session-qa-v1',appId:'differentiator',appVersion:'1.3.42',platformVersion:'1.1.2',syntheticOnly:true,mode:'deterministic-multi-context-simulation',cases:[]};
++const report={schema:'ghrab-suite-session-qa-v1',appId:'differentiator',appVersion:'1.3.43',platformVersion:'1.1.2',syntheticOnly:true,mode:'deterministic-multi-context-simulation',cases:[]};
+ const add=(id,pass,detail={})=>report.cases.push({id,pass,...detail});
+ class Store{constructor(shared){this.map=shared||new Map();this.failRemoveKey='';this.failSetKey=''}getItem(k){k=String(k);return this.map.has(k)?this.map.get(k):null}setItem(k,v){k=String(k);if(k===this.failSetKey)throw new Error('synthetic-set-failure:'+k);this.map.set(k,String(v))}removeItem(k){k=String(k);if(k===this.failRemoveKey)throw new Error('synthetic-remove-failure:'+k);this.map.delete(k)}clear(){this.map.clear()}key(i){return [...this.map.keys()][i]??null}get length(){return this.map.size}}
+ const sharedMap=new Map();let contexts=[];
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/AI-RESOURCE-BUDGET.txt ./security/AI-RESOURCE-BUDGET.txt
+--- /mnt/data/diff_baseline_1.3.42/security/AI-RESOURCE-BUDGET.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/AI-RESOURCE-BUDGET.txt	2026-09-09 09:39:15.212721322 +0000
+@@ -0,0 +1,18 @@
++DIFFERENTIATOR 1.3.43 — AI RESOURCE BUDGET
++
++Client/runtime limits evidenced in source:
++- request timeout: 120000 ms;
++- request body max: 18,874,368 bytes;
++- individual part max: 12,582,912 bytes;
++- direct profile gateway retries: 0;
++- school profile gateway retries: 1;
++- direct-provider max output cap: 60,000 tokens;
++- operation hints: 4,096–32,768 output tokens;
++- worksheet generation / repair / revision: maxProviderRequestsPerWorkflow = 12.
++
++Cancellation/error behavior:
++- AI Core integration exposes AbortController/AbortSignal handling and user cancellation paths in the existing implementation; static/behavioral local tests remain the authoritative app evidence.
++
++Not proven in PREP:
++- server-wide per-user concurrency, global rate limits, circuit breaker, provider quota enforcement and process/container CPU/memory limits.
++These remain SH-RUN-LIVE items and must not be inferred from client configuration.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/DAST-SUMMARY.txt ./security/DAST-SUMMARY.txt
+--- /mnt/data/diff_baseline_1.3.42/security/DAST-SUMMARY.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/DAST-SUMMARY.txt	2026-09-09 09:39:15.219290632 +0000
+@@ -0,0 +1,4 @@
++DIFFERENTIATOR 1.3.43 — DAST SUMMARY
++Status: NOT TESTED.
++Reason: no real school-server endpoint is part of this local migration.
++Required: served-header/CSP/TLS/session tests plus endpoint abuse, rate-limit and authorization checks after deployment.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/DEPLOYMENT-SECURITY.txt ./security/DEPLOYMENT-SECURITY.txt
+--- /mnt/data/diff_baseline_1.3.42/security/DEPLOYMENT-SECURITY.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/DEPLOYMENT-SECURITY.txt	2026-09-09 09:39:15.215390124 +0000
+@@ -0,0 +1,20 @@
++DIFFERENTIATOR 1.3.43 — DEPLOYMENT SECURITY HANDOFF
++
++Preferred school profile:
++- same-origin path /apps/diferenciator/;
++- server-session authentication;
++- AI only through /api/v1/ai/generate;
++- no local provider keys in school profile;
++- school build CSP must not permit direct generativelanguage.googleapis.com connection.
++
++Required production controls before approval:
++1. Serve deployment artifact only after independent Prompt E review.
++2. Verify release-integrity.json + release-integrity.sig against the production trust root before activation.
++3. Keep production signing private key outside source, build artifact and web root.
++4. Enforce HTTPS, secure session cookies, authorization and CSRF/session controls at the server/reverse proxy.
++5. Enforce server-side request size, timeout, retry, rate-limit/concurrency and egress policy independent of client hints.
++6. Do not cache runtime/auth/revocation/integrity/platform security assets. The included SW routes them network-only/no-store.
++7. Enable safe audit/incident logging without prompt/student-content logging by default.
++8. Execute SHIELD-LIVE / RI-LIVE, DAST and SIM-07 before real student data.
++
++security/security-critical-assets.json is verification metadata, not a secret. It must accompany source/audit tooling so the release gate can verify the service worker fail-closed.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/KEY-CUSTODY-AND-RECOVERY.txt ./security/KEY-CUSTODY-AND-RECOVERY.txt
+--- /mnt/data/diff_baseline_1.3.42/security/KEY-CUSTODY-AND-RECOVERY.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/KEY-CUSTODY-AND-RECOVERY.txt	2026-09-09 09:39:15.220856031 +0000
+@@ -0,0 +1,4 @@
++DIFFERENTIATOR 1.3.43 — KEY CUSTODY
++PREP audit: use a one-time Ed25519 private key stored outside the candidate tree; retain only the public PREP trust root in evidence.
++Production: private release key must be held in an approved secret/HSM/CI signing boundary, never in Git, dist, web root or developer-shared ZIP. Define owner, backup, rotation, revocation and emergency replacement before RI-LIVE.
++Current production key custody status: NOT TESTED / NOT CONFIGURED by this local migration.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/NEGATIVE-CONTROLS.txt ./security/NEGATIVE-CONTROLS.txt
+--- /mnt/data/diff_baseline_1.3.42/security/NEGATIVE-CONTROLS.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/NEGATIVE-CONTROLS.txt	2026-09-09 09:39:15.216150309 +0000
+@@ -0,0 +1,21 @@
++DIFFERENTIATOR 1.3.43 — NEGATIVE CONTROLS
++
++NC-01 SW critical precache mutation
++Inject ./ghrab/ghrab-platform.js into CORE_ASSETS. Expected: canonical GARP 2.5.1 R2 checker non-zero (CRITICAL).
++
++NC-02 SW structural guard removal
++Rename/remove isSecurityCriticalRequest while cacheFirst remains. Expected: canonical checker non-zero because critical deployed assets no longer have structural networkOnlyNoStore routing.
++
++NC-03 AI assurance mutation
++Mutate a fingerprinted AI/prompt-boundary source file. Expected: generate-ai-assurance-fingerprint.mjs --check FAIL until restored.
++
++NC-04 Vendored platform drift
++Mutate any checked dist GHRAB platform byte. Expected: check-vendored-consistency.mjs FAIL.
++
++NC-05 Release tamper
++After manifest/signature generation, mutate a deployed payload byte. Expected: verify-release-integrity.mjs FAIL.
++
++NC-06 Signature tamper
++Mutate release-integrity.json or .sig. Expected: verify-release-signature.mjs FAIL.
++
++All controls use synthetic/disposable copies. No real student data is used.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/RELEASE-INTEGRITY-README.txt ./security/RELEASE-INTEGRITY-README.txt
+--- /mnt/data/diff_baseline_1.3.42/security/RELEASE-INTEGRITY-README.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/RELEASE-INTEGRITY-README.txt	2026-09-09 09:39:15.220069956 +0000
+@@ -0,0 +1,4 @@
++DIFFERENTIATOR 1.3.43 — RELEASE INTEGRITY
++This candidate implements GARP 2.5.1 R2 PREP release integrity over a concrete school-server deployment payload.
++Artifacts: release-integrity.json, release-integrity.sig, PREP trust root, PREP release registry, build provenance, evidence manifest, SBOM and security-critical asset list.
++The PREP key is disposable and must not be reused in production. RI-PREP PASS does not imply RI-LIVE or production approval.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/SAST-SUMMARY.txt ./security/SAST-SUMMARY.txt
+--- /mnt/data/diff_baseline_1.3.42/security/SAST-SUMMARY.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/SAST-SUMMARY.txt	2026-09-09 09:43:47.250774310 +0000
+@@ -0,0 +1,15 @@
++DIFFERENTIATOR 1.3.43 — SAST / STATIC ASSURANCE SUMMARY
++
++Executed locally on the final 1.3.43 source/build:
++- canonical GARP 2.5.1 R2 tooling selftest: 43/43 PASS;
++- GARP 2.3 static/AIR/PC-01 campaign: PASS, including 24 structural AIR variants, 96 marker/operation instruction-boundary cases, fail-closed privacy decision, AI negative control and 7/7 production AI call sites with explicit trusted appInstructions;
++- suite-session deterministic simulation: 8/8 PASS including injected cleanup failure behavior;
++- repository/build secret scanner: PASS;
++- XSS sink regression inventory: PASS against frozen baseline (57 innerHTML, 1 insertAdjacentHTML, no eval/new Function/document.write; this is an inventory, not proof every sink is safe);
++- performance/quality gate: 31/31 PASS; entry HTML 489,990 bytes <= frozen 490,000-byte limit;
++- canonical GARP R2 SW freeze: PASS on public and school-server deployment;
++- SW negative controls: baseline PASS, critical-precache mutation FAIL, structural-guard removal FAIL;
++- vendored consistency: PASS, 9 copies checked, 0 drift;
++- AI assurance fingerprint: PASS.
++
++This is repository-local bounded static assurance. No claim is made that a commercial SAST engine was executed. Browser/DAST/live-server findings remain separate.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/SCA-SUMMARY.txt ./security/SCA-SUMMARY.txt
+--- /mnt/data/diff_baseline_1.3.42/security/SCA-SUMMARY.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/SCA-SUMMARY.txt	2026-09-09 09:43:33.796815701 +0000
+@@ -0,0 +1,8 @@
++DIFFERENTIATOR 1.3.43 — SCA / DEPENDENCY SUMMARY
++
++- package-lock.json is present and pins resolved package versions/integrities.
++- CycloneDX 1.5 SBOM generated: 67 components, 67 unique purls, 67 components with lockfile-derived cryptographic hashes.
++- immutable GitHub Action pinning is covered by the existing regression gate (T41 PASS).
++- clean npm registry-backed vulnerability lookup (`npm audit`/external SCA service) is NOT TESTED in this sandbox because registry/cache access is unavailable; offline npm ci fails at uncached xmlchars-2.2.0.
++
++Therefore SH-APP-08 remains AMBER until a connected CI/SCA run supplies current vulnerability intelligence; SH-APP-09 SBOM is PASS.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/SECRET-SCAN-SUMMARY.txt ./security/SECRET-SCAN-SUMMARY.txt
+--- /mnt/data/diff_baseline_1.3.42/security/SECRET-SCAN-SUMMARY.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/SECRET-SCAN-SUMMARY.txt	2026-09-09 09:43:33.798929357 +0000
+@@ -0,0 +1,10 @@
++DIFFERENTIATOR 1.3.43 — SECRET / SENSITIVE DATA SWEEP
++
++Results:
++- application repository/build secret scanner: PASS over .github, src, scripts, config, dist and dist-school-server;
++- GARP deployment leak scan in the PREP release gate: PASS;
++- no real student data was used in migration evidence;
++- PREP signing private key is generated outside the source tree and is deleted before final packaging;
++- only the public PREP trust root is retained.
++
++Binary assets reported as not text-scanned by the deployment leak tool are normal image/gzip artifacts and are explicitly listed in gate evidence. This does not promote the build to LIVE approval.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/SECURITY-ASSURANCE-CROSSWALK.txt ./security/SECURITY-ASSURANCE-CROSSWALK.txt
+--- /mnt/data/diff_baseline_1.3.42/security/SECURITY-ASSURANCE-CROSSWALK.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/SECURITY-ASSURANCE-CROSSWALK.txt	2026-09-09 09:39:15.213777609 +0000
+@@ -0,0 +1,53 @@
++DIFFERENTIATOR 1.3.43 — GARP 2.5.1 ASSURANCE CROSSWALK
++
++Status legend: PASS = reproduced locally; N/A = structurally not applicable; NOT TESTED = no valid evidence; AMBER = partial/prep evidence only.
++
++Legacy / AI gates
++- RT / application regression structure: PASS for locally executable static/unit suites; browser subset NOT TESTED in this sandbox.
++- SIM-07 service-worker update/recovery: NOT TESTED behaviorally; static SW freeze + negative controls PASS.
++- PC-01 path coverage for the 1.3.43 SW fix: PASS statically on deployed public + school profiles and two mutation controls.
++- AIR structural prompt-injection boundary campaign: PASS via qa-garp23-static; behavioral live-model AIR remains NOT TESTED.
++- Agentic controls SH-AG-01..15: N/A as an agentic runtime; capability classification AGENTIC=NO. Generic least-privilege/AI-output controls remain mapped under SH-AI/SH-APP.
++
++SH-APP
++- 01 threat model: PASS (SECURITY-THREAT-MODEL.txt)
++- 02 attack surface inventory: PASS (threat model + app card)
++- 03 auth/session: AMBER; client/school contracts exist, LIVE server behavior NOT TESTED
++- 04 injection/unsafe sinks: PASS static; browser/DAST NOT TESTED
++- 05 browser hardening: AMBER; source policy PASS, served headers NOT TESTED
++- 06 file/import/export: AMBER; existing deterministic suites locally exercised where dependency-free, full browser matrix NOT TESTED
++- 07 SAST: PASS bounded local static suite
++- 08 SCA: AMBER; lockfile/SBOM available, live registry vulnerability query NOT TESTED
++- 09 SBOM: PASS
++- 10 DAST: NOT TESTED
++- 11 secret sweep: PASS on source/deployment scans
++- 12 exception register: PASS (SECURITY-EXCEPTIONS.txt)
++
++SH-SC
++- 01 source identity: PASS for frozen input ZIP SHA + generated build-input snapshot SHA
++- 02 source-control protection: NOT TESTED (repository settings not part of supplied artifact)
++- 03 pinned inputs: PASS for package-lock and immutable GitHub Action refs found in supplied source
++- 04 clean/isolated build: AMBER; dependency-free build reproduced, clean npm ci blocked by sandbox registry/cache
++- 05 build provenance: PASS PREP
++- 06 provenance verification: PASS PREP with --allow-local-builder
++- 07 rebuild equivalence: NOT TESTED as a strict byte gate because current build emits wall-clock timestamps
++- 08 source/deployment separation: PASS
++- 09 signed release: PASS PREP with disposable Ed25519 key; NOT production key
++- 10 key revocation/rotation: AMBER documentation only; LIVE key custody NOT TESTED
++- 11 release policy/bypass resistance: AMBER; canonical R2 release gate used, CI enforcement not independently configured here
++- 12 evidence manifest: PASS PREP
++
++SH-RUN / SH-DET
++- server/container/TLS/rate-limit/egress/alert/recovery controls: NOT TESTED unless directly evidenced by source contract. No PREP result is promoted to LIVE.
++- SH-RUN-09 resource budget: PASS client contract; server enforcement NOT TESTED.
++- SH-RUN-10 timeout/retry/cancel: PASS client contract; server circuit breaker NOT TESTED.
++- SH-RUN-13 fail-closed security assets: PASS static SW policy; server behavior NOT TESTED.
++
++SH-AI
++- prompt injection / untrusted-data separation: PASS structural, live-model red team NOT TESTED;
++- sensitive disclosure: AMBER due D2 data class and missing provider/server LIVE evidence;
++- excessive agency: N/A (no tools/agent loop);
++- AI supply chain/model drift: AMBER; model/profile config is explicit, provider-side change controls NOT TESTED;
++- unbounded consumption: PASS client budget / AMBER server enforcement;
++- output handling: PASS static XSS/renderer gates where executable; browser acceptance NOT TESTED;
++- kill/degrade behavior: AMBER; cancellation paths exist, server-side kill switch NOT TESTED.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/SECURITY-EXCEPTIONS.txt ./security/SECURITY-EXCEPTIONS.txt
+--- /mnt/data/diff_baseline_1.3.42/security/SECURITY-EXCEPTIONS.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/SECURITY-EXCEPTIONS.txt	2026-09-09 09:39:15.214618416 +0000
+@@ -0,0 +1,22 @@
++DIFFERENTIATOR 1.3.43 — SECURITY EXCEPTIONS / DEBTS
++
++E-01  CLEAN NPM INSTALL / BROWSER QA
++Status: NOT TESTED in this audit environment.
++Reason: npm registry access/cache was insufficient; npm ci could not obtain xmlchars-2.2.0. This is an environment limitation, not an application PASS or FAIL.
++Required closure: clean npm ci from package-lock + browser/axe/runtime P5 suite in CI or a network-enabled clean runner.
++
++E-02  DAST / SERVED HEADERS
++Status: NOT TESTED.
++Required closure: execute against the actual school-server URL after deployment, validate response headers/CSP/TLS/session behavior and malicious-input cases.
++
++E-03  SHIELD-LIVE / RI-LIVE
++Status: NOT TESTED.
++Required closure: production-like server evidence including key custody, revocation/rollback, rate limit, egress, alerting and signed deployment verification.
++
++E-04  D2 PROVIDER RETENTION / DATA-GOVERNANCE EVIDENCE
++Status: AMBER.
++Required closure: document approved school AI gateway/provider processing/retention policy before real student content is allowed.
++
++E-05  REBUILD BYTE EQUIVALENCE
++Status: NOT TESTED as a strict guarantee.
++Reason: current build scripts write wall-clock timestamps. Release integrity signs the concrete built artifact; it does not claim deterministic rebuild equivalence.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/SECURITY-THREAT-MODEL.txt ./security/SECURITY-THREAT-MODEL.txt
+--- /mnt/data/diff_baseline_1.3.42/security/SECURITY-THREAT-MODEL.txt	1970-01-01 00:00:00.000000000 +0000
++++ ./security/SECURITY-THREAT-MODEL.txt	2026-09-09 09:39:15.211895267 +0000
+@@ -0,0 +1,46 @@
++DIFFERENTIATOR 1.3.43 — GARP 2.5.1 THREAT MODEL
++
++Protected assets
++- teacher/session identity in school-server mode;
++- source educational material, which may include student content;
++- AI prompts/results and generated worksheets/tests;
++- direct-mode provider key in client storage when the standalone profile is used;
++- platform/access/runtime configuration and signed release metadata;
++- integrity of exported learning materials.
++
++Trust boundaries / attack surfaces
++1. Browser UI and imported files (DOCX/XLSX/PPTX/PDF/images/audio/video/GeoJSON and text).
++2. AI boundary: direct Gemini in the public profile; same-origin school gateway in the school profile.
++3. Shared AI Studio handoff/localStorage and suite-session lifecycle.
++4. Service worker and Cache Storage.
++5. Build/supply chain: npm lockfile, vendored GHRAB AI Core 1.0.0, GHRAB Platform 1.1.2, GitHub Actions.
++6. School-server auth/session/gateway endpoints; LIVE behavior is outside this PREP-only audit.
++
++Principal threats
++- prompt injection / instruction smuggling from imported material;
++- sensitive data disclosure to provider or logs;
++- XSS/unsafe rendering from AI or imported content;
++- malicious/oversized files and resource exhaustion;
++- stale/revoked platform/access/runtime bytes served from SW cache;
++- source/deployment drift, dependency drift, release tampering or rollback;
++- persistence of provider credentials or handoff content on shared devices;
++- over-consumption through repeated AI calls;
++- server misconfiguration, rate-limit/session/TLS/egress failures (LIVE-only).
++
++Key controls already present
++- GARP 2.3 AIR structural checks and prompt/data boundary controls;
++- centralized AI Core integration and operation registry;
++- explicit request/part/output/time/retry budgets;
++- school profile strips direct-provider endpoint and provider model configuration;
++- suite-session cleanup and client deletion controls;
++- CSP/header contract, secret scanner, XSS sink gate, file/subject regression suites;
++- GHRAB Platform conformance and vendored integrity checks.
++
++New 1.3.43 controls
++- security-critical assets are removed from SW precache and routed through explicit networkOnlyNoStore before cacheFirst;
++- canonical GARP 2.5.1 R2 SW checker + negative controls;
++- CycloneDX SBOM, build provenance, evidence manifest and signed release-integrity PREP artifact;
++- authoritative security-critical asset list and vendored consistency manifest.
++
++Residual / LIVE-only risk
++- served headers, TLS, reverse-proxy/session behavior, rate limiting, egress policy, DAST, revocation behavior, alerting and production key custody are NOT TESTED until school-server deployment.
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/check-sw-security-freeze.mjs ./security/garp25/tools/check-sw-security-freeze.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/check-sw-security-freeze.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/check-sw-security-freeze.mjs	2026-09-09 09:38:18.956875599 +0000
+@@ -0,0 +1,399 @@
++#!/usr/bin/env node
++// GARP 2.5.1 GHRAB - service-worker security freeze checker, tooling hardening R2.
++// Goal: fail closed against security-critical assets entering Cache API write paths.
++// This is intentionally conservative static analysis. Unknown install/precache writes are AMBER,
++// never silent PASS. Runtime cache writes are accepted only when structurally behind the
++// isSecurityCriticalRequest -> networkOnlyNoStore early-return boundary.
++import { readFile, readdir, lstat } from 'node:fs/promises';
++import path from 'node:path';
++
++const [swPath, deployDirArg, listArg] = process.argv.slice(2);
++if (!swPath || !deployDirArg) {
++  console.error('Usage: node check-sw-security-freeze.mjs <sw.js> <deployment-dir> [security-critical-list.json]');
++  process.exit(2);
++}
++
++const DEFAULT_CRITICAL = [
++  'app-guard', 'access-control', 'platform-runtime', 'revoked-access.json',
++  'release-integrity.json', 'release-integrity.sig', 'integrity-status', 'runtime-config'
++];
++let critical = DEFAULT_CRITICAL;
++if (listArg) {
++  try {
++    const parsed = JSON.parse(await readFile(listArg, 'utf8'));
++    if (!Array.isArray(parsed) || !parsed.length || parsed.some(x => typeof x !== 'string' || !x.trim())) {
++      throw new Error('critical list must be a non-empty JSON array of strings');
++    }
++    critical = parsed;
++  } catch (e) {
++    console.error(JSON.stringify({ status: 'ERROR', error: 'critical-asset-list-invalid', detail: String(e) }, null, 2));
++    process.exit(2);
++  }
++}
++
++const rawSw = await readFile(swPath, 'utf8');
++const sw = stripComments(rawSw);
++const deployRoot = path.resolve(deployDirArg);
++const findings = [];
++const unresolvedCacheWrites = [];
++
++const norm = value => String(value || '').replace(/^\.\//, '').replace(/^\//, '');
++const matchesCritical = value => { const v=norm(value); if (!v) return false; return critical.some(c => { const cc=norm(c); return cc && (v.includes(cc) || cc.includes(v)); }); };
++
++async function walk(dir, base = '') {
++  const out = [];
++  for (const name of (await readdir(dir)).sort()) {
++    const abs = path.join(dir, name), rel = path.posix.join(base, name);
++    const st = await lstat(abs);
++    if (st.isSymbolicLink()) continue;
++    if (st.isDirectory()) out.push(...await walk(abs, rel));
++    else if (st.isFile()) out.push(rel);
++  }
++  return out;
++}
++let files;
++try { files = await walk(deployRoot); }
++catch (e) { console.error(JSON.stringify({ status: 'ERROR', error: String(e) })); process.exit(2); }
++
++const criticalFiles = files.filter(f => matchesCritical(f));
++if (!criticalFiles.length) {
++  findings.push({ severity: 'INFO', issue: 'zadny security-critical asset nenalezen - overit seznam rucne', detail: critical.join(',') });
++}
++
++function stripComments(text) {
++  let out = '', i = 0, quote = null;
++  while (i < text.length) {
++    const ch = text[i], next = text[i + 1];
++    if (quote) {
++      out += ch;
++      if (ch === '\\') { if (i + 1 < text.length) out += text[++i]; }
++      else if (ch === quote) quote = null;
++      i++; continue;
++    }
++    if (ch === '"' || ch === "'" || ch === '`') { quote = ch; out += ch; i++; continue; }
++    if (ch === '/' && next === '/') {
++      out += '  '; i += 2;
++      while (i < text.length && text[i] !== '\n') { out += ' '; i++; }
++      continue;
++    }
++    if (ch === '/' && next === '*') {
++      out += '  '; i += 2;
++      while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) {
++        out += text[i] === '\n' ? '\n' : ' '; i++;
++      }
++      if (i < text.length) { out += '  '; i += 2; }
++      continue;
++    }
++    out += ch; i++;
++  }
++  return out;
++}
++
++function scanBalanced(text, openIndex, openChar = '(', closeChar = ')') {
++  let depth = 0, quote = null;
++  for (let i = openIndex; i < text.length; i++) {
++    const ch = text[i];
++    if (quote) {
++      if (ch === '\\') i++;
++      else if (ch === quote) quote = null;
++      continue;
++    }
++    if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
++    if (ch === openChar) depth++;
++    else if (ch === closeChar) {
++      depth--;
++      if (depth === 0) return i;
++    }
++  }
++  return -1;
++}
++
++function splitTopLevel(text, sep = ',') {
++  const out = []; let start = 0, round = 0, square = 0, curly = 0, quote = null;
++  for (let i = 0; i < text.length; i++) {
++    const ch = text[i];
++    if (quote) {
++      if (ch === '\\') i++;
++      else if (ch === quote) quote = null;
++      continue;
++    }
++    if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
++    if (ch === '(') round++; else if (ch === ')') round--;
++    else if (ch === '[') square++; else if (ch === ']') square--;
++    else if (ch === '{') curly++; else if (ch === '}') curly--;
++    else if (ch === sep && round === 0 && square === 0 && curly === 0) {
++      out.push(text.slice(start, i).trim()); start = i + 1;
++    }
++  }
++  out.push(text.slice(start).trim());
++  return out.filter(Boolean);
++}
++
++function decodeString(expr) {
++  const t = expr.trim();
++  if (t.length < 2 || !['"', "'", '`'].includes(t[0]) || t[t.length - 1] !== t[0]) return null;
++  if (t[0] === '`' && t.includes('${')) return null;
++  try {
++    if (t[0] === '"') return JSON.parse(t);
++    const inner = t.slice(1, -1).replace(/\\([\\'"`])/g, '$1');
++    return inner;
++  } catch { return null; }
++}
++
++const env = new Map();
++function captureStaticAssignments(text) {
++  const starts = [
++    ...text.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*/g),
++    ...text.matchAll(/\b(self\.[A-Za-z_$][\w$]*)\s*=\s*/g)
++  ].sort((a,b) => a.index - b.index);
++  for (const m of starts) {
++    const name = m[1], start = m.index + m[0].length;
++    let round=0, square=0, curly=0, quote=null, end=start;
++    for (let i=start; i<text.length; i++) {
++      const ch=text[i];
++      if (quote) { if (ch==='\\') i++; else if (ch===quote) quote=null; end=i+1; continue; }
++      if (ch==='\"'||ch==="'"||ch==='`') { quote=ch; end=i+1; continue; }
++      if (ch==='(') round++; else if (ch===')') round--;
++      else if (ch==='[') square++; else if (ch===']') square--;
++      else if (ch==='{') curly++; else if (ch==='}') curly--;
++      if ((ch===';' || ch==='\n') && round===0 && square===0 && curly===0) { end=i; break; }
++      end=i+1;
++    }
++    const expr=text.slice(start,end).trim();
++    if (expr) env.set(name, expr);
++  }
++}
++captureStaticAssignments(sw);
++
++function resolveObjectValues(expr, seen, depth) {
++  const m = expr.match(/^Object\.values\s*\(\s*([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*\)$/);
++  if (!m) return null;
++  const raw = env.get(m[1]);
++  if (!raw || !raw.trim().startsWith('{') || !raw.trim().endsWith('}')) return null;
++  const body = raw.trim().slice(1, -1);
++  const vals = [];
++  for (const part of splitTopLevel(body)) {
++    const idx = part.indexOf(':'); if (idx < 0) return null;
++    const r = resolveExpr(part.slice(idx + 1), seen, depth + 1); if (!r) return null;
++    vals.push(...r);
++  }
++  return vals;
++}
++
++function resolveExpr(expr, seen = new Set(), depth = 0) {
++  if (depth > 12) return null;
++  let t = String(expr || '').trim();
++  while (t.startsWith('(') && t.endsWith(')')) {
++    const end = scanBalanced(t, 0); if (end !== t.length - 1) break; t = t.slice(1, -1).trim();
++  }
++  const lit = decodeString(t); if (lit !== null) return [lit];
++  if (/^new\s+Request\s*\(/.test(t)) {
++    const open = t.indexOf('('), end = scanBalanced(t, open); if (end < 0) return null;
++    const first = splitTopLevel(t.slice(open + 1, end))[0]; return resolveExpr(first, seen, depth + 1);
++  }
++  if (t.startsWith('[') && t.endsWith(']')) {
++    const vals = [];
++    for (const part of splitTopLevel(t.slice(1, -1))) {
++      if (part.startsWith('...')) { const r = resolveExpr(part.slice(3), seen, depth + 1); if (!r) return null; vals.push(...r); }
++      else { const r = resolveExpr(part, seen, depth + 1); if (!r) return null; vals.push(...r); }
++    }
++    return vals;
++  }
++  const concat = t.match(/^(.+?)\.concat\s*\((.*)\)$/s);
++  if (concat) {
++    const base = resolveExpr(concat[1], seen, depth + 1); if (!base) return null;
++    const vals = [...base];
++    for (const arg of splitTopLevel(concat[2])) { const r = resolveExpr(arg, seen, depth + 1); if (!r) return null; vals.push(...r); }
++    return vals;
++  }
++  const split = t.match(/^(.+?)\.split\s*\((.*)\)$/s);
++  if (split) {
++    const base = resolveExpr(split[1], seen, depth + 1), sep = resolveExpr(split[2], seen, depth + 1);
++    if (!base || base.length !== 1 || !sep || sep.length !== 1) return null;
++    return base[0].split(sep[0]);
++  }
++  const ov = resolveObjectValues(t, seen, depth); if (ov) return ov;
++  if (/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/.test(t)) {
++    if (seen.has(t)) return null;
++    const raw = env.get(t); if (!raw) return null;
++    const nextSeen = new Set(seen); nextSeen.add(t);
++    return resolveExpr(raw, nextSeen, depth + 1);
++  }
++  return null;
++}
++
++function enclosingFunctionName(pos) {
++  const prefix = sw.slice(0, pos);
++  const matches = [...prefix.matchAll(/(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*\{/g)];
++  for (let i = matches.length - 1; i >= 0; i--) {
++    const m = matches[i], open = m.index + m[0].lastIndexOf('{');
++    const end = scanBalanced(sw, open, '{', '}');
++    if (end >= pos) return m[1];
++  }
++  return null;
++}
++
++function installRanges() {
++  const ranges = [];
++  for (const m of sw.matchAll(/addEventListener\s*\(\s*['"]install['"]\s*,/g)) {
++    const start = m.index, open = sw.indexOf('(', start), end = scanBalanced(sw, open);
++    if (end > start) ranges.push([start, end]);
++  }
++  return ranges;
++}
++const installs = installRanges();
++const isInstallPos = pos => installs.some(([a,b]) => pos >= a && pos <= b);
++
++const precached = new Set();
++const precacheSources = [];
++function addResolved(values, source) {
++  const uniq = [...new Set((values || []).filter(Boolean))];
++  for (const v of uniq) precached.add(v);
++  if (uniq.length) precacheSources.push({ source, entries: uniq });
++}
++function noteUnresolved(pos, method, expr, source) {
++  unresolvedCacheWrites.push({ method, expression: expr.slice(0, 180), source, installOrPrecache: isInstallPos(pos), function: enclosingFunctionName(pos) });
++}
++
++const iteratorAddVars = new Set();
++for (const m of sw.matchAll(/\bfor\s*\(\s*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s+of\s+([^)]*)\)\s*\{/g)) {
++  const openBrace = m.index + m[0].lastIndexOf('{'), endBrace = scanBalanced(sw, openBrace, '{', '}');
++  if (endBrace < 0) continue;
++  const body = sw.slice(openBrace + 1, endBrace);
++  if (new RegExp(`\\.\\s*add\\s*\\(\\s*${m[1]}\\s*\\)`).test(body)) iteratorAddVars.add(m[1]);
++}
++for (const m of sw.matchAll(/\bfor\s*\(\s*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s+of\s+Object\.values\s*\(\s*([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*\)\s*\)\s*\{/g)) {
++  const openBrace = m.index + m[0].lastIndexOf('{'), endBrace = scanBalanced(sw, openBrace, '{', '}');
++  if (endBrace < 0) continue;
++  const body = sw.slice(openBrace + 1, endBrace);
++  if (new RegExp(`\\.\\s*add\\s*\\(\\s*${m[1]}\\s*\\)`).test(body)) iteratorAddVars.add(m[1]);
++}
++for (const m of sw.matchAll(/(?:([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)|Object\.values\s*\([^)]*\))\.(?:map|forEach)\s*\(\s*([A-Za-z_$][\w$]*)\s*=>[\s\S]{0,260}?\.\s*add\s*\(\s*\2\s*\)/g)) iteratorAddVars.add(m[2]);
++
++// Direct Cache API writes. Parse the first argument, not the variable name.
++for (const m of sw.matchAll(/\.\s*(addAll|add|put)\s*\(/g)) {
++  const method = m[1], open = m.index + m[0].lastIndexOf('('), close = scanBalanced(sw, open);
++  if (close < 0) { noteUnresolved(m.index, method, '<unbalanced>', 'direct-call'); continue; }
++  const args = splitTopLevel(sw.slice(open + 1, close));
++  const first = args[0] || '';
++  const values = resolveExpr(first);
++  if (values) addResolved(values, `${method}:expression`);
++  else {
++    const fn = enclosingFunctionName(m.index);
++    // Dynamic request cache writes are structurally safe only if they live in runtime helpers
++    // whose callers sit behind the security-critical early return. Verified below.
++    const idOnly = /^[A-Za-z_$][\w$]*$/.test(first.trim());
++    if (method === 'add' && idOnly && iteratorAddVars.has(first.trim())) {
++      // resolved by the iterator pass below
++    } else if (!(method === 'put' && first.trim() === 'request' && ['networkFirst','cacheFirst'].includes(fn))) {
++      noteUnresolved(m.index, method, first, 'direct-call');
++    }
++  }
++}
++
++// Iterated add paths where the cache.add argument is a loop variable.
++for (const m of sw.matchAll(/\bfor\s*\(\s*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s+of\s+Object\.values\s*\(\s*([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*\)\s*\)\s*\{/g)) {
++  const openBrace = m.index + m[0].lastIndexOf('{'), endBrace = scanBalanced(sw, openBrace, '{', '}');
++  if (endBrace < 0) continue;
++  const body = sw.slice(openBrace + 1, endBrace), varName = m[1];
++  if (new RegExp(`\\.\\s*add\\s*\\(\\s*${varName}\\s*\\)`).test(body)) {
++    const expr = `Object.values(${m[2]})`, values = resolveExpr(expr);
++    if (values) addResolved(values, `for-of-add:${expr}`); else noteUnresolved(m.index, 'add', expr, 'for-of');
++  }
++}
++for (const m of sw.matchAll(/\bfor\s*\(\s*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s+of\s+([^)]*)\)\s*\{/g)) {
++  const openBrace = m.index + m[0].lastIndexOf('{'), endBrace = scanBalanced(sw, openBrace, '{', '}');
++  if (endBrace < 0) continue;
++  const body = sw.slice(openBrace + 1, endBrace);
++  const varName = m[1];
++  if (new RegExp(`\\.\\s*add\\s*\\(\\s*${varName}\\s*\\)`).test(body)) {
++    const values = resolveExpr(m[2]);
++    if (values) addResolved(values, `for-of-add:${m[2].trim()}`);
++    else noteUnresolved(m.index, 'add', m[2], 'for-of');
++  }
++}
++
++// map/forEach receiver paths. Resolve the receiver expression, including Object.values(...).
++for (const m of sw.matchAll(/((?:[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)|(?:Object\.values\s*\([^)]*\)))\.(map|forEach)\s*\(\s*([A-Za-z_$][\w$]*)\s*=>[\s\S]{0,260}?\.\s*add\s*\(\s*\3\s*\)/g)) {
++  const receiver = m[1].trim();
++  const values = resolveExpr(receiver);
++  if (values) addResolved(values, `${m[2]}-add:${receiver}`);
++  else noteUnresolved(m.index, 'add', receiver, `${m[2]}-receiver`);
++}
++
++for (const p of precached) {
++  for (const c of critical) {
++    const pp=norm(p), cc=norm(c);
++    if (pp && cc && (pp.includes(cc) || cc.includes(pp))) {
++      findings.push({ severity: 'CRITICAL', issue: 'security-critical asset je v Cache API write/precache ceste', detail: `${p} (vzor: ${c})` });
++    }
++  }
++}
++
++// Structural exemption only. Comments/proximity never count.
++function extractFunction(name) {
++  const re = new RegExp(`(?:async\\s+)?function\\s+${name}\\s*\\([^)]*\\)\\s*\\{`);
++  const m = re.exec(sw); if (!m) return '';
++  const open = m.index + m[0].lastIndexOf('{'), end = scanBalanced(sw, open, '{', '}');
++  return end > open ? sw.slice(open + 1, end) : '';
++}
++const securityCriticalFn = extractFunction('isSecurityCriticalRequest');
++const fetchMatch = /addEventListener\s*\(\s*['"]fetch['"]\s*,/.exec(sw);
++let fetchBody = '';
++if (fetchMatch) {
++  const open = sw.indexOf('(', fetchMatch.index), end = scanBalanced(sw, open);
++  fetchBody = end > open ? sw.slice(open + 1, end) : '';
++}
++const guardIdx = fetchBody.indexOf('isSecurityCriticalRequest');
++const networkOnlyIdx = guardIdx >= 0 ? fetchBody.indexOf('networkOnlyNoStore', guardIdx) : -1;
++const cacheFirstIdx = fetchBody.indexOf('cacheFirst');
++const structuralNetworkOnlyGuard = guardIdx >= 0 && networkOnlyIdx > guardIdx && (cacheFirstIdx < 0 || networkOnlyIdx < cacheFirstIdx);
++const criticalLiterals = [...securityCriticalFn.matchAll(/(['"`])((?:\\.|(?!\1)[\s\S])*)\1/g)]
++  .filter(m => !(m[1] === '`' && m[2].includes('${'))).map(m => norm(m[2]));
++const structurallyExempt = file => structuralNetworkOnlyGuard && criticalLiterals.some(l => norm(file).includes(l) || l.includes(norm(file)));
++
++const hasCacheFirst = /\bcacheFirst\s*\(/.test(sw)
++  || /CacheFirst|StaleWhileRevalidate|staleWhileRevalidate/.test(sw)
++  || /const\s+cached\s*=\s*await\s+cache(?:s)?\.match[\s\S]{0,240}if\s*\(\s*cached\s*\)\s*return\s+cached/.test(sw);
++if (hasCacheFirst) {
++  for (const f of criticalFiles) {
++    if (!structurallyExempt(f)) findings.push({
++      severity: 'HIGH', issue: 'security-critical asset nema strukturani isSecurityCriticalRequest -> networkOnlyNoStore vyjimku pred cache-first', detail: f
++    });
++  }
++}
++
++// Dynamic request writes in cacheFirst/networkFirst are accepted only with the proven early-return guard.
++if (!structuralNetworkOnlyGuard) {
++  for (const m of sw.matchAll(/\.\s*put\s*\(\s*request\s*,/g)) {
++    const fn = enclosingFunctionName(m.index);
++    if (['networkFirst','cacheFirst'].includes(fn)) noteUnresolved(m.index, 'put', 'request', 'unguarded-runtime-helper');
++  }
++}
++
++// Any unresolved install/precache write is AMBER, never silent PASS. Unknown writes elsewhere are also
++// AMBER unless explicitly recognized as the guarded runtime-request pattern above.
++for (const u of unresolvedCacheWrites) findings.push({ severity: 'MEDIUM', issue: 'unresolved-cache-write', detail: u });
++
++for (const p of precached) if (/release-integrity\.(json|sig)$/.test(p))
++  findings.push({ severity: 'CRITICAL', issue: 'integritni artefakt je precachovan - integrity check by overoval zmrazenou verzi', detail: p });
++
++const blocking = findings.filter(f => f.severity === 'CRITICAL' || f.severity === 'HIGH');
++const amber = findings.filter(f => f.severity === 'MEDIUM');
++const status = blocking.length ? 'FAIL' : (amber.length ? 'AMBER' : 'PASS');
++const out = {
++  status,
++  serviceWorker: swPath,
++  criticalListSource: listArg || 'DEFAULT_CRITICAL(ad-hoc only; release gate must supply authoritative list)',
++  precachedEntries: precached.size,
++  precacheSources,
++  unresolvedCacheWrites,
++  cacheFirstDetected: hasCacheFirst,
++  structuralNetworkOnlyGuard,
++  criticalAssetsInDeployment: criticalFiles,
++  findings,
++  checkerRevision: 'garp-2.5.1-r2-cache-write-coverage-fail-closed',
++  note: 'Static bounded analysis. PASS means no critical asset found in recognized Cache API write paths, all analyzed writes resolved/guarded, and deployed critical assets have structural isSecurityCriticalRequest -> networkOnlyNoStore routing. Does not replace SIM-07 or behavioral revocation tests.'
++};
++console[status === 'PASS' ? 'log' : 'error'](JSON.stringify(out, null, 2));
++process.exit(status === 'PASS' ? 0 : (status === 'AMBER' ? 2 : 1));
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/check-vendored-consistency.mjs ./security/garp25/tools/check-vendored-consistency.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/check-vendored-consistency.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/check-vendored-consistency.mjs	2026-09-09 09:38:18.956909761 +0000
+@@ -0,0 +1,71 @@
++#!/usr/bin/env node
++// GARP 2.5.1 GHRAB - check-vendored-consistency
++// EW-03 / EW-04 mely v GARP 2.5 jen textovy popis. Tohle je jejich vynutitelna podoba.
++// Ekosystem GHRAB vendoruje platformu, app-guard a error-reporter do kazde aplikace;
++// bezpecnostni oprava sdilene vrstvy je hotova az tehdy, kdyz je ve VSECH kopiich.
++//
++// Konfigurace (JSON):
++// {
++//   "schema": "ghrab-vendored-consistency-v1",
++//   "canonicalRoot": "../AI-Studio-GHRAB",
++//   "components": [
++//     { "id": "platform", "canonical": "src/ghrab-platform.js", "severity": "CRITICAL" },
++//     { "id": "error-reporter", "canonical": "src/error-reporter.js", "severity": "HIGH" }
++//   ],
++//   "consumers": [
++//     { "appId": "korespondencni-asistent", "root": "../KS",
++//       "copies": { "platform": ["src/vendor/ghrab-platform.js", "dist/vendor/ghrab-platform.js"] } }
++//   ]
++// }
++import { createHash } from 'node:crypto';
++import { readFile } from 'node:fs/promises';
++import path from 'node:path';
++
++const [cfgPath] = process.argv.slice(2);
++if (!cfgPath) { console.error('Usage: node check-vendored-consistency.mjs <config.json>'); process.exit(2); }
++const cfg = JSON.parse(await readFile(cfgPath, 'utf8'));
++if (cfg.schema !== 'ghrab-vendored-consistency-v1') { console.error('config schema'); process.exit(2); }
++const base = path.dirname(path.resolve(cfgPath));
++const hex = b => createHash('sha256').update(b).digest('hex');
++const abs = (root, rel) => path.resolve(base, root, rel);
++
++const canonical = new Map();
++const findings = [];
++for (const c of cfg.components) {
++  try { canonical.set(c.id, { sha: hex(await readFile(abs(cfg.canonicalRoot, c.canonical))), severity: c.severity || 'HIGH' }); }
++  catch { findings.push({ severity: 'CRITICAL', component: c.id, issue: 'canonical-unreadable', detail: c.canonical }); }
++}
++
++const report = [];
++for (const consumer of cfg.consumers) {
++  for (const [componentId, paths] of Object.entries(consumer.copies || {})) {
++    const canon = canonical.get(componentId);
++    if (!canon) { findings.push({ severity: 'HIGH', appId: consumer.appId, component: componentId, issue: 'no-canonical-declared' }); continue; }
++    if (!paths.length) findings.push({ severity: 'HIGH', appId: consumer.appId, component: componentId, issue: 'no-copy-declared' });
++    for (const rel of paths) {
++      let sha = null;
++      try { sha = hex(await readFile(abs(consumer.root, rel))); }
++      catch { findings.push({ severity: canon.severity, appId: consumer.appId, component: componentId, issue: 'copy-missing', detail: rel }); continue; }
++      const match = sha === canon.sha;
++      report.push({ appId: consumer.appId, component: componentId, path: rel, sha256: sha, match });
++      if (!match) findings.push({ severity: canon.severity, appId: consumer.appId, component: componentId, issue: 'DRIFT', detail: rel, observed: sha, expected: canon.sha });
++    }
++  }
++  // aplikace, ktera nema deklarovanou kopii povinne komponenty, je take nalez
++  for (const c of cfg.components) {
++    if (c.required !== false && !(consumer.copies || {})[c.id])
++      findings.push({ severity: c.severity || 'HIGH', appId: consumer.appId, component: c.id, issue: 'component-not-declared-in-consumer' });
++  }
++}
++
++const blocking = findings.filter(f => f.severity === 'CRITICAL' || f.severity === 'HIGH');
++const out = {
++  status: blocking.length ? 'FAIL' : (findings.length ? 'AMBER' : 'PASS'),
++  canonicalRoot: cfg.canonicalRoot,
++  components: [...canonical.entries()].map(([id, v]) => ({ id, sha256: v.sha })),
++  checkedCopies: report.length,
++  drift: report.filter(r => !r.match).length,
++  findings
++};
++console[blocking.length ? 'error' : 'log'](JSON.stringify(out, null, 2));
++process.exit(blocking.length ? 1 : 0);
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/create-build-provenance.mjs ./security/garp25/tools/create-build-provenance.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/create-build-provenance.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/create-build-provenance.mjs	2026-09-09 09:38:18.956928028 +0000
+@@ -0,0 +1,47 @@
++#!/usr/bin/env node
++import { createHash } from 'node:crypto';
++import { readFile, writeFile } from 'node:fs/promises';
++import path from 'node:path';
++
++const [artifactArg, outArg='build-provenance.json'] = process.argv.slice(2);
++if (!artifactArg) {
++  console.error('Usage: node create-build-provenance.mjs <artifact-file> [output]');
++  process.exit(2);
++}
++const artifact=path.resolve(artifactArg);
++const data=await readFile(artifact);
++const sha256=createHash('sha256').update(data).digest('hex');
++let lockfileSha256=null;
++if (process.env.GHRAB_LOCKFILE) {
++  const lock=await readFile(process.env.GHRAB_LOCKFILE);
++  lockfileSha256=createHash('sha256').update(lock).digest('hex');
++}
++const now=new Date().toISOString();
++const provenance={
++  schema:'ghrab-build-provenance-v1',
++  subject:{name:path.basename(artifact),sha256},
++  source:{
++    repository:process.env.GHRAB_SOURCE_REPOSITORY||null,
++    revision:process.env.GHRAB_SOURCE_COMMIT||null,
++    sourcePackageSha256:process.env.GHRAB_SOURCE_PACKAGE_SHA256||null
++  },
++  builder:{
++    id:process.env.GHRAB_BUILDER_ID||'local-untrusted-builder',
++    workflow:process.env.GHRAB_WORKFLOW_REF||null,
++    entrypoint:process.env.GHRAB_BUILD_ENTRYPOINT||null
++  },
++  invocation:{
++    startedAt:process.env.GHRAB_BUILD_STARTED_AT||null,
++    finishedAt:process.env.GHRAB_BUILD_FINISHED_AT||now,
++    lockfileSha256,
++    parameters:{profile:process.env.GHRAB_BUILD_PROFILE||null}
++  },
++  releaseIntegrity:{artifactDigest:process.env.GHRAB_ARTIFACT_DIGEST||null},
++  assurance:{
++    slsaReference:'v1.2',
++    claimedSlsaLevel:null,
++    note:'Custom GARP provenance is not by itself a SLSA level attestation.'
++  }
++};
++await writeFile(outArg,JSON.stringify(provenance,null,2)+'\n','utf8');
++console.log(JSON.stringify({status:'PASS',output:outArg,subjectSha256:sha256},null,2));
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/create-evidence-manifest.mjs ./security/garp25/tools/create-evidence-manifest.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/create-evidence-manifest.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/create-evidence-manifest.mjs	2026-09-09 09:38:18.956943101 +0000
+@@ -0,0 +1,23 @@
++#!/usr/bin/env node
++import { createHash } from 'node:crypto';
++import { readdir, readFile, lstat, writeFile } from 'node:fs/promises';
++import path from 'node:path';
++
++const [dirArg,outArg='security-evidence-manifest.json']=process.argv.slice(2);
++if(!dirArg){console.error('Usage: node create-evidence-manifest.mjs <evidence-dir> [output]');process.exit(2);}
++const root=path.resolve(dirArg); const out=path.resolve(outArg);
++const hex=b=>createHash('sha256').update(b).digest('hex');
++async function walk(dir,base=''){
++  const rows=[];
++  for(const name of (await readdir(dir)).sort((a,b)=>a.localeCompare(b,'en'))){
++    const abs=path.join(dir,name),rel=path.posix.join(base,name),st=await lstat(abs);
++    if(st.isSymbolicLink()) throw new Error(`Symlink forbidden: ${rel}`);
++    if(st.isDirectory()) rows.push(...await walk(abs,rel));
++    else if(st.isFile()) { const d=await readFile(abs); rows.push({path:rel,size:d.length,sha256:hex(d)}); }
++  }
++  return rows;
++}
++const files=await walk(root);
++const manifest={schema:'ghrab-security-evidence-manifest-v1',appId:process.env.GHRAB_APP_ID||null,version:process.env.GHRAB_APP_VERSION||null,sourceRevision:process.env.GHRAB_SOURCE_COMMIT||null,sourcePackageSha256:process.env.GHRAB_SOURCE_PACKAGE_SHA256||null,createdAt:new Date().toISOString(),files};
++await writeFile(out,JSON.stringify(manifest,null,2)+'\n','utf8');
++console.log(JSON.stringify({status:'PASS',files:files.length,output:out},null,2));
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/create-release-integrity.mjs ./security/garp25/tools/create-release-integrity.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/create-release-integrity.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/create-release-integrity.mjs	2026-09-09 09:38:18.956958374 +0000
+@@ -0,0 +1,76 @@
++#!/usr/bin/env node
++// GARP 2.5.1 GHRAB - create-release-integrity (schema v2)
++// Zmena proti 2.5: deterministicke poradi nezavisle na ICU/locale a na poradi pruchodu
++// adresarem. Cesty se normalizuji do NFC a radi bytove (UTF-8), nikoli localeCompare.
++import { createHash } from 'node:crypto';
++import { readdir, readFile, lstat, writeFile } from 'node:fs/promises';
++import path from 'node:path';
++
++const [dirArg, appId, version, keyId, outArg = 'release-integrity.json'] = process.argv.slice(2);
++if (!dirArg || !appId || !version || !keyId) {
++  console.error('Usage: node create-release-integrity.mjs <deployment-dir> <appId> <version> <keyId> [output]');
++  process.exit(2);
++}
++const root = path.resolve(dirArg);
++const EXCLUDE = new Set(['release-integrity.json', 'release-integrity.sig',
++  'package-attestation.json', 'package-attestation.sig', 'SHA256SUMS.txt']);
++const hex = b => createHash('sha256').update(b).digest('hex');
++
++async function walk(dir, base = '') {
++  const rows = [];
++  for (const name of await readdir(dir)) {
++    const abs = path.join(dir, name);
++    const rel = path.posix.join(base, name).normalize('NFC');
++    const st = await lstat(abs);
++    if (st.isSymbolicLink()) throw new Error(`Symlink forbidden: ${rel}`);
++    if (st.isDirectory()) rows.push(...await walk(abs, rel));
++    else if (st.isFile()) {
++      if (base === '' && EXCLUDE.has(rel)) continue;
++      const data = await readFile(abs);
++      rows.push({ path: rel, size: data.length, sha256: hex(data) });
++    } else throw new Error(`Unsupported file type: ${rel}`);
++  }
++  return rows;
++}
++
++export function canonicalOrder(files) {
++  return [...files].sort((a, b) =>
++    Buffer.compare(Buffer.from(a.path, 'utf8'), Buffer.from(b.path, 'utf8')));
++}
++
++export function artifactDigest(files) {
++  const rows = canonicalOrder(files);
++  const header = `ghrab-artifact-digest-v2\0${rows.length}\n`;
++  const body = rows.map(f => `${f.path}\0${f.sha256}\0${f.size}\n`).join('');
++  return hex(Buffer.from(header + body, 'utf8'));
++}
++
++const files = canonicalOrder(await walk(root));
++if (!files.length) throw new Error('Deployment directory is empty');
++
++// NFC kolize: dve ruzne cesty, ktere po normalizaci splynou, by rozbily 1:1 mapovani.
++const dup = new Set();
++for (const f of files) { if (dup.has(f.path)) throw new Error(`Duplicate path after NFC: ${f.path}`); dup.add(f.path); }
++
++const manifest = {
++  schema: 'ghrab-release-integrity-v2',
++  digestAlgorithmId: 'ghrab-artifact-digest-v2',
++  pathEncoding: 'NFC',
++  pathOrder: 'utf8-bytewise',
++  appId, version,
++  buildId: process.env.GHRAB_BUILD_ID || `local-${Date.now()}`,
++  createdAt: new Date().toISOString(),
++  sourceCommit: process.env.GHRAB_SOURCE_COMMIT || null,
++  sourcePackageSha256: process.env.GHRAB_SOURCE_PACKAGE_SHA256 || null,
++  deploymentPackageSha256: process.env.GHRAB_DEPLOYMENT_PACKAGE_SHA256 || null,
++  artifactDigest: artifactDigest(files),
++  fileCount: files.length,
++  buildProvenanceSha256: process.env.GHRAB_BUILD_PROVENANCE_SHA256 || null,
++  sbomSha256: process.env.GHRAB_SBOM_SHA256 || null,
++  evidenceManifestSha256: process.env.GHRAB_EVIDENCE_MANIFEST_SHA256 || null,
++  hashAlgorithm: 'SHA-256',
++  signature: { algorithm: 'Ed25519', keyId },
++  files
++};
++await writeFile(path.resolve(outArg), JSON.stringify(manifest, null, 2) + '\n', 'utf8');
++console.log(JSON.stringify({ status: 'PASS', output: path.resolve(outArg), files: files.length, artifactDigest: manifest.artifactDigest }, null, 2));
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/release-gate.mjs ./security/garp25/tools/release-gate.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/release-gate.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/release-gate.mjs	2026-09-09 09:38:18.956973797 +0000
+@@ -0,0 +1,114 @@
++#!/usr/bin/env node
++// GARP 2.5.1 GHRAB - release gate, tooling hardening R2.
++// Fail-closed orchestration. If a deployed service worker exists, the gate MUST run
++// sw-security-freeze with the authoritative security-critical-assets list.
++import { spawnSync } from 'node:child_process';
++import { access } from 'node:fs/promises';
++import { existsSync } from 'node:fs';
++import path from 'node:path';
++import { fileURLToPath } from 'node:url';
++
++const here = path.dirname(fileURLToPath(import.meta.url));
++const argv = process.argv.slice(2);
++const opt = k => { const i = argv.indexOf(`--${k}`); return i >= 0 ? argv[i + 1] : null; };
++const profile = opt('profile') || 'school';
++const deployArg = opt('deploy');
++
++const REQUIRED = {
++  school: ['deploy', 'manifest', 'signature', 'trust-root', 'registry', 'artifact', 'provenance', 'evidence-dir', 'evidence-manifest'],
++  prep: ['deploy', 'manifest', 'signature', 'trust-root']
++};
++if (!REQUIRED[profile]) {
++  console.error(JSON.stringify({ status: 'FAIL', errors: [`unknown-profile:${profile}`] }, null, 2));
++  process.exit(2);
++}
++
++const steps = [];
++const missing = [];
++for (const k of REQUIRED[profile]) {
++  const v = opt(k);
++  if (!v) { missing.push(k); continue; }
++  try { await access(v); } catch { missing.push(`${k}:${v}:unreadable`); }
++}
++if (missing.length) failEarly('required-input-missing', { missing });
++
++const deployRoot = path.resolve(deployArg);
++const explicitSw = opt('sw');
++const detectedSw = path.join(deployRoot, 'sw.js');
++let swPath = null;
++if (explicitSw) {
++  try { await access(explicitSw); swPath = path.resolve(explicitSw); }
++  catch { failEarly('service-worker-unreadable', { sw: explicitSw }); }
++} else if (existsSync(detectedSw)) {
++  swPath = detectedSw;
++}
++
++let criticalList = null;
++if (swPath) {
++  const candidates = [
++    opt('critical-list'),
++    path.join(path.dirname(deployRoot), 'security', 'security-critical-assets.json')
++  ].filter(Boolean);
++  for (const c of candidates) {
++    try { await access(c); criticalList = path.resolve(c); break; } catch {}
++  }
++  if (!criticalList) failEarly('critical-asset-list-missing', {
++    sw: swPath,
++    searched: candidates.length ? candidates : ['--critical-list', '<project-root>/security/security-critical-assets.json']
++  });
++}
++
++run('deployment-leaks', 'scan-deployment-leaks.mjs', [deployArg]);
++run('release-integrity', 'verify-release-integrity.mjs', [deployArg, opt('manifest')]);
++run('release-signature', 'verify-release-signature.mjs', [opt('manifest'), opt('signature'), opt('trust-root')]);
++if (opt('registry')) run('release-registry', 'verify-release-registry.mjs', [opt('manifest'), opt('registry')]);
++if (opt('artifact') && opt('provenance'))
++  run('build-provenance', 'verify-build-provenance.mjs',
++    [opt('artifact'), opt('provenance'), ...(profile === 'prep' ? ['--allow-local-builder'] : [])]);
++if (opt('evidence-dir') && opt('evidence-manifest'))
++  run('evidence-manifest', 'verify-evidence-manifest.mjs', [opt('evidence-dir'), opt('evidence-manifest')]);
++
++const assuranceScript = path.join(here, 'verify-assurance-links.mjs');
++if (existsSync(assuranceScript)) {
++  run('assurance-links', 'verify-assurance-links.mjs', [
++    '--manifest', opt('manifest'),
++    ...(opt('provenance') ? ['--provenance', opt('provenance')] : []),
++    ...(opt('evidence-manifest') ? ['--evidence-manifest', opt('evidence-manifest')] : []),
++    ...(opt('sbom') ? ['--sbom', opt('sbom')] : []),
++    ...(opt('deployment-package') ? ['--deployment-package', opt('deployment-package')] : []),
++  ]);
++}
++if (swPath) run('sw-security-freeze', 'check-sw-security-freeze.mjs', [swPath, deployArg, criticalList]);
++if (opt('vendored-config')) run('vendored-consistency', 'check-vendored-consistency.mjs', [opt('vendored-config')]);
++
++const failed = steps.filter(s => s.status !== 'PASS');
++const verdict = {
++  gate: 'GARP-2.5.1-RELEASE-GATE-R2',
++  profile,
++  status: failed.length ? 'RED' : 'GREEN',
++  serviceWorker: swPath,
++  criticalAssetList: criticalList,
++  steps,
++  note: profile === 'prep'
++    ? 'PREP profil muze pouzit lokalni builder, ale pokud deployment obsahuje service worker, SW kontrola a autoritativni critical-asset list jsou povinne. Neni to school-server LIVE GREEN.'
++    : 'School profil: povinne vstupy jsou fail-closed; service worker se nesmi overovat bez autoritativniho seznamu kritickych assetu.'
++};
++console[failed.length ? 'error' : 'log'](JSON.stringify(verdict, null, 2));
++process.exit(failed.length ? 1 : 0);
++
++function run(name, script, args) {
++  const r = spawnSync(process.execPath, [path.join(here, script), ...args], { encoding: 'utf8' });
++  const text = (r.status === 0 ? r.stdout : (r.stderr || r.stdout)).trim();
++  const reportedAmber = /"status"\s*:\s*"AMBER"/.test(text);
++  steps.push({
++    step: name,
++    script,
++    status: r.status === 0 ? 'PASS' : (reportedAmber ? 'AMBER' : 'FAIL'),
++    exitCode: r.status,
++    detail: text.slice(0, 1200)
++  });
++}
++function failEarly(reason, extra = {}) {
++  console.error(JSON.stringify({ gate: 'GARP-2.5.1-RELEASE-GATE-R2', status: 'RED', profile, errors: [reason], ...extra }, null, 2));
++  process.exit(1);
++}
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/scan-deployment-leaks.mjs ./security/garp25/tools/scan-deployment-leaks.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/scan-deployment-leaks.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/scan-deployment-leaks.mjs	2026-09-09 09:38:18.956991063 +0000
+@@ -0,0 +1,79 @@
++#!/usr/bin/env node
++// GARP 2.5.1 GHRAB - scan-deployment-leaks
++// Zmeny proti 2.5:
++//  - odstranen limit 2 MB (secret ve velkem bundlu drive proklouzl); velke soubory
++//    se ctou po blocich s prekryvem, aby se pattern nerozpadl na hranici bloku;
++//    binarni soubory se preskakuji podle NUL bytu, ne podle velikosti;
++//  - cela rodina .env* (drive prosel .env.production, .env.school apod.);
++//  - doplneny vzory a zakazane pripony/adresare relevantni pro GHRAB.
++import { readdir, readFile, lstat, open } from 'node:fs/promises';
++import path from 'node:path';
++
++const root = path.resolve(process.argv[2] || 'dist');
++const forbiddenDirs = new Set([
++  '.git', '.github', '.svn', '.hg', '.vscode', '.idea', 'test', 'tests', '__tests__',
++  'test-results', 'coverage', 'audit-evidence', 'PROMPTY', 'node_modules', '.claude'
++]);
++const forbiddenNames = new Set([
++  'SHA256SUMS.private', 'private-key.pem', 'id_rsa', 'id_ed25519', '.npmrc', '.netrc', '.DS_Store'
++]);
++const forbiddenExt = new Set(['.map', '.pem', '.key', '.p12', '.pfx', '.p8', '.jks', '.keystore', '.kdb', '.ppk', '.asc', '.gpg', '.bak', '.orig']);
++const secretPatterns = [
++  [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'private-key-block'],
++  [/\bAIza[A-Za-z0-9_-]{20,}\b/, 'google-api-key'],
++  [/\bghp_[A-Za-z0-9]{20,}\b/, 'github-token'],
++  [/\bgithub_pat_[A-Za-z0-9_]{20,}\b/, 'github-fine-grained-pat'],
++  [/\bgho_[A-Za-z0-9]{20,}\b/, 'github-oauth-token'],
++  [/\bAKIA[0-9A-Z]{16}\b/, 'aws-access-key-id'],
++  [/\bsk-[A-Za-z0-9_-]{20,}\b/, 'openai-style-key'],
++  [/\bsk-ant-[A-Za-z0-9_-]{20,}\b/, 'anthropic-key'],
++  [/\bxox[baprs]-[A-Za-z0-9-]{10,}\b/, 'slack-token'],
++  [/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/, 'jwt'],
++  [/(?:api[_-]?key|secret|passwd|password|token)\s*[:=]\s*["'][^"'\s]{12,}["']/i, 'assigned-secret-literal'],
++  [/GHRAB_CANARY_[A-Z0-9_]+/, 'garp-canary']
++];
++const CHUNK = 1 << 20, OVERLAP = 4096;
++const errors = [];
++
++async function scanFile(abs, rel, size) {
++  const fh = await open(abs, 'r');
++  try {
++    let pos = 0, tail = '', binary = false;
++    const buf = Buffer.alloc(CHUNK);
++    while (pos < size) {
++      const { bytesRead } = await fh.read(buf, 0, CHUNK, pos);
++      if (!bytesRead) break;
++      const slice = buf.subarray(0, bytesRead);
++      if (pos === 0 && slice.subarray(0, Math.min(8192, bytesRead)).includes(0)) { binary = true; break; }
++      const text = tail + slice.toString('utf8');
++      for (const [re, label] of secretPatterns) if (re.test(text)) errors.push(`secret-pattern:${rel}:${label}`);
++      tail = text.slice(-OVERLAP);
++      pos += bytesRead;
++    }
++    if (binary) errors.push(`INFO-binary-not-scanned:${rel}`);
++  } finally { await fh.close(); }
++}
++
++async function walk(dir, base = '') {
++  for (const name of (await readdir(dir)).sort()) {
++    const abs = path.join(dir, name), rel = path.posix.join(base, name);
++    const st = await lstat(abs);
++    if (st.isSymbolicLink()) { errors.push(`symlink:${rel}`); continue; }
++    if (st.isDirectory()) {
++      if (forbiddenDirs.has(name)) errors.push(`forbidden-dir:${rel}`);
++      else await walk(abs, rel);
++      continue;
++    }
++    if (!st.isFile()) { errors.push(`irregular-file:${rel}`); continue; }
++    if (forbiddenNames.has(name)) errors.push(`forbidden-name:${rel}`);
++    if (name === '.env' || name.startsWith('.env.')) errors.push(`forbidden-env-file:${rel}`);
++    if (forbiddenExt.has(path.extname(name).toLowerCase())) errors.push(`forbidden-ext:${rel}`);
++    await scanFile(abs, rel, st.size);
++  }
++}
++await walk(root);
++
++const hard = [...new Set(errors)].filter(e => !e.startsWith('INFO-'));
++const info = [...new Set(errors)].filter(e => e.startsWith('INFO-'));
++if (hard.length) { console.error(JSON.stringify({ status: 'FAIL', errors: hard, info }, null, 2)); process.exit(1); }
++console.log(JSON.stringify({ status: 'PASS', root, info }, null, 2));
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/selftest-garp251.mjs ./security/garp25/tools/selftest-garp251.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/selftest-garp251.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/selftest-garp251.mjs	2026-09-09 09:38:18.957006827 +0000
+@@ -0,0 +1,293 @@
++#!/usr/bin/env node
++// GARP 2.5.1 GHRAB - selftest
++// Rozsiruje selftest 2.5 o negativni kontroly, ktere v nem chybely: determinismus
++// artifactDigest, vazba keyId na trust root, revokovany klic, anti-rollback,
++// neznamy release, prisna provenance, .env rodina, secret ve velkem souboru,
++// vendorovany drift, zmrazeni brany v SW a fail-closed chovani release gate.
++import { createHash, generateKeyPairSync } from 'node:crypto';
++import { mkdtemp, mkdir, writeFile, readFile, copyFile, rm } from 'node:fs/promises';
++import { tmpdir } from 'node:os';
++import path from 'node:path';
++import { spawnSync } from 'node:child_process';
++import { fileURLToPath } from 'node:url';
++
++const here = path.dirname(fileURLToPath(import.meta.url));
++const errors = [];
++const passed = [];
++const run = (s, a) => spawnSync(process.execPath, [path.join(here, s), ...a], { encoding: 'utf8' });
++const expect = (name, cond) => { if (cond) passed.push(name); else errors.push(name); };
++
++const t = await mkdtemp(path.join(tmpdir(), 'garp251-'));
++try {
++  // --- fixture: deployment, ktery drive rozbijel poradi (adresar 'a' vedle souboru 'a.js')
++  const deploy = path.join(t, 'dist');
++  await mkdir(path.join(deploy, 'a'), { recursive: true });
++  await writeFile(path.join(deploy, 'index.html'), '<h1>synthetic</h1>\n');
++  await writeFile(path.join(deploy, 'a.js'), 'console.log("a")\n');
++  await writeFile(path.join(deploy, 'a', 'z.js'), 'console.log("z")\n');
++  await writeFile(path.join(deploy, 'ch.js'), 'console.log("ch")\n');
++  await writeFile(path.join(deploy, 'h.js'), 'console.log("h")\n');
++
++  let r = run('create-release-integrity.mjs', [deploy, 'synthetic-app', '1.2.0', 'ghrab-key-2026-A', path.join(t, 'ri.json')]);
++  expect('create-ri', r.status === 0);
++  const digest1 = JSON.parse(r.stdout || '{}').artifactDigest;
++
++  // NC-1 determinismus: druhy beh musi dat stejny digest
++  r = run('create-release-integrity.mjs', [deploy, 'synthetic-app', '1.2.0', 'ghrab-key-2026-A', path.join(t, 'ri2.json')]);
++  expect('digest-deterministic', JSON.parse(r.stdout || '{}').artifactDigest === digest1);
++
++  await copyFile(path.join(t, 'ri.json'), path.join(deploy, 'release-integrity.json'));
++  r = run('verify-release-integrity.mjs', [deploy, path.join(deploy, 'release-integrity.json')]);
++  expect('verify-ri-clean-with-dir-file-collision', r.status === 0);
++
++  // NC-2 byte tamper
++  await writeFile(path.join(deploy, 'a.js'), 'console.log("tampered")\n');
++  r = run('verify-release-integrity.mjs', [deploy, path.join(deploy, 'release-integrity.json')]);
++  expect('NC-ri-byte-tamper-fails', r.status !== 0);
++  await writeFile(path.join(deploy, 'a.js'), 'console.log("a")\n');
++
++  // NC-3 pridany soubor
++  await writeFile(path.join(deploy, 'extra.js'), 'x\n');
++  r = run('verify-release-integrity.mjs', [deploy, path.join(deploy, 'release-integrity.json')]);
++  expect('NC-ri-extra-file-fails', r.status !== 0);
++  await rm(path.join(deploy, 'extra.js'));
++
++  // NC-4 legacy v1 manifest musi byt odmitnut
++  const legacy = JSON.parse(await readFile(path.join(t, 'ri.json'), 'utf8'));
++  legacy.schema = 'ghrab-release-integrity-v1';
++  await writeFile(path.join(t, 'legacy.json'), JSON.stringify(legacy));
++  r = run('verify-release-integrity.mjs', [deploy, path.join(t, 'legacy.json')]);
++  expect('NC-legacy-v1-rejected', r.status !== 0);
++
++  // --- podpis a trust root
++  const A = generateKeyPairSync('ed25519'), B = generateKeyPairSync('ed25519');
++  const pem = k => k.export({ type: 'spki', format: 'pem' });
++  await writeFile(path.join(t, 'A.priv'), A.privateKey.export({ type: 'pkcs8', format: 'pem' }));
++  await writeFile(path.join(t, 'B.priv'), B.privateKey.export({ type: 'pkcs8', format: 'pem' }));
++  const trust = {
++    schema: 'ghrab-trust-root-v1',
++    keys: [
++      { keyId: 'ghrab-key-2026-A', algorithm: 'Ed25519', status: 'active', publicKeyPem: pem(A.publicKey) },
++      { keyId: 'ghrab-key-2025-OLD', algorithm: 'Ed25519', status: 'revoked', publicKeyPem: pem(B.publicKey) }
++    ]
++  };
++  await writeFile(path.join(t, 'trust-root.json'), JSON.stringify(trust, null, 2));
++
++  r = run('sign-release-integrity.mjs', [path.join(deploy, 'release-integrity.json'), path.join(t, 'A.priv'), path.join(deploy, 'release-integrity.sig')]);
++  expect('sign', r.status === 0);
++  r = run('verify-release-signature.mjs', [path.join(deploy, 'release-integrity.json'), path.join(deploy, 'release-integrity.sig'), path.join(t, 'trust-root.json')]);
++  expect('verify-signature-clean', r.status === 0);
++
++  // NC-5 podpis cizim klicem pri deklarovanem keyId A
++  r = run('sign-release-integrity.mjs', [path.join(deploy, 'release-integrity.json'), path.join(t, 'B.priv'), path.join(t, 'wrong.sig')]);
++  r = run('verify-release-signature.mjs', [path.join(deploy, 'release-integrity.json'), path.join(t, 'wrong.sig'), path.join(t, 'trust-root.json')]);
++  expect('NC-wrong-key-for-declared-keyId-denied', r.status !== 0);
++
++  // NC-6 revokovany klic
++  const revoked = JSON.parse(await readFile(path.join(t, 'ri.json'), 'utf8'));
++  revoked.signature.keyId = 'ghrab-key-2025-OLD';
++  await writeFile(path.join(t, 'revoked.json'), JSON.stringify(revoked, null, 2) + '\n');
++  run('sign-release-integrity.mjs', [path.join(t, 'revoked.json'), path.join(t, 'B.priv'), path.join(t, 'revoked.sig')]);
++  r = run('verify-release-signature.mjs', [path.join(t, 'revoked.json'), path.join(t, 'revoked.sig'), path.join(t, 'trust-root.json')]);
++  expect('NC-revoked-key-denied', r.status !== 0);
++
++  // NC-7 neznamy keyId
++  const unknown = JSON.parse(await readFile(path.join(t, 'ri.json'), 'utf8'));
++  unknown.signature.keyId = 'attacker-key';
++  await writeFile(path.join(t, 'unknown.json'), JSON.stringify(unknown, null, 2) + '\n');
++  run('sign-release-integrity.mjs', [path.join(t, 'unknown.json'), path.join(t, 'B.priv'), path.join(t, 'unknown.sig')]);
++  r = run('verify-release-signature.mjs', [path.join(t, 'unknown.json'), path.join(t, 'unknown.sig'), path.join(t, 'trust-root.json')]);
++  expect('NC-unknown-keyId-denied', r.status !== 0);
++
++  // --- registry / anti-rollback
++  const registry = {
++    schema: 'ghrab-release-registry-v1', updatedAt: new Date().toISOString(),
++    apps: [{ appId: 'synthetic-app', approvedVersion: '1.2.0', artifactDigest: digest1, keyId: 'ghrab-key-2026-A', approvedAt: new Date().toISOString(), status: 'approved', history: [{ version: '1.1.0' }] }]
++  };
++  await writeFile(path.join(t, 'registry.json'), JSON.stringify(registry, null, 2));
++  r = run('verify-release-registry.mjs', [path.join(deploy, 'release-integrity.json'), path.join(t, 'registry.json')]);
++  expect('registry-clean', r.status === 0);
++
++  // NC-8 validne podepsany starsi release
++  const old = { ...registry, apps: [{ ...registry.apps[0], approvedVersion: '1.3.0', history: [{ version: '1.2.0' }] }] };
++  await writeFile(path.join(t, 'registry-newer.json'), JSON.stringify(old, null, 2));
++  r = run('verify-release-registry.mjs', [path.join(deploy, 'release-integrity.json'), path.join(t, 'registry-newer.json')]);
++  expect('NC-signed-rollback-denied', r.status !== 0);
++
++  // NC-9 neznama aplikace
++  const foreign = { ...registry, apps: [{ ...registry.apps[0], appId: 'jina-app' }] };
++  await writeFile(path.join(t, 'registry-foreign.json'), JSON.stringify(foreign, null, 2));
++  r = run('verify-release-registry.mjs', [path.join(deploy, 'release-integrity.json'), path.join(t, 'registry-foreign.json')]);
++  expect('NC-unknown-release-denied', r.status !== 0);
++
++  // --- provenance
++  const artifact = path.join(t, 'build.zip');
++  await writeFile(artifact, 'synthetic-artifact');
++  run('create-build-provenance.mjs', [artifact, path.join(t, 'prov-local.json')]);
++  r = run('verify-build-provenance.mjs', [artifact, path.join(t, 'prov-local.json')]);
++  expect('NC-untrusted-local-builder-rejected', r.status !== 0);
++  r = run('verify-build-provenance.mjs', [artifact, path.join(t, 'prov-local.json'), '--allow-local-builder']);
++  expect('NC-local-builder-without-source-identity-still-rejected', r.status !== 0);
++
++  const localWithSource = JSON.parse(await readFile(path.join(t, 'prov-local.json'), 'utf8'));
++  localWithSource.source.revision = 'b'.repeat(40);
++  await writeFile(path.join(t, 'prov-local2.json'), JSON.stringify(localWithSource, null, 2));
++  r = run('verify-build-provenance.mjs', [artifact, path.join(t, 'prov-local2.json')]);
++  expect('NC-school-profile-rejects-local-builder', r.status !== 0);
++  r = run('verify-build-provenance.mjs', [artifact, path.join(t, 'prov-local2.json'), '--allow-local-builder']);
++  expect('prep-allows-local-builder-explicitly', r.status === 0);
++
++  const good = JSON.parse(await readFile(path.join(t, 'prov-local.json'), 'utf8'));
++  good.source.revision = 'a'.repeat(40);
++  good.builder.id = 'github-actions://Daniel22-dev/ai-studio-ghrab';
++  await writeFile(path.join(t, 'prov.json'), JSON.stringify(good, null, 2));
++  r = run('verify-build-provenance.mjs', [artifact, path.join(t, 'prov.json')]);
++  expect('provenance-clean', r.status === 0);
++  await writeFile(artifact, 'tampered-artifact');
++  r = run('verify-build-provenance.mjs', [artifact, path.join(t, 'prov.json')]);
++  expect('NC-provenance-artifact-tamper-fails', r.status !== 0);
++  await writeFile(artifact, 'synthetic-artifact');
++
++  // --- leak scanner
++  const leak = path.join(t, 'leak'); await mkdir(leak);
++  await writeFile(path.join(leak, 'index.html'), 'ok');
++  r = run('scan-deployment-leaks.mjs', [leak]);
++  expect('leak-clean', r.status === 0);
++  await writeFile(path.join(leak, '.env.production'), 'SESSION_SECRET=7f3a9c1e5b2d8046af11c3e7b9d05a62\n');
++  r = run('scan-deployment-leaks.mjs', [leak]);
++  expect('NC-env-production-detected', r.status !== 0);
++  await rm(path.join(leak, '.env.production'));
++  await writeFile(path.join(leak, 'bundle.js'), '// b\n' + 'a'.repeat(2_100_000) + '\nconst K="AIzaSyFAKEFAKEFAKEFAKEFAKEFAKEFAKE00";\n');
++  r = run('scan-deployment-leaks.mjs', [leak]);
++  expect('NC-secret-in-large-bundle-detected', r.status !== 0);
++  await rm(path.join(leak, 'bundle.js'));
++  await writeFile(path.join(leak, 'app.js.map'), '{}');
++  r = run('scan-deployment-leaks.mjs', [leak]);
++  expect('NC-sourcemap-detected', r.status !== 0);
++  await rm(path.join(leak, 'app.js.map'));
++
++  // --- evidence
++  const ev = path.join(t, 'evidence'); await mkdir(ev);
++  await writeFile(path.join(ev, 'result.txt'), 'PASS synthetic\n');
++  run('create-evidence-manifest.mjs', [ev, path.join(t, 'evidence.json')]);
++  r = run('verify-evidence-manifest.mjs', [ev, path.join(t, 'evidence.json')]);
++  expect('evidence-clean', r.status === 0);
++  await writeFile(path.join(ev, 'result.txt'), 'TAMPER\n');
++  r = run('verify-evidence-manifest.mjs', [ev, path.join(t, 'evidence.json')]);
++  expect('NC-evidence-tamper-fails', r.status !== 0);
++  await writeFile(path.join(ev, 'result.txt'), 'PASS synthetic\n');
++
++  // --- vendorovana konzistence
++  const eco = path.join(t, 'eco');
++  await mkdir(path.join(eco, 'studio', 'src'), { recursive: true });
++  await mkdir(path.join(eco, 'ks', 'src', 'vendor'), { recursive: true });
++  await mkdir(path.join(eco, 'sortio', 'src', 'vendor'), { recursive: true });
++  await writeFile(path.join(eco, 'studio', 'src', 'platform.js'), 'export const V="1.1.0"\n');
++  await writeFile(path.join(eco, 'ks', 'src', 'vendor', 'platform.js'), 'export const V="1.1.0"\n');
++  await writeFile(path.join(eco, 'sortio', 'src', 'vendor', 'platform.js'), 'export const V="1.0.9"\n');
++  const cfg = {
++    schema: 'ghrab-vendored-consistency-v1', canonicalRoot: 'studio',
++    components: [{ id: 'platform', canonical: 'src/platform.js', severity: 'CRITICAL' }],
++    consumers: [
++      { appId: 'ks', root: 'ks', copies: { platform: ['src/vendor/platform.js'] } },
++      { appId: 'sortio', root: 'sortio', copies: { platform: ['src/vendor/platform.js'] } }
++    ]
++  };
++  await writeFile(path.join(eco, 'cfg.json'), JSON.stringify(cfg, null, 2));
++  r = run('check-vendored-consistency.mjs', [path.join(eco, 'cfg.json')]);
++  expect('NC-vendored-drift-detected', r.status !== 0 && r.stderr.includes('DRIFT'));
++  await writeFile(path.join(eco, 'sortio', 'src', 'vendor', 'platform.js'), 'export const V="1.1.0"\n');
++  r = run('check-vendored-consistency.mjs', [path.join(eco, 'cfg.json')]);
++  expect('vendored-consistent-after-fix', r.status === 0);
++
++  // --- service worker freeze
++  const swDir = path.join(t, 'swapp'); await mkdir(swDir, { recursive: true });
++  await writeFile(path.join(swDir, 'app-guard.js'), '// guard\n');
++  await writeFile(path.join(swDir, 'revoked-access.json'), '[]\n');
++  await writeFile(path.join(swDir, 'index.html'), 'ok');
++  const badSw = `const PRECACHE=['/index.html','/app-guard.js','/revoked-access.json'];
++self.addEventListener('install',e=>e.waitUntil(caches.open('x').then(cache=>cache.addAll(PRECACHE))));
++self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request)))});`;
++  await writeFile(path.join(t, 'sw-bad.js'), badSw);
++  r = run('check-sw-security-freeze.mjs', [path.join(t, 'sw-bad.js'), swDir]);
++  expect('NC-sw-freezes-guard-detected', r.status !== 0);
++
++  // GH-02 hotfix regression: variable name must not hide an array-driven cache.add path.
++  const blindSpotSw = `const RANDOM_CACHE_LIST=['/index.html','/app-guard.js'];
++self.addEventListener('install',e=>e.waitUntil(caches.open('x').then(cache=>Promise.all(RANDOM_CACHE_LIST.map(asset=>cache.add(asset))))));
++self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.pathname.includes('app-guard')){e.respondWith(fetch(e.request,{cache:'no-store'}));return;}e.respondWith(fetch(e.request));});`;
++  await writeFile(path.join(t, 'sw-blindspot.js'), blindSpotSw);
++  r = run('check-sw-security-freeze.mjs', [path.join(t, 'sw-blindspot.js'), swDir]);
++  expect('NC-sw-arbitrary-array-name-cannot-hide-critical-precache', r.status !== 0 && (r.stderr.includes('CRITICAL') || r.stdout.includes('CRITICAL')));
++  const goodSw = `const PRECACHE=['/index.html'];
++self.addEventListener('fetch',e=>{const u=new URL(e.request.url);
++if(u.pathname.includes('app-guard')||u.pathname.includes('revoked-access.json')){
++  e.respondWith(fetch(e.request,{cache:'no-store'}));return;}
++e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request)))});`;
++  await writeFile(path.join(t, 'sw-good.js'), goodSw);
++  r = run('check-sw-security-freeze.mjs', [path.join(t, 'sw-good.js'), swDir]);
++  expect('sw-network-first-for-guard-passes', r.status === 0);
++
++  // N7 hardening: alternate Cache API write paths must never be silent PASS.
++  const criticalListPath = path.join(t, 'critical-list.json');
++  await writeFile(criticalListPath, JSON.stringify(['app-guard.js'], null, 2));
++  const swVariants = [
++    ['property-array-addAll', `self.EXTRA_ASSETS=['/app-guard.js'];\nself.addEventListener('install',e=>e.waitUntil(caches.open('x').then(cache=>cache.addAll(self.EXTRA_ASSETS))));`],
++    ['cache-put-literal', `self.addEventListener('install',e=>e.waitUntil(caches.open('x').then(cache=>cache.put('/app-guard.js',new Response('x')))));`],
++    ['cache-add-new-request', `self.addEventListener('install',e=>e.waitUntil(caches.open('x').then(cache=>cache.add(new Request('/app-guard.js')))));`],
++    ['concat-addAll', `const BASE=['/index.html'];const X=BASE.concat(['/app-guard.js']);\nself.addEventListener('install',e=>e.waitUntil(caches.open('x').then(cache=>cache.addAll(X))));`],
++    ['split-addAll', `const X='/index.html,/app-guard.js'.split(',');\nself.addEventListener('install',e=>e.waitUntil(caches.open('x').then(cache=>cache.addAll(X))));`],
++    ['object-values-forof-add', `const MAP={a:'/index.html',b:'/app-guard.js'};\nself.addEventListener('install',e=>e.waitUntil((async()=>{const cache=await caches.open('x');for(const asset of Object.values(MAP)){await cache.add(asset)}})()));`]
++  ];
++  for (const [id, code] of swVariants) {
++    const f = path.join(t, `sw-${id}.js`); await writeFile(f, code);
++    r = run('check-sw-security-freeze.mjs', [f, swDir, criticalListPath]);
++    expect(`NC-sw-${id}-not-silent-pass`, r.status !== 0);
++  }
++  const unresolvedSw = `let dynamicPath;self.addEventListener('install',e=>e.waitUntil(caches.open('x').then(cache=>cache.add(dynamicPath))));`;
++  await writeFile(path.join(t, 'sw-unresolved.js'), unresolvedSw);
++  r = run('check-sw-security-freeze.mjs', [path.join(t, 'sw-unresolved.js'), swDir, criticalListPath]);
++  expect('NC-sw-unresolved-cache-write-amber-or-fail', r.status !== 0 && (r.stderr.includes('AMBER') || r.stdout.includes('AMBER') || r.stderr.includes('FAIL') || r.stdout.includes('FAIL')));
++
++  // N8 hardening: comments/text proximity cannot create a network-only exemption.
++  await writeFile(path.join(swDir, 'data-manifest.json'), '{}\n');
++  const dataCritical = path.join(t, 'critical-data.json');
++  await writeFile(dataCritical, JSON.stringify(['data-manifest.json'], null, 2));
++  const commentBypassSw = `const CORE=['/index.html'];\nself.addEventListener('install',e=>e.waitUntil(caches.open('x').then(cache=>cache.addAll(CORE))));\nasync function networkFirst(request){ // data-manifest.json network later\n const cache=await caches.open('x');try{return await fetch(request)}catch(e){return cache.match(request)}}\nasync function cacheFirst(request){const cache=await caches.open('x');const c=await cache.match(request);if(c)return c;const rr=await fetch(request);if(rr.ok)await cache.put(request,rr.clone());return rr}\nself.addEventListener('fetch',e=>e.respondWith(cacheFirst(e.request)));`;
++  await writeFile(path.join(t, 'sw-comment-bypass.js'), commentBypassSw);
++  r = run('check-sw-security-freeze.mjs', [path.join(t, 'sw-comment-bypass.js'), swDir, dataCritical]);
++  expect('NC-sw-comment-cannot-create-exemption', r.status !== 0);
++
++  // N6 hardening: release gate itself must enforce the authoritative list and propagate SW failure.
++  r = run('release-gate.mjs', [
++    '--profile', 'prep', '--deploy', deploy, '--manifest', path.join(deploy, 'release-integrity.json'),
++    '--signature', path.join(deploy, 'release-integrity.sig'), '--trust-root', path.join(t, 'trust-root.json'),
++    '--sw', path.join(t, 'sw-blindspot.js'), '--critical-list', criticalListPath
++  ]);
++  expect('NC-gate-propagates-sw-critical-failure', r.status !== 0 && (r.stderr.includes('sw-security-freeze') || r.stdout.includes('sw-security-freeze')));
++
++  r = run('release-gate.mjs', [
++    '--profile', 'prep', '--deploy', deploy, '--manifest', path.join(deploy, 'release-integrity.json'),
++    '--signature', path.join(deploy, 'release-integrity.sig'), '--trust-root', path.join(t, 'trust-root.json'),
++    '--sw', path.join(t, 'sw-good.js')
++  ]);
++  expect('NC-gate-missing-critical-list-fails-closed', r.status !== 0 && (r.stderr.includes('critical-asset-list-missing') || r.stdout.includes('critical-asset-list-missing')));
++
++  // --- release gate fail-closed
++  r = run('release-gate.mjs', ['--profile', 'school', '--deploy', deploy, '--manifest', path.join(deploy, 'release-integrity.json')]);
++  expect('NC-gate-missing-inputs-fails-closed', r.status !== 0 && r.stderr.includes('required-input-missing'));
++
++  await writeFile(path.join(deploy, 'release-integrity.json'), await readFile(path.join(t, 'ri.json')));
++  run('sign-release-integrity.mjs', [path.join(deploy, 'release-integrity.json'), path.join(t, 'A.priv'), path.join(deploy, 'release-integrity.sig')]);
++  r = run('release-gate.mjs', [
++    '--profile', 'school', '--deploy', deploy, '--manifest', path.join(deploy, 'release-integrity.json'),
++    '--signature', path.join(deploy, 'release-integrity.sig'), '--trust-root', path.join(t, 'trust-root.json'),
++    '--registry', path.join(t, 'registry.json'), '--artifact', artifact, '--provenance', path.join(t, 'prov.json'),
++    '--evidence-dir', ev, '--evidence-manifest', path.join(t, 'evidence.json')
++  ]);
++  expect('gate-full-chain-green', r.status === 0);
++} finally { await rm(t, { recursive: true, force: true }); }
++
++const out = { status: errors.length ? 'FAIL' : 'PASS', checks: passed.length + errors.length, passed: passed.length, failed: errors };
++console[errors.length ? 'error' : 'log'](JSON.stringify(out, null, 2));
++process.exit(errors.length ? 1 : 0);
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/sign-release-integrity.mjs ./security/garp25/tools/sign-release-integrity.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/sign-release-integrity.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/sign-release-integrity.mjs	2026-09-09 09:38:18.957026577 +0000
+@@ -0,0 +1,10 @@
++#!/usr/bin/env node
++import { readFile, writeFile } from 'node:fs/promises';
++import { createPrivateKey, sign } from 'node:crypto';
++const [manifestPath, privateKeyPath, sigPath='release-integrity.sig'] = process.argv.slice(2);
++if (!manifestPath || !privateKeyPath) { console.error('Usage: node sign-release-integrity.mjs <manifest> <private-key.pem> [signature]'); process.exit(2); }
++const data=await readFile(manifestPath); const key=createPrivateKey(await readFile(privateKeyPath));
++if (key.asymmetricKeyType!=='ed25519') throw new Error('Expected Ed25519 private key');
++const signature=sign(null,data,key).toString('base64');
++await writeFile(sigPath, signature+'\n','utf8');
++console.log(JSON.stringify({signature:sigPath,algorithm:'Ed25519'},null,2));
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/verify-build-provenance.mjs ./security/garp25/tools/verify-build-provenance.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/verify-build-provenance.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/verify-build-provenance.mjs	2026-09-09 09:38:18.957040538 +0000
+@@ -0,0 +1,42 @@
++#!/usr/bin/env node
++// GARP 2.5.1 GHRAB - verify-build-provenance
++// Zmena proti 2.5: verifier uz neprojde provenance bez zdrojove revize a s vychozim
++// builderem 'local-untrusted-builder'. SH-SC-06 vyzaduje shodu source + builder +
++// artifact digest s ocekavanim, ne jen digest.
++import { createHash } from 'node:crypto';
++import { readFile } from 'node:fs/promises';
++
++const args = process.argv.slice(2);
++const flags = new Set(args.filter(a => a.startsWith('--')));
++const [artifact, provPath] = args.filter(a => !a.startsWith('--'));
++if (!artifact || !provPath) {
++  console.error('Usage: node verify-build-provenance.mjs <artifact-file> <provenance.json> [--allow-local-builder]');
++  console.error('  --allow-local-builder: povoleno jen pro PREP/staging, nikdy pro skolni release.');
++  process.exit(2);
++}
++const errors = [];
++const warnings = [];
++let p; try { p = JSON.parse(await readFile(provPath, 'utf8')); } catch { fail(['provenance-unreadable']); }
++const sha = createHash('sha256').update(await readFile(artifact)).digest('hex');
++
++if (p?.schema !== 'ghrab-build-provenance-v1') errors.push('schema');
++if (p?.subject?.sha256 !== sha) errors.push('subject.sha256');
++if (!p?.source?.revision && !p?.source?.sourcePackageSha256) errors.push('source-identity-missing');
++if (!p?.builder?.id) errors.push('builder.id');
++else if (p.builder.id === 'local-untrusted-builder') {
++  if (flags.has('--allow-local-builder')) warnings.push('builder=local-untrusted-builder (PREP only, nikdy skolni release)');
++  else errors.push('builder-untrusted:local-untrusted-builder');
++}
++if (!p?.invocation?.finishedAt) errors.push('invocation.finishedAt');
++if (p?.assurance?.claimedSlsaLevel) errors.push('claimedSlsaLevel-self-asserted');
++if (process.env.GHRAB_EXPECT_SOURCE_COMMIT && p?.source?.revision !== process.env.GHRAB_EXPECT_SOURCE_COMMIT)
++  errors.push('source.revision != GHRAB_EXPECT_SOURCE_COMMIT');
++if (process.env.GHRAB_EXPECT_BUILDER_ID && p?.builder?.id !== process.env.GHRAB_EXPECT_BUILDER_ID)
++  errors.push('builder.id != GHRAB_EXPECT_BUILDER_ID');
++if (process.env.GHRAB_EXPECT_ARTIFACT_DIGEST && p?.releaseIntegrity?.artifactDigest !== process.env.GHRAB_EXPECT_ARTIFACT_DIGEST)
++  errors.push('releaseIntegrity.artifactDigest != GHRAB_EXPECT_ARTIFACT_DIGEST');
++
++if (errors.length) fail(errors);
++console.log(JSON.stringify({ status: 'PASS', subjectSha256: sha, builderId: p.builder.id, sourceRevision: p.source.revision ?? null, warnings }, null, 2));
++
++function fail(errs) { console.error(JSON.stringify({ status: 'FAIL', errors: errs }, null, 2)); process.exit(1); }
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/verify-evidence-manifest.mjs ./security/garp25/tools/verify-evidence-manifest.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/verify-evidence-manifest.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/verify-evidence-manifest.mjs	2026-09-09 09:38:18.957054719 +0000
+@@ -0,0 +1,26 @@
++#!/usr/bin/env node
++import { createHash } from 'node:crypto';
++import { readFile, readdir, lstat } from 'node:fs/promises';
++import path from 'node:path';
++
++const [dirArg,manifestArg]=process.argv.slice(2);
++if(!dirArg||!manifestArg){console.error('Usage: node verify-evidence-manifest.mjs <evidence-dir> <manifest>');process.exit(2);}
++const root=path.resolve(dirArg), manifest=JSON.parse(await readFile(manifestArg,'utf8'));
++const expected=new Map((manifest.files||[]).map(x=>[x.path,x])); const seen=new Set(); const errors=[];
++const hex=b=>createHash('sha256').update(b).digest('hex');
++async function walk(dir,base=''){
++ for(const name of (await readdir(dir)).sort((a,b)=>a.localeCompare(b,'en'))){
++  const abs=path.join(dir,name),rel=path.posix.join(base,name),st=await lstat(abs);
++  if(st.isSymbolicLink()){errors.push(`symlink:${rel}`);continue;}
++  if(st.isDirectory()) await walk(abs,rel);
++  else if(st.isFile()){
++    seen.add(rel); const e=expected.get(rel),d=await readFile(abs);
++    if(!e) errors.push(`unexpected:${rel}`);
++    else { if(e.size!==d.length) errors.push(`size:${rel}`); if(e.sha256!==hex(d)) errors.push(`sha256:${rel}`); }
++  }
++ }
++}
++await walk(root);
++for(const rel of expected.keys()) if(!seen.has(rel)) errors.push(`missing:${rel}`);
++if(errors.length){console.error(JSON.stringify({status:'FAIL',errors},null,2));process.exit(1);}
++console.log(JSON.stringify({status:'PASS',files:seen.size},null,2));
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/verify-release-integrity.mjs ./security/garp25/tools/verify-release-integrity.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/verify-release-integrity.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/verify-release-integrity.mjs	2026-09-09 09:38:18.957070343 +0000
+@@ -0,0 +1,67 @@
++#!/usr/bin/env node
++// GARP 2.5.1 GHRAB - verify-release-integrity (schema v2)
++// Pouziva stejne kanonicke poradi jako create. Manifest schematu v1 odmita fail-closed,
++// protoze jeho artifactDigest neni reprodukovatelny nezavislym verifierem.
++import { createHash } from 'node:crypto';
++import { readFile, readdir, lstat } from 'node:fs/promises';
++import path from 'node:path';
++
++const [dirArg, manifestArg] = process.argv.slice(2);
++if (!dirArg || !manifestArg) {
++  console.error('Usage: node verify-release-integrity.mjs <deployment-dir> <manifest>');
++  process.exit(2);
++}
++const root = path.resolve(dirArg);
++let manifest;
++try { manifest = JSON.parse(await readFile(manifestArg, 'utf8')); }
++catch (e) { fail(['manifest-unreadable:' + e.message]); }
++
++if (manifest.schema !== 'ghrab-release-integrity-v2')
++  fail([`schema:${manifest.schema || 'missing'} (ocekavano ghrab-release-integrity-v2; v1 manifest znovu vygeneruj)`]);
++if (manifest.digestAlgorithmId !== 'ghrab-artifact-digest-v2') fail(['digestAlgorithmId']);
++if (manifest.hashAlgorithm !== 'SHA-256') fail(['hashAlgorithm']);
++if (!Array.isArray(manifest.files) || !manifest.files.length) fail(['files-empty']);
++
++const EXCLUDE = new Set(['release-integrity.json', 'release-integrity.sig',
++  'package-attestation.json', 'package-attestation.sig', 'SHA256SUMS.txt']);
++const hex = b => createHash('sha256').update(b).digest('hex');
++const expected = new Map(manifest.files.map(f => [String(f.path).normalize('NFC'), f]));
++if (expected.size !== manifest.files.length) fail(['duplicate-paths-in-manifest']);
++if (typeof manifest.fileCount === 'number' && manifest.fileCount !== manifest.files.length) fail(['fileCount']);
++
++const seen = new Set();
++const errors = [];
++async function walk(dir, base = '') {
++  for (const name of await readdir(dir)) {
++    const abs = path.join(dir, name);
++    const rel = path.posix.join(base, name).normalize('NFC');
++    const st = await lstat(abs);
++    if (st.isSymbolicLink()) { errors.push(`symlink:${rel}`); continue; }
++    if (st.isDirectory()) { await walk(abs, rel); continue; }
++    if (!st.isFile()) { errors.push(`irregular-file:${rel}`); continue; }
++    if (base === '' && EXCLUDE.has(rel)) continue;
++    seen.add(rel);
++    const e = expected.get(rel);
++    const data = await readFile(abs);
++    if (!e) { errors.push(`unexpected:${rel}`); continue; }
++    if (e.size !== data.length) errors.push(`size:${rel}`);
++    if (e.sha256 !== hex(data)) errors.push(`sha256:${rel}`);
++  }
++}
++await walk(root);
++for (const rel of expected.keys()) if (!seen.has(rel)) errors.push(`missing:${rel}`);
++
++const rows = [...manifest.files].sort((a, b) =>
++  Buffer.compare(Buffer.from(String(a.path).normalize('NFC'), 'utf8'), Buffer.from(String(b.path).normalize('NFC'), 'utf8')));
++const header = `ghrab-artifact-digest-v2\0${rows.length}\n`;
++const body = rows.map(f => `${String(f.path).normalize('NFC')}\0${f.sha256}\0${f.size}\n`).join('');
++const recomputed = hex(Buffer.from(header + body, 'utf8'));
++if (manifest.artifactDigest !== recomputed) errors.push('artifactDigest');
++
++if (errors.length) fail(errors);
++console.log(JSON.stringify({ status: 'VERIFIED', files: seen.size, artifactDigest: recomputed }, null, 2));
++
++function fail(errs) {
++  console.error(JSON.stringify({ status: 'TAMPERED', errors: errs }, null, 2));
++  process.exit(1);
++}
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/verify-release-registry.mjs ./security/garp25/tools/verify-release-registry.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/verify-release-registry.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/verify-release-registry.mjs	2026-09-09 09:38:18.957084804 +0000
+@@ -0,0 +1,55 @@
++#!/usr/bin/env node
++// GARP 2.5.1 GHRAB - verify-release-registry
++// RI-08 / SHNC-05: v GARP 2.5 nemel zadnou referencni implementaci. Overuje, ze
++// nasazeny manifest odpovida SCHVALENEMU zaznamu v Release Registry, a odmita
++// validne podepsany starsi release (anti-rollback) i neznamy release.
++import { readFile } from 'node:fs/promises';
++
++const [manifestPath, registryPath] = process.argv.slice(2);
++if (!manifestPath || !registryPath) {
++  console.error('Usage: node verify-release-registry.mjs <manifest> <release-registry.json>');
++  process.exit(2);
++}
++const errors = [];
++let manifest, registry;
++try { manifest = JSON.parse(await readFile(manifestPath, 'utf8')); } catch { deny(['manifest-unreadable']); }
++try { registry = JSON.parse(await readFile(registryPath, 'utf8')); } catch { deny(['registry-unreadable']); }
++if (registry.schema !== 'ghrab-release-registry-v1') deny(['registry-schema']);
++
++const entry = (registry.apps || []).find(a => a.appId === manifest.appId);
++if (!entry) deny([`unknown-app:${manifest.appId}`]);
++if ((registry.apps || []).filter(a => a.appId === manifest.appId).length > 1) errors.push('duplicate-appId');
++if (entry.status !== 'approved') errors.push(`registry-status:${entry.status || 'missing'}`);
++
++if (entry.artifactDigest !== manifest.artifactDigest) errors.push('artifactDigest-mismatch');
++if (entry.keyId !== manifest?.signature?.keyId) errors.push('keyId-mismatch');
++if (entry.approvedVersion !== manifest.version) errors.push(`version-mismatch:observed=${manifest.version},approved=${entry.approvedVersion}`);
++
++// Anti-rollback: nasazovana verze nesmi byt nizsi nez nejvyssi kdy schvalena.
++// history je nepovinne pole {version, approvedAt}; bez nej se pouzije approvedVersion.
++const history = Array.isArray(entry.history) ? entry.history.map(h => h.version) : [];
++const known = [entry.approvedVersion, ...history].filter(Boolean);
++const highest = known.reduce((a, b) => (cmpVersion(a, b) >= 0 ? a : b), known[0]);
++if (cmpVersion(manifest.version, highest) < 0) errors.push(`rollback-denied:${manifest.version}<${highest}`);
++
++if (errors.length) deny(errors);
++console.log(JSON.stringify({
++  status: 'APPROVED', appId: manifest.appId, version: manifest.version,
++  artifactDigest: manifest.artifactDigest, keyId: entry.keyId
++}, null, 2));
++
++function cmpVersion(a, b) {
++  const pa = String(a).split(/[.\-+]/).map(x => (/^\d+$/.test(x) ? Number(x) : x));
++  const pb = String(b).split(/[.\-+]/).map(x => (/^\d+$/.test(x) ? Number(x) : x));
++  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
++    const x = pa[i] ?? 0, y = pb[i] ?? 0;
++    if (x === y) continue;
++    if (typeof x === 'number' && typeof y === 'number') return x < y ? -1 : 1;
++    return String(x) < String(y) ? -1 : 1;
++  }
++  return 0;
++}
++function deny(errs) {
++  console.error(JSON.stringify({ status: 'DENIED', errors: errs }, null, 2));
++  process.exit(1);
++}
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/garp25/tools/verify-release-signature.mjs ./security/garp25/tools/verify-release-signature.mjs
+--- /mnt/data/diff_baseline_1.3.42/security/garp25/tools/verify-release-signature.mjs	1970-01-01 00:00:00.000000000 +0000
++++ ./security/garp25/tools/verify-release-signature.mjs	2026-09-09 09:38:18.957099176 +0000
+@@ -0,0 +1,52 @@
++#!/usr/bin/env node
++// GARP 2.5.1 GHRAB - verify-release-signature
++// Zmena proti 2.5: podpis se overuje proti trust rootu, ne proti libovolnemu PEM
++// predanemu na prikazove radce. Vynucuje vazbu manifest.signature.keyId -> klic,
++// stav klice (active/revoked) a casove okno platnosti. Fail-closed.
++import { readFile } from 'node:fs/promises';
++import { createPublicKey, verify } from 'node:crypto';
++
++const [manifestPath, sigPath, trustRootPath] = process.argv.slice(2);
++if (!manifestPath || !sigPath || !trustRootPath) {
++  console.error('Usage: node verify-release-signature.mjs <manifest> <signature> <trust-root.json>');
++  process.exit(2);
++}
++const errors = [];
++const raw = await readFile(manifestPath);
++let manifest; try { manifest = JSON.parse(raw.toString('utf8')); } catch { deny(['manifest-unreadable']); }
++
++let trust; try { trust = JSON.parse(await readFile(trustRootPath, 'utf8')); } catch { deny(['trust-root-unreadable']); }
++if (trust.schema !== 'ghrab-trust-root-v1') deny(['trust-root-schema']);
++
++const keyId = manifest?.signature?.keyId;
++const alg = manifest?.signature?.algorithm;
++if (!keyId) deny(['manifest-keyId-missing']);
++if (alg !== 'Ed25519') deny([`manifest-algorithm:${alg}`]);
++
++const entry = (trust.keys || []).find(k => k.keyId === keyId);
++if (!entry) deny([`unknown-keyId:${keyId}`]);
++if (entry.algorithm !== 'Ed25519') errors.push('trust-entry-algorithm');
++if (entry.status !== 'active') errors.push(`key-status:${entry.status || 'missing'}`);
++
++const now = new Date();
++if (entry.notBefore && now < new Date(entry.notBefore)) errors.push('key-not-yet-valid');
++if (entry.notAfter && now > new Date(entry.notAfter)) errors.push('key-expired');
++if (errors.length) deny(errors);
++
++let key;
++try {
++  key = createPublicKey(entry.publicKeyPem);
++  if (key.asymmetricKeyType !== 'ed25519') deny(['trust-key-not-ed25519']);
++} catch { deny(['trust-key-unparseable']); }
++
++let sig;
++try { sig = Buffer.from((await readFile(sigPath, 'utf8')).trim(), 'base64'); } catch { deny(['signature-unreadable']); }
++if (sig.length !== 64) deny([`signature-length:${sig.length}`]);
++if (!verify(null, raw, key, sig)) deny(['SIGNATURE_INVALID']);
++
++console.log(JSON.stringify({ status: 'VERIFIED', algorithm: 'Ed25519', keyId, keyStatus: entry.status }, null, 2));
++
++function deny(errs) {
++  console.error(JSON.stringify({ status: 'UNVERIFIED', errors: errs }, null, 2));
++  process.exit(1);
++}
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/security-critical-assets.json ./security/security-critical-assets.json
+--- /mnt/data/diff_baseline_1.3.42/security/security-critical-assets.json	1970-01-01 00:00:00.000000000 +0000
++++ ./security/security-critical-assets.json	2026-09-09 09:38:18.958021356 +0000
+@@ -0,0 +1,13 @@
++[
++  "app-guard",
++  "access-control",
++  "ghrab/ghrab-platform.js",
++  "access/deployment-config.js",
++  "revoked-access.json",
++  "runtime-config.js",
++  "config/deployment.json",
++  "config/deployment.school-server.json",
++  "release-integrity.json",
++  "release-integrity.sig",
++  "integrity-status"
++]
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/security/vendored-consistency.json ./security/vendored-consistency.json
+--- /mnt/data/diff_baseline_1.3.42/security/vendored-consistency.json	1970-01-01 00:00:00.000000000 +0000
++++ ./security/vendored-consistency.json	2026-09-09 09:38:18.958809524 +0000
+@@ -0,0 +1,22 @@
++{
++  "schema": "ghrab-vendored-consistency-v1",
++  "canonicalRoot": "..",
++  "components": [
++    { "id": "platform-js", "canonical": "vendor/ghrab-platform-1.1.2/ghrab-platform.js", "severity": "CRITICAL", "required": true },
++    { "id": "platform-css", "canonical": "vendor/ghrab-platform-1.1.2/ghrab-platform.css", "severity": "HIGH", "required": true },
++    { "id": "school-logo", "canonical": "vendor/ghrab-platform-1.1.2/school-logo.png", "severity": "HIGH", "required": true },
++    { "id": "error-reporter", "canonical": "src/access/error-reporter.js", "severity": "HIGH", "required": true }
++  ],
++  "consumers": [
++    {
++      "appId": "differentiator",
++      "root": "..",
++      "copies": {
++        "platform-js": ["dist/ghrab/ghrab-platform.js", "dist-school-server/ghrab/ghrab-platform.js"],
++        "platform-css": ["dist/ghrab/ghrab-platform.css", "dist-school-server/ghrab/ghrab-platform.css"],
++        "school-logo": ["src/assets/brand/school-logo.png", "dist/assets/brand/school-logo.png", "dist-school-server/assets/brand/school-logo.png"],
++        "error-reporter": ["dist/access/error-reporter.js", "dist-school-server/access/error-reporter.js"]
++      }
++    }
++  ]
++}
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/access/error-reporter-adapter.js ./src/access/error-reporter-adapter.js
+--- /mnt/data/diff_baseline_1.3.42/src/access/error-reporter-adapter.js	2026-09-06 13:01:30.000000000 +0000
++++ ./src/access/error-reporter-adapter.js	2026-09-09 09:37:11.420340736 +0000
+@@ -8,7 +8,7 @@
+ const reporter = setupErrorReporter({
+   appId: 'differentiator',
+   appName: 'Diferenciátor',
+-  appVersion: '1.3.42',
++  appVersion: '1.3.43',
+   studioUrl: reporterStudioUrl,
+   supportEmail: 'balaz@ghrabuvka.cz',
+   guideUrl: reporterGuideUrl,
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/ai-operations.json ./src/ai-operations.json
+--- /mnt/data/diff_baseline_1.3.42/src/ai-operations.json	2026-09-06 13:01:30.000000000 +0000
++++ ./src/ai-operations.json	2026-09-09 09:37:11.422039170 +0000
+@@ -1,7 +1,7 @@
+ {
+   "schema": "ghrab-ai-operations-v1",
+   "appId": "differentiator",
+-  "appVersion": "1.3.42",
++  "appVersion": "1.3.43",
+   "registryVersion": "1.1.0",
+   "coreVersion": "1.0.0",
+   "contractVersion": "1",
+Binary files /mnt/data/diff_baseline_1.3.42/src/assets/brand/school-logo.png and ./src/assets/brand/school-logo.png differ
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/config/all-subject-test-matrix.json ./src/config/all-subject-test-matrix.json
+--- /mnt/data/diff_baseline_1.3.42/src/config/all-subject-test-matrix.json	2026-09-06 13:01:30.000000000 +0000
++++ ./src/config/all-subject-test-matrix.json	2026-09-09 09:37:11.423762277 +0000
+@@ -1,6 +1,6 @@
+ {
+   "schema": "ghrab-differentiator-all-subject-matrix-v1",
+-  "version": "1.3.42",
++  "version": "1.3.43",
+   "domains": [
+     {
+       "id": "language",
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/config/data-manifest.json ./src/config/data-manifest.json
+--- /mnt/data/diff_baseline_1.3.42/src/config/data-manifest.json	2026-09-06 13:01:30.000000000 +0000
++++ ./src/config/data-manifest.json	2026-09-09 09:37:11.425350345 +0000
+@@ -1,7 +1,7 @@
+ {
+   "schema": "ghrab-data-manifest-v1",
+   "appId": "differentiator",
+-  "appVersion": "1.3.42",
++  "appVersion": "1.3.43",
+   "manifestVersion": 5,
+   "dataCategories": [
+     "settings",
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/config/platform-manifest.json ./src/config/platform-manifest.json
+--- /mnt/data/diff_baseline_1.3.42/src/config/platform-manifest.json	2026-09-06 13:01:30.000000000 +0000
++++ ./src/config/platform-manifest.json	2026-09-09 09:37:11.427083132 +0000
+@@ -1,7 +1,7 @@
+ {
+   "schema": "ghrab-platform-app-integration-v1",
+   "appId": "differentiator",
+-  "appVersion": "1.3.42",
++  "appVersion": "1.3.43",
+   "contract": "ghrab-platform-v1",
+   "requiredPlatformRange": ">=1.1.2 <2.0.0",
+   "platformVersion": "1.1.2",
+@@ -27,7 +27,7 @@
+     ]
+   },
+   "storagePrefix": "ghrab.differentiator.",
+-  "cacheName": "ghrab-differentiator-v1.3.42",
++  "cacheName": "ghrab-differentiator-v1.3.43",
+   "capabilities": [
+     "artifact-envelope-v1",
+     "canonical-branding",
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/config/release-acceptance.json ./src/config/release-acceptance.json
+--- /mnt/data/diff_baseline_1.3.42/src/config/release-acceptance.json	2026-09-06 13:01:30.000000000 +0000
++++ ./src/config/release-acceptance.json	2026-09-09 09:37:11.428711851 +0000
+@@ -2,7 +2,7 @@
+   "schema": "ghrab-release-acceptance-v1",
+   "stage": "P5",
+   "appId": "differentiator",
+-  "appVersion": "1.3.42",
++  "appVersion": "1.3.43",
+   "releaseStatus": "security-candidate-awaiting-independent-review",
+   "primaryRuntime": {
+     "mode": "standalone-github-pages",
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/config/security-headers.json ./src/config/security-headers.json
+--- /mnt/data/diff_baseline_1.3.42/src/config/security-headers.json	2026-09-06 13:01:30.000000000 +0000
++++ ./src/config/security-headers.json	2026-09-09 09:37:11.430597928 +0000
+@@ -1,7 +1,7 @@
+ {
+   "schema": "ghrab-security-headers-v1",
+   "appId": "differentiator",
+-  "version": "1.3.42",
++  "version": "1.3.43",
+   "staticProfile": {
+     "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://generativelanguage.googleapis.com; media-src 'self' data: blob:; worker-src 'self' blob:; frame-src 'self'; manifest-src 'self'",
+     "note": "'unsafe-inline' zůstává nutná kompatibilní výjimka kvůli současnému chráněnému inline aplikačnímu bundle; odstranění je odloženo na přechod na externí skripty nebo nonce/hash architekturu."
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/index.template.html ./src/index.template.html
+--- /mnt/data/diff_baseline_1.3.42/src/index.template.html	2026-09-06 13:01:30.000000000 +0000
++++ ./src/index.template.html	2026-09-09 09:37:11.432041514 +0000
+@@ -1,5 +1,5 @@
+ <!doctype html>
+-<html lang="cs" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.42">
++<html lang="cs" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.43">
+ <head>
+ <meta charset="utf-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/js/10-release-changelog.js ./src/js/10-release-changelog.js
+--- /mnt/data/diff_baseline_1.3.42/src/js/10-release-changelog.js	2026-09-06 13:01:30.000000000 +0000
++++ ./src/js/10-release-changelog.js	2026-09-09 09:41:14.143723430 +0000
+@@ -1,11 +1,12 @@
+ 
+ const RELEASE = Object.freeze({
+-  version: '1.3.42',
+-  date: '2026-09-06',
++  version: '1.3.43',
++  date: '2026-09-09',
+   build: '__BUILD__', // build skript (scripts/build.mjs) nahradí __BUILD__ za krátký git hash; bez nahrazení se v changelogu nezobrazí
+   status: 'řízený pilot',
+   changes: [
+-    '1.3.42: Platform 1.1.2 Studio manifest alignment.',
++    '1.3.43: GARP 2.5.1 SHIELD delta.',
++    '1.3.42: P1.',
+     '1.3.41: Runtime hotfix.',
+     '1.3.40: Platform 1.1.2 suite-session.',
+     '1.3.39: GARP 2.3.',
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/js/31-ai-core-integration.js ./src/js/31-ai-core-integration.js
+--- /mnt/data/diff_baseline_1.3.42/src/js/31-ai-core-integration.js	2026-09-06 13:01:30.000000000 +0000
++++ ./src/js/31-ai-core-integration.js	2026-09-09 09:37:11.433624845 +0000
+@@ -1,4 +1,4 @@
+-const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.42'});
++const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.43'});
+ const DPL_WORKSHEET_SCHEMA=Object.freeze({type:'object',properties:{worksheet_title:{type:'string'},student_instructions:{type:'string'},tasks:{type:'string'},answer_key:{type:'string'},teacher_note:{type:'string'}},required:['worksheet_title','student_instructions','tasks','answer_key','teacher_note'],additionalProperties:false});
+ const DPL_AI_SCHEMAS=Object.freeze({'differentiator.text.v1':Object.freeze({type:'object',required:['text'],properties:{text:{type:'string'}},additionalProperties:false}),'differentiator.object.v1':DPL_WORKSHEET_SCHEMA});
+ const dplOp=(s,d,i,m)=>({outputSchemaId:s,defaultModelProfile:d,allowedModelProfiles:['economy','balanced','quality'],inputTypes:i,streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:m});
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/js/36-all-subject-safety.js ./src/js/36-all-subject-safety.js
+--- /mnt/data/diff_baseline_1.3.42/src/js/36-all-subject-safety.js	2026-09-06 13:01:30.000000000 +0000
++++ ./src/js/36-all-subject-safety.js	2026-09-09 09:37:11.435230850 +0000
+@@ -42,7 +42,7 @@
+   return [common];
+ }
+ function educationalVisualPromptLines(subject){
+-  const kind=subjectDomainKind(subject),stem=typeof stemSubjectKind==='function'?stemSubjectKind(subject):'',base='ODBORNÉ VIZUÁLY 1.3.42: nový přesný vizuál zapisuj jako samostatný [[EDU_TYP|{JSON}]]. Data markeru musí souhlasit se zadáním i klíčem. Zachovaný [[VISUAL_n]] nenahrazuj aproximací.';
++  const kind=subjectDomainKind(subject),stem=typeof stemSubjectKind==='function'?stemSubjectKind(subject):'',base='ODBORNÉ VIZUÁLY 1.3.43: nový přesný vizuál zapisuj jako samostatný [[EDU_TYP|{JSON}]]. Data markeru musí souhlasit se zadáním i klíčem. Zachovaný [[VISUAL_n]] nenahrazuj aproximací.';
+   const chart='EDU_CHART: {"type":"bar|line|scatter|pie","title":"...","labels":["A","B"],"series":[{"name":"řada","values":[1,2]}]}.';
+   const flow='EDU_FLOW: {"title":"...","direction":"lr|tb","nodes":[{"id":"a","label":"...","shape":"process|decision|start|end|entity|note"}],"edges":[{"from":"a","to":"b","label":"..."}]}. Vazby musí být odborně skutečné.';
+   const timeline='EDU_TIMELINE: {"title":"...","events":[{"year":1918,"label":"..."},{"startYear":1939,"endYear":1945,"label":"..."},{"year":-500,"uncertainty":50,"approximate":true,"label":"..."}]}. Záporný rok = př. n. l.; dataci nevymýšlej.';
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/manifest.webmanifest ./src/manifest.webmanifest
+--- /mnt/data/diff_baseline_1.3.42/src/manifest.webmanifest	2026-09-06 13:01:30.000000000 +0000
++++ ./src/manifest.webmanifest	2026-09-09 09:37:11.436824276 +0000
+@@ -33,7 +33,7 @@
+       "purpose": "maskable"
+     }
+   ],
+-  "version": "1.3.42",
++  "version": "1.3.43",
+   "ghrab_platform": {
+     "contract": "ghrab-platform-v1",
+     "version": "1.0.0",
+@@ -41,6 +41,6 @@
+     "brand_version": "1.0.0",
+     "theme_contract": "ghrab-theme-v1",
+     "sw_contract": "ghrab-sw-v1",
+-    "cache_name": "ghrab-differentiator-v1.3.42"
++    "cache_name": "ghrab-differentiator-v1.3.43"
+   }
+ }
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/manual/index.html ./src/manual/index.html
+--- /mnt/data/diff_baseline_1.3.42/src/manual/index.html	2026-09-06 13:01:30.000000000 +0000
++++ ./src/manual/index.html	2026-09-09 09:37:11.438386906 +0000
+@@ -1,5 +1,5 @@
+ <!DOCTYPE html>
+-<html lang="cs" data-theme="dark" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.42">
++<html lang="cs" data-theme="dark" data-ghrab-access="checking" data-ghrab-app-id="differentiator" data-ghrab-app-version="1.3.43">
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+@@ -37,7 +37,7 @@
+ <body>
+ <div class="app">
+ <header class="topbar">
+-  <div class="brand"><div class="brandmark">DI</div><div class="brandtext"><b>Diferenciátor</b><small>Interaktivní manuál · pro aplikaci v1.3.42</small></div></div>
++  <div class="brand"><div class="brandmark">DI</div><div class="brandtext"><b>Diferenciátor</b><small>Interaktivní manuál · pro aplikaci v1.3.43</small></div></div>
+   <div class="top-actions"><a class="chipbtn manual-back" href="../" title="Zpět do aplikace Diferenciátor"><span class="manual-back-icon">←</span><span class="manual-back-label">Zpět do aplikace</span></a>
+     <div class="progress-pill"><div class="progress-ring" id="progressRing"><span id="progressNum">0%</span></div><span>prostudováno</span></div>
+     <button class="iconbtn" id="searchBtn" title="Hledat v manuálu (Ctrl+K)">⌕</button>
+@@ -61,7 +61,7 @@
+ </aside>
+ <main>
+ <section class="hero" id="start">
+-  <div class="eyebrow"><span class="badge hot">Manuál 1.0.3</span><span class="badge">Pohled běžného učitele</span><span class="badge">aplikace v1.3.42</span><span class="badge">Gymnázium, Ostrava-Hrabůvka</span></div>
++  <div class="eyebrow"><span class="badge hot">Manuál 1.0.3</span><span class="badge">Pohled běžného učitele</span><span class="badge">aplikace v1.3.43</span><span class="badge">Gymnázium, Ostrava-Hrabůvka</span></div>
+   <h1>Diferenciátor pracovních listů a testů</h1>
+   <p class="lead">Převede jeden výukový materiál do jednodušší, standardní nebo náročnější varianty se zachováním stejného vzdělávacího cíle.</p>
+   <div class="hero-grid">
+@@ -71,7 +71,7 @@
+   </div>
+ </section>
+ <section>
+-  <div class="notice"><div class="notice-icon">↗</div><div><strong>Aktuální stav · Diferenciátor 1.3.42</strong><br>Manuál odpovídá aktuálnímu importu podkladů včetně fotografií, skenů a PDF bez textové vrstvy, obrazově klíčových map, grafů a schémat, obrázků a Word Equation vložených do DOCX, STEM zápisu i nové all-subject vrstvě pro jazyky, zeměpis, dějepis, ZSV, informatiku, hudební/výtvarnou/tělesnou výchovu a humanitní předměty, tvorbě variant, přímému audio/video a GeoJSON vstupu, deterministickým odborným rendererům notace, chemie, obvodů, map, matematiky, časových os, algoritmických diagramů, genetiky, fyziky a Office DrawingML, výběru Úsporný / Doporučený / Důkladný, selektivnímu zapracování kontroly kvality a PDF workflow. <strong>Manuál uvnitř AI Studia se otevírá ve stejném pracovním prostoru, nikoli v nové kartě.</strong></div></div>
++  <div class="notice"><div class="notice-icon">↗</div><div><strong>Aktuální stav · Diferenciátor 1.3.43</strong><br>Manuál odpovídá aktuálnímu importu podkladů včetně fotografií, skenů a PDF bez textové vrstvy, obrazově klíčových map, grafů a schémat, obrázků a Word Equation vložených do DOCX, STEM zápisu i nové all-subject vrstvě pro jazyky, zeměpis, dějepis, ZSV, informatiku, hudební/výtvarnou/tělesnou výchovu a humanitní předměty, tvorbě variant, přímému audio/video a GeoJSON vstupu, deterministickým odborným rendererům notace, chemie, obvodů, map, matematiky, časových os, algoritmických diagramů, genetiky, fyziky a Office DrawingML, výběru Úsporný / Doporučený / Důkladný, selektivnímu zapracování kontroly kvality a PDF workflow. <strong>Manuál uvnitř AI Studia se otevírá ve stejném pracovním prostoru, nikoli v nové kartě.</strong></div></div>
+ </section>
+ <section>
+   <div class="section-head"><div><div class="kicker">Vyber svůj cíl</div><h2>Co chceš udělat?</h2><p>Klikni na nejbližší scénář. Zobrazí se nejkratší doporučená cesta.</p></div></div>
+@@ -117,7 +117,7 @@
+   <div class="section-head"><div><div class="kicker">Před prvním ostrým použitím</div><h2>Kontrolní seznam</h2><p>Stav se ukládá pouze lokálně v tomto prohlížeči.</p></div><button class="chipbtn" id="resetProgress">Vynulovat průchod</button></div>
+   <div class="checklist" id="checklist"><label class="check"><input type="checkbox"><span>Rozumím účelu aplikace a vybral(a) jsem správný pracovní scénář.</span></label><label class="check"><input type="checkbox"><span>Prošel/prošla jsem mapu prostředí a vím, kde se nachází hlavní pracovní kroky.</span></label><label class="check"><input type="checkbox"><span>Dokončil(a) jsem interaktivní prohlídku krok za krokem.</span></label><label class="check"><input type="checkbox"><span>Znám bezpečnostní pravidla a vím, které údaje nesmí odejít do AI.</span></label><label class="check"><input type="checkbox"><span>Vyzkoušel(a) jsem aplikaci na neostrém testovacím příkladu.</span></label><label class="check"><input type="checkbox"><span>Před prvním ostrým použitím provedu finální lidskou kontrolu výstupu.</span></label></div>
+ </section>
+-<div class="footer" data-ghrab-footer>Interaktivní manuál 1.0.3 · cílová aplikace Diferenciátor v1.3.42 · integrováno do aplikace a AI Studia GHRAB<br>© 2026 Daniel Baláž · Gymnázium, Ostrava-Hrabůvka</div>
++<div class="footer" data-ghrab-footer>Interaktivní manuál 1.0.3 · cílová aplikace Diferenciátor v1.3.43 · integrováno do aplikace a AI Studia GHRAB<br>© 2026 Daniel Baláž · Gymnázium, Ostrava-Hrabůvka</div>
+ 
+ <section class="ghrab-central-error-guide" style="margin:20px 0;padding:18px;border:1px solid color-mix(in srgb,currentColor 22%,transparent);border-radius:14px;background:color-mix(in srgb,currentColor 5%,transparent)">
+   <strong style="display:block;margin-bottom:7px">Potřebujete nahlásit technickou chybu?</strong>
+@@ -130,7 +130,7 @@
+ </div>
+ <div class="search-overlay" id="searchOverlay"><div class="searchbox"><input id="searchInput" placeholder="Hledat v manuálu…"><div class="results" id="searchResults"></div></div></div>
+ <script type="application/ghrab-protected" data-ghrab-protected>
+-const MANUAL={id:"differentiator",version:"1.3.42",map:[{"n": "1", "title": "AI a profil", "desc": "Serverless klíč pro relaci a společná volba profilu Úsporný / Doporučený / Důkladný; ve školním režimu vybírá konkrétní model server."}, {"n": "2", "title": "Zdrojový materiál", "desc": "Vložený text nebo soubor DOCX, XLSX, PPTX, PDF, GeoJSON, audio/video a další podporované formáty; u fotografií a skenů lze lokálně upravit pořadí, otočení, výřez a čtecí kontrast pro AI; u map, grafů a schémat učitel rozhodne, zda se původní obraz zachová ve výstupu, použije jen jako reference nebo ignoruje. K PDF lze přidat přesný snímek/výřez vizuálního podkladu."}, {"n": "3", "title": "Pedagogický kontext", "desc": "Předmět, CEFR u jazyků, ročník vybraný z nabídky pro osmileté nebo čtyřleté gymnázium, ručně zadaný čas, očekávaný výstup, bodování a závazný vlastní pokyn učitele."}, {"n": "4", "title": "Rozsah změny", "desc": "Co se má změnit a jak zachovat strukturu; doporučené automatické volby vždy přímo vysvětlují, co se skutečně stane."}, {"n": "5", "title": "Úroveň varianty", "desc": "Jednodušší, Normální nebo Obtížnější s jasným stavem výběru; při „Stejný obsah, jiná obtížnost“ Normální není dostupná."}, {"n": "6", "title": "Výsledek", "desc": "Jedna varianta nebo sada, učitelská poznámka, řešení, editace a kontrola kvality s výběrem návrhů, které se mají zapracovat."}, {"n": "7", "title": "PDF workflow", "desc": "Náhled, případné lokální doplnění bodů, finální učitelské potvrzení a PDF pojmenované podle nadpisu materiálu."}],tour:[{"title": "Vlož spolehlivý zdroj", "body": "Vlož text nebo načti soubor. U map, grafů, schémat a dalších obrazově klíčových částí zkontroluj nový panel Obrazové podklady a rozhodni, co se má zachovat ve výstupu. U fotografie celé stránky můžeš před načtením upravit pořadí, otočení a kontrast čtecí kopie nebo potřebnou oblast lokálně vyříznout bez dalšího AI dotazu. PDF se čte multimodálně i bez textové vrstvy; pokud chceš mapu či schéma zachovat pixelově, přidej k PDF snímek příslušné stránky/výřezu. DOCX/PPTX/XLSX předávají podporované obrázky, grafy a běžné DrawingML tvary; nepodporovaný nativní objekt se musí označit k vizuální kontrole. GeoJSON se validuje lokálně a audio/video se drží jako zdroj oddělený od žákovského textu; po importu vždy projdi celý získaný obsah.", "tip": "Zdroj je výchozí autorita. Obrazově klíčový podklad nenechávej jen jako textový přepis; pokud jej žák potřebuje k řešení, nastav jeho zachování ve výstupu."}, {"title": "Doplň pedagogický kontext", "body": "Předmět, ročník, čas a výukový cíl pomáhají odlišit skutečnou diferenciaci od pouhého zjednodušení textu. Ročník vyber z nabídky pro osmileté (prima–oktáva) nebo čtyřleté gymnázium (1.–4. ročník); aplikace k němu předá AI i orientační věk. Čas na vypracování napiš ručně.", "tip": "CEFR zapínej jen u jazykového předmětu nebo vědomě vynuceného případu."}, {"title": "Řekni, co smí a nesmí změnit", "body": "Urči, zda má zůstat stejný obsah, formát, struktura nebo pouze cíl. U doporučených automatických voleb si přečti živé vysvětlení pod polem; čím přesnější hranice, tím předvídatelnější výstup.", "tip": "Pro paralelní testy obvykle zachovej strukturu; pro pracovní list může být volnější."}, {"title": "Vyber úroveň podpory", "body": "Jednodušší přidává oporu, slovní banku či volby. Normální je výchozí standard. Obtížnější ubírá oporu a přidává otevřenější nebo hlubší zpracování. Při režimu „Stejný obsah, jiná obtížnost“ se Normální automaticky vypne.", "tip": "Diferenciace nesmí tajně změnit hlavní měřenou dovednost."}, {"title": "Vytvoř jednu nebo tři verze", "body": "Jedna verze šetří API dotazy. Celá sada vytvoří všechny tři úrovně postupně; částečný úspěch zachová hotové varianty.", "tip": "Označení ⚡ 3+ znamená nejméně tři dotazy a případné opravné pokusy."}, {"title": "Porovnej varianty mezi sebou", "body": "Zkontroluj, zda mají stejný cíl, podobný rozsah a jasně odlišnou míru opory. Projdi také řešení a učitelskou poznámku.", "tip": "Obtížnější neznamená jiné učivo; jednodušší neznamená bezcenné úlohy."}, {"title": "Uprav a spusť kontrolu kvality", "body": "Hotový materiál lze ručně editovat. Kontrola kvality hledá rozpory, nejasnosti a problémy v řešení; u návrhů Opravit / Doporučení zaškrtni jen ty, které chceš skutečně zapracovat.", "tip": "Po ruční změně vždy znovu ověř řešení a návazné poznámky."}, {"title": "Exportuj až po finálním potvrzení", "body": "Před PDF otevři náhled a potvrď, že jsi prošel zadání, řešení i citlivé údaje. V režimu „Body doplním sám/sama“ nejprve lokálně vyplníš body jednotlivých úloh. Doporučený název souboru se bere z hlavního nadpisu materiálu.", "tip": "Potvrzení není formalita; je to poslední lidská bezpečnostní brána."}]};
++const MANUAL={id:"differentiator",version:"1.3.43",map:[{"n": "1", "title": "AI a profil", "desc": "Serverless klíč pro relaci a společná volba profilu Úsporný / Doporučený / Důkladný; ve školním režimu vybírá konkrétní model server."}, {"n": "2", "title": "Zdrojový materiál", "desc": "Vložený text nebo soubor DOCX, XLSX, PPTX, PDF, GeoJSON, audio/video a další podporované formáty; u fotografií a skenů lze lokálně upravit pořadí, otočení, výřez a čtecí kontrast pro AI; u map, grafů a schémat učitel rozhodne, zda se původní obraz zachová ve výstupu, použije jen jako reference nebo ignoruje. K PDF lze přidat přesný snímek/výřez vizuálního podkladu."}, {"n": "3", "title": "Pedagogický kontext", "desc": "Předmět, CEFR u jazyků, ročník vybraný z nabídky pro osmileté nebo čtyřleté gymnázium, ručně zadaný čas, očekávaný výstup, bodování a závazný vlastní pokyn učitele."}, {"n": "4", "title": "Rozsah změny", "desc": "Co se má změnit a jak zachovat strukturu; doporučené automatické volby vždy přímo vysvětlují, co se skutečně stane."}, {"n": "5", "title": "Úroveň varianty", "desc": "Jednodušší, Normální nebo Obtížnější s jasným stavem výběru; při „Stejný obsah, jiná obtížnost“ Normální není dostupná."}, {"n": "6", "title": "Výsledek", "desc": "Jedna varianta nebo sada, učitelská poznámka, řešení, editace a kontrola kvality s výběrem návrhů, které se mají zapracovat."}, {"n": "7", "title": "PDF workflow", "desc": "Náhled, případné lokální doplnění bodů, finální učitelské potvrzení a PDF pojmenované podle nadpisu materiálu."}],tour:[{"title": "Vlož spolehlivý zdroj", "body": "Vlož text nebo načti soubor. U map, grafů, schémat a dalších obrazově klíčových částí zkontroluj nový panel Obrazové podklady a rozhodni, co se má zachovat ve výstupu. U fotografie celé stránky můžeš před načtením upravit pořadí, otočení a kontrast čtecí kopie nebo potřebnou oblast lokálně vyříznout bez dalšího AI dotazu. PDF se čte multimodálně i bez textové vrstvy; pokud chceš mapu či schéma zachovat pixelově, přidej k PDF snímek příslušné stránky/výřezu. DOCX/PPTX/XLSX předávají podporované obrázky, grafy a běžné DrawingML tvary; nepodporovaný nativní objekt se musí označit k vizuální kontrole. GeoJSON se validuje lokálně a audio/video se drží jako zdroj oddělený od žákovského textu; po importu vždy projdi celý získaný obsah.", "tip": "Zdroj je výchozí autorita. Obrazově klíčový podklad nenechávej jen jako textový přepis; pokud jej žák potřebuje k řešení, nastav jeho zachování ve výstupu."}, {"title": "Doplň pedagogický kontext", "body": "Předmět, ročník, čas a výukový cíl pomáhají odlišit skutečnou diferenciaci od pouhého zjednodušení textu. Ročník vyber z nabídky pro osmileté (prima–oktáva) nebo čtyřleté gymnázium (1.–4. ročník); aplikace k němu předá AI i orientační věk. Čas na vypracování napiš ručně.", "tip": "CEFR zapínej jen u jazykového předmětu nebo vědomě vynuceného případu."}, {"title": "Řekni, co smí a nesmí změnit", "body": "Urči, zda má zůstat stejný obsah, formát, struktura nebo pouze cíl. U doporučených automatických voleb si přečti živé vysvětlení pod polem; čím přesnější hranice, tím předvídatelnější výstup.", "tip": "Pro paralelní testy obvykle zachovej strukturu; pro pracovní list může být volnější."}, {"title": "Vyber úroveň podpory", "body": "Jednodušší přidává oporu, slovní banku či volby. Normální je výchozí standard. Obtížnější ubírá oporu a přidává otevřenější nebo hlubší zpracování. Při režimu „Stejný obsah, jiná obtížnost“ se Normální automaticky vypne.", "tip": "Diferenciace nesmí tajně změnit hlavní měřenou dovednost."}, {"title": "Vytvoř jednu nebo tři verze", "body": "Jedna verze šetří API dotazy. Celá sada vytvoří všechny tři úrovně postupně; částečný úspěch zachová hotové varianty.", "tip": "Označení ⚡ 3+ znamená nejméně tři dotazy a případné opravné pokusy."}, {"title": "Porovnej varianty mezi sebou", "body": "Zkontroluj, zda mají stejný cíl, podobný rozsah a jasně odlišnou míru opory. Projdi také řešení a učitelskou poznámku.", "tip": "Obtížnější neznamená jiné učivo; jednodušší neznamená bezcenné úlohy."}, {"title": "Uprav a spusť kontrolu kvality", "body": "Hotový materiál lze ručně editovat. Kontrola kvality hledá rozpory, nejasnosti a problémy v řešení; u návrhů Opravit / Doporučení zaškrtni jen ty, které chceš skutečně zapracovat.", "tip": "Po ruční změně vždy znovu ověř řešení a návazné poznámky."}, {"title": "Exportuj až po finálním potvrzení", "body": "Před PDF otevři náhled a potvrď, že jsi prošel zadání, řešení i citlivé údaje. V režimu „Body doplním sám/sama“ nejprve lokálně vyplníš body jednotlivých úloh. Doporučený název souboru se bere z hlavního nadpisu materiálu.", "tip": "Potvrzení není formalita; je to poslední lidská bezpečnostní brána."}]};
+ const KEY='ghrab-manual-progress-'+MANUAL.id+'-'+MANUAL.version;
+ let state={tour:[],checks:[]};try{state=Object.assign(state,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(_){ }
+ function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(_){ } updateProgress()}
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/modules/algorithm-trace-engine.js ./src/modules/algorithm-trace-engine.js
+--- /mnt/data/diff_baseline_1.3.42/src/modules/algorithm-trace-engine.js	2026-09-06 13:01:30.000000000 +0000
++++ ./src/modules/algorithm-trace-engine.js	2026-09-09 09:37:11.440141881 +0000
+@@ -1,4 +1,4 @@
+-/* Diferenciator 1.3.42 - bounded school pseudocode tracer. No eval, no Function, no network. */
++/* Diferenciator 1.3.43 - bounded school pseudocode tracer. No eval, no Function, no network. */
+ const DEFAULT_MAX_STEPS=600,HARD_MAX_STEPS=2000,MAX_ARRAY=200,MAX_PROGRAM_LINES=160;
+ const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k),finite=v=>Number.isFinite(Number(v)),clone=v=>Array.isArray(v)?v.map(clone):v,txt=(v,n=160)=>String(v??'').trim().slice(0,n);
+ function fail(message,line=0){const e=new Error(message);e.line=line;throw e}
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/modules/cross-subject-engine.js ./src/modules/cross-subject-engine.js
+--- /mnt/data/diff_baseline_1.3.42/src/modules/cross-subject-engine.js	2026-09-06 13:01:30.000000000 +0000
++++ ./src/modules/cross-subject-engine.js	2026-09-09 09:37:11.441749163 +0000
+@@ -1,4 +1,4 @@
+-/* Diferenciator 1.3.42 - deterministic cross-subject diagram engines. No eval, no network. */
++/* Diferenciator 1.3.43 - deterministic cross-subject diagram engines. No eval, no network. */
+ const finite=v=>Number.isFinite(Number(v)),num=(v,d=0)=>finite(v)?Number(v):d,txt=(v,n=120)=>String(v??'').trim().slice(0,n),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ 
+ function uniqueId(value,fallback,used){let id=txt(value||fallback,40)||fallback,base=id,k=2;while(used.has(id))id=base+'-'+k++;used.add(id);return id}
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/modules/reaction-engine.js ./src/modules/reaction-engine.js
+--- /mnt/data/diff_baseline_1.3.42/src/modules/reaction-engine.js	2026-09-06 13:01:30.000000000 +0000
++++ ./src/modules/reaction-engine.js	2026-09-09 09:37:11.443231282 +0000
+@@ -1,4 +1,4 @@
+-/* Diferenciator 1.3.42 - bounded school reaction balancer and simple stoichiometry. */
++/* Diferenciator 1.3.43 - bounded school reaction balancer and simple stoichiometry. */
+ const txt=(v,n=180)=>String(v??'').trim().slice(0,n),gcd=(a,b)=>{a=a<0n?-a:a;b=b<0n?-b:b;while(b){const t=a%b;a=b;b=t}return a||1n},lcm=(a,b)=>a/gcd(a,b)*b;
+ class Q{constructor(n=0n,d=1n){if(d===0n)throw Error('Nulový jmenovatel.');if(d<0n){n=-n;d=-d}const g=gcd(n,d);this.n=n/g;this.d=d/g}add(b){b=Q.of(b);return new Q(this.n*b.d+b.n*this.d,this.d*b.d)}sub(b){b=Q.of(b);return new Q(this.n*b.d-b.n*this.d,this.d*b.d)}mul(b){b=Q.of(b);return new Q(this.n*b.n,this.d*b.d)}div(b){b=Q.of(b);if(b.n===0n)throw Error('Dělení nulou.');return new Q(this.n*b.d,this.d*b.n)}neg(){return new Q(-this.n,this.d)}zero(){return this.n===0n}static of(x){return x instanceof Q?x:new Q(BigInt(x),1n)}}
+ const WEIGHTS=Object.freeze({H:1.008,He:4.0026,Li:6.94,Be:9.0122,B:10.81,C:12.011,N:14.007,O:15.999,F:18.998,Ne:20.18,Na:22.99,Mg:24.305,Al:26.982,Si:28.085,P:30.974,S:32.06,Cl:35.45,Ar:39.948,K:39.098,Ca:40.078,Sc:44.956,Ti:47.867,V:50.942,Cr:51.996,Mn:54.938,Fe:55.845,Co:58.933,Ni:58.693,Cu:63.546,Zn:65.38,Ga:69.723,Ge:72.63,As:74.922,Se:78.971,Br:79.904,Kr:83.798,Rb:85.468,Sr:87.62,Ag:107.868,Cd:112.414,Sn:118.71,I:126.904,Ba:137.327,Pt:195.084,Au:196.967,Hg:200.592,Pb:207.2});
+diff -ruN '--exclude=dist' '--exclude=dist-school-server' '--exclude=test-results' '--exclude=evidence' '--exclude=release-integrity' '--exclude=sbom' '--exclude=security-evidence-manifest.json' /mnt/data/diff_baseline_1.3.42/src/sw.js ./src/sw.js
+--- /mnt/data/diff_baseline_1.3.42/src/sw.js	2026-09-06 13:01:30.000000000 +0000
++++ ./src/sw.js	2026-09-09 09:37:30.810609248 +0000
+@@ -1,14 +1,13 @@
+ const GHRAB_SW_CONTRACT='ghrab-service-worker-v1';
+ /* GHRAB service-worker contract v1 · update activation is user-controlled. */
+-const APP_VERSION = "1.3.42";
+-const CACHE_NAME = "ghrab-differentiator-v1.3.42";
++const APP_VERSION = "1.3.43";
++const CACHE_NAME = "ghrab-differentiator-v1.3.43";
+ const CACHE_PREFIXES = ["ghrab-differentiator-v", "diferenciator-"];
+ const CORE_ASSETS = [
+   "./",
+   "./index.html",
+   "./manifest.webmanifest",
+   "./access/access-gate.css",
+-  "./access/deployment-config.js",
+   "./access/reporter-bootstrap.js",
+   "./access/error-reporter.js",
+   "./access/error-reporter.css",
+@@ -71,6 +70,25 @@
+   }
+ }
+ 
++async function networkOnlyNoStore(request) {
++  return fetch(request, { cache: 'no-store' });
++}
++
++function isSecurityCriticalRequest(url, scopePath) {
++  const relative = url.pathname.slice(scopePath.length);
++  return relative === 'runtime-config.js' ||
++    relative === 'config/deployment.json' ||
++    relative === 'config/deployment.school-server.json' ||
++    relative === 'access/deployment-config.js' ||
++    relative === 'ghrab/ghrab-platform.js' ||
++    relative === 'release-integrity.json' ||
++    relative === 'release-integrity.sig' ||
++    relative === 'integrity-status.json' ||
++    relative.endsWith('/app-guard.js') ||
++    relative.endsWith('/access-control.js') ||
++    relative.endsWith('/revoked-access.json');
++}
++
+ async function cacheFirst(request) {
+   const cache = await caches.open(CACHE_NAME);
+   const cached = await cache.match(request);
+@@ -95,7 +113,12 @@
+   const url = new URL(request.url);
+   if (url.origin !== self.location.origin) return;
+   const scopePath = new URL('./', self.location.href).pathname;
+-  if (!url.pathname.startsWith(scopePath) || request.cache === 'no-store' || isRuntimeRequest(url, scopePath)) return;
++  if (!url.pathname.startsWith(scopePath)) return;
++  if (isSecurityCriticalRequest(url, scopePath)) {
++    event.respondWith(networkOnlyNoStore(request));
++    return;
++  }
++  if (request.cache === 'no-store' || isRuntimeRequest(url, scopePath)) return;
+   if (request.mode === 'navigate') {
+     const fallback = new URL(url.pathname.includes('/manual/') ? 'manual/index.html' : 'index.html', self.registration.scope).href;
+     event.respondWith(networkFirst(request, fallback));

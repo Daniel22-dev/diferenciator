@@ -1,0 +1,33 @@
+{
+  "schema": "ghrab-build-provenance-v1",
+  "subject": {
+    "name": "differentiator-1.3.43-GARP2.5-SHIELD-DEPLOYMENT-PAYLOAD.zip",
+    "sha256": "a375425c5d06cf65a0bfa16d976a9e3649317b4773641e4fc1feade971b0256f"
+  },
+  "source": {
+    "repository": null,
+    "revision": null,
+    "sourcePackageSha256": "955baa004d126974cc9d25774e5eb84e948d472c937c2c226ce334e9b66d6c2e"
+  },
+  "builder": {
+    "id": "local-untrusted-builder",
+    "workflow": null,
+    "entrypoint": "npm run build && node scripts/build-school-profile.mjs"
+  },
+  "invocation": {
+    "startedAt": null,
+    "finishedAt": "2026-09-09T09:44:35.607Z",
+    "lockfileSha256": "f4c51a5258b87b1d2984e2966de299ca63956dc82fbf716281e0ed1a97b30aa8",
+    "parameters": {
+      "profile": "school-server-prep"
+    }
+  },
+  "releaseIntegrity": {
+    "artifactDigest": null
+  },
+  "assurance": {
+    "slsaReference": "v1.2",
+    "claimedSlsaLevel": null,
+    "note": "Custom GARP provenance is not by itself a SLSA level attestation."
+  }
+}

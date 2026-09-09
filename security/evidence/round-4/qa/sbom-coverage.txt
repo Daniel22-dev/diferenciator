@@ -1,0 +1,14 @@
+
+> ghrab-diferenciator@1.3.46 qa:garp25:sbom-coverage
+> node scripts/qa-garp25-sbom-coverage.mjs
+
+{
+  "status": "PASS",
+  "sbomPath": "security/sbom/differentiator-1.3.46.cdx.json",
+  "expectedLockPackages": 67,
+  "components": 67,
+  "uniquePurl": 67,
+  "rrwebCssom08": true,
+  "phantomCssstyle08": false,
+  "errors": []
+}

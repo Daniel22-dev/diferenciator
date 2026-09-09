@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "output": "security/evidence/ai-assurance-fingerprint.json",
+  "files": 20,
+  "detectedCandidates": 20,
+  "untracked": [],
+  "aggregate": "7e19c156555e3f7f7646fbe6c421c2838f663274076e7d12a445791872ff0ba0",
+  "schema": "ghrab-ai-assurance-fingerprint-v2"
+}
+{
+  "status": "PASS",
+  "files": 20,
+  "detectedCandidates": 20,
+  "untracked": [],
+  "aggregate": "7e19c156555e3f7f7646fbe6c421c2838f663274076e7d12a445791872ff0ba0",
+  "expected": "7e19c156555e3f7f7646fbe6c421c2838f663274076e7d12a445791872ff0ba0",
+  "schema": "ghrab-ai-assurance-fingerprint-v2"
+}
+{
+  "status": "PASS",
+  "files": 20,
+  "aggregate": "7e19c156555e3f7f7646fbe6c421c2838f663274076e7d12a445791872ff0ba0",
+  "inventory": "/mnt/data/diff_round2/security/ai-boundary-files.json"
+}
