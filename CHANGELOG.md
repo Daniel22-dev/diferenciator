@@ -1,3 +1,21 @@
+## 1.3.48 — MASTER cleanup a auto-patch E2E (2026-09-18)
+
+- Bez změny aplikační logiky, pedagogického workflow, UI nebo AI operací.
+- Pre-release `release-acceptance.json` zůstává pouze ve `src/config/` a build jej explicitně odstraňuje z veřejného runtime artefaktu.
+- P5 nově fail-closed ověřuje, že `dist/config/release-acceptance.json` neexistuje.
+- Živý deployment stav je autoritativně doložen `release-integrity.json`, chráněným GitHub P5/Safe Promotion/Pages řetězcem a AI Studio `release-wave`.
+- Patch 1.3.48 slouží zároveň jako první ostrý automatický PATCH test nad přijatým 1.3.47 baseline.
+- Regenerují se aktivní verze, CycloneDX SBOM a AI assurance fingerprint; historické round-4 evidence 1.3.46 zůstávají nedotčené.
+
+## 1.3.47 — GARP 2.5.1 / N5 Safe Promotion baseline (2026-09-18)
+
+- Povinné N5 negativní kontroly pro private JWK `d`, encrypted private PEM a private PGP.
+- Plný GARP 2.5.1 release gate je zapojen do skutečné P5/release cesty.
+- Safe Promotion používá `candidate → PR → protected main`; produkční deploy vychází pouze z ověřeného `main`.
+- Release identity v2 svazuje verzi, source SHA, artifact digest, SBOM, provenance a evidence; signing stav je explicitně TRANSITIONAL.
+- Po live Pages verifikaci aplikace odesílá `app-updated` do AI Studia; 1.3.47 je přijatý auto-patch baseline.
+- Pedagogická logika a UI se nemění.
+
 ## 1.3.42 — Platform 1.1.2 Studio manifest alignment (2026-09-06)
 
 - Zdrojový Studio manifest byl srovnán s reálnou Platformou 1.1.2 a rozsahem `>=1.1.2 <2.0.0`.
