@@ -1,84 +1,210 @@
-name: Build and deploy after P5 R2
+name: GHRAB QA and deploy
 
 on:
-  workflow_run:
-    workflows: ["P5 R2 pre-production release gate"]
-    types: [completed]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.event == 'push' &&
-       github.event.workflow_run.head_branch == 'main')
+  qa-build:
+    permissions:
+      contents: read
+      pull-requests: read
+      pages: write
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      app_version: ${{ steps.release-identity.outputs.app_version }}
+      artifact_digest: ${{ steps.release-identity.outputs.artifact_digest }}
+      manifest_sha256: ${{ steps.release-identity.outputs.manifest_sha256 }}
+      sbom_sha256: ${{ steps.release-identity.outputs.sbom_sha256 }}
+      evidence_manifest_sha256: ${{ steps.release-identity.outputs.evidence_manifest_sha256 }}
+      build_provenance_sha256: ${{ steps.release-identity.outputs.build_provenance_sha256 }}
+      assurance_mode: ${{ steps.release-identity.outputs.assurance_mode }}
+      release_stage: ${{ steps.release-identity.outputs.release_stage }}
+      garp_profile: ${{ steps.release-identity.outputs.garp_profile }}
+      gate: ${{ steps.release-identity.outputs.gate }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
+          registry-url: https://registry.npmjs.org
+
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
-      - name: Build deploy artifact
-        run: npm run build
-      - name: Verify platform conformance of deploy artifact
-        run: npm run qa:platform
+
+      - name: Verify deploy originates from Safe Promotion
+        run: npm run qa:promotion-origin
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Verify protected deployment branch
+        run: npm run qa:github-governance
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Verify pinned audit tools
+        run: |
+          node -e "const p=require('./node_modules/axe-core/package.json'); if(p.version!=='4.12.1') process.exit(1)"
+          node -e "const p=require('./node_modules/playwright/package.json'); if(p.version!=='1.61.1') process.exit(1)"
+
+      - name: Run repository secret scan
+        run: npm run qa:secrets
+
+      - name: Install pinned Playwright Chromium
+        shell: bash
+        run: |
+          npx playwright install --with-deps chromium
+          node -e "console.log('CHROMIUM_PATH=' + require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
+
+      - name: Install PDF audit dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+          pdftotext -v
+
+      - name: Enforce full P5 R2 + GARP 2.5.1 + N5 release gate
+        run: npm run qa:p5:ci
+
+      - name: Verify AI Studio dispatch credential
+        shell: bash
+        env:
+          AI_STUDIO_DISPATCH_TOKEN: ${{ secrets.AI_STUDIO_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$AI_STUDIO_DISPATCH_TOKEN" ]; then
+            echo "::error::Missing AI_STUDIO_DISPATCH_TOKEN. Deploy is blocked because AI Studio could not be notified safely."
+            exit 1
+          fi
+
+      - name: Prepare canonical Pages artifact and release identity
+        run: npm run prepare:pages
+
+      - name: Export verified release identity
+        id: release-identity
+        shell: bash
+        run: |
+          node <<'NODE' >> "$GITHUB_OUTPUT"
+          const fs = require('node:fs');
+          const integrity = JSON.parse(fs.readFileSync('dist/release-integrity.json', 'utf8'));
+          const required = {
+            app_version: integrity.version,
+            artifact_digest: integrity.artifactDigest,
+            manifest_sha256: integrity.manifestSha256,
+            sbom_sha256: integrity.sbomSha256,
+            evidence_manifest_sha256: integrity.evidenceManifestSha256,
+            build_provenance_sha256: integrity.buildProvenanceSha256,
+            assurance_mode: integrity.assuranceMode,
+            release_stage: integrity.releaseStage,
+            garp_profile: integrity.garpProfile,
+            gate: integrity.gate,
+          };
+          if (integrity.releaseStage !== 'LIVE-PUBLIC-PAGES') {
+            console.error(`::error::Release record is not a live Pages release (releaseStage=${integrity.releaseStage}). Deploy is blocked.`);
+            process.exit(1);
+          }
+          const missing = Object.entries(required).filter(([, value]) => !value).map(([key]) => key);
+          if (missing.length) {
+            console.error(`::error::Release identity is incomplete: ${missing.join(', ')}`);
+            process.exit(1);
+          }
+          for (const [key, value] of Object.entries(required)) {
+            if (/[\r\n]/.test(String(value))) {
+              console.error('::error::Release identity value is not single-line.');
+              process.exit(1);
+            }
+            process.stdout.write(`${key}=${value}\n`);
+          }
+          NODE
+
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ghrab-qa-${{ github.sha }}
+          path: |
+            qa-results
+            dist/qa-p5-*.json
+            dist/qa-p3-browser-report.json
+            dist/quality-report.json
+
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           path: dist
 
   deploy:
-    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    needs: qa-build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment_1.outputs.page_url || steps.deployment_2.outputs.page_url || steps.deployment_3.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages (attempt 1/3)
-        id: deployment_1
-        continue-on-error: true
+      - id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
 
-      - name: Wait before Pages retry 2
-        if: steps.deployment_1.outcome == 'failure'
+  notify-ai-studio:
+    permissions:
+      contents: read
+    needs: [qa-build, deploy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Verify the live release before notifying AI Studio
+        env:
+          GHRAB_LIVE_URL: ${{ needs.deploy.outputs.page_url }}
+          GHRAB_LIVE_APP_ID: differentiator
+          GHRAB_LIVE_VERSION: ${{ needs.qa-build.outputs.app_version }}
+          GHRAB_LIVE_SOURCE_SHA: ${{ github.sha }}
+          GHRAB_LIVE_ARTIFACT_DIGEST: ${{ needs.qa-build.outputs.artifact_digest }}
+          GHRAB_LIVE_MANIFEST_SHA256: ${{ needs.qa-build.outputs.manifest_sha256 }}
+          GHRAB_LIVE_OUT: ${{ runner.temp }}/live-release.json
+        run: npm run verify:live-release
+
+      - name: Dispatch app-updated event to AI Studio
         shell: bash
-        run: sleep 60
-
-      - name: Deploy to GitHub Pages (attempt 2/3)
-        id: deployment_2
-        if: steps.deployment_1.outcome == 'failure'
-        continue-on-error: true
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
-
-      - name: Wait before Pages retry 3
-        if: steps.deployment_1.outcome == 'failure' && steps.deployment_2.outcome == 'failure'
-        shell: bash
-        run: sleep 180
-
-      - name: Deploy to GitHub Pages (attempt 3/3)
-        id: deployment_3
-        if: steps.deployment_1.outcome == 'failure' && steps.deployment_2.outcome == 'failure'
-        continue-on-error: true
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
-
-      - name: Enforce successful Pages deployment
-        if: steps.deployment_1.outcome != 'success' && steps.deployment_2.outcome != 'success' && steps.deployment_3.outcome != 'success'
-        shell: bash
+        env:
+          AI_STUDIO_DISPATCH_TOKEN: ${{ secrets.AI_STUDIO_DISPATCH_TOKEN }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
+          DEPLOYED_URL: ${{ needs.deploy.outputs.page_url }}
+          APP_VERSION: ${{ needs.qa-build.outputs.app_version }}
+          ARTIFACT_DIGEST: ${{ needs.qa-build.outputs.artifact_digest }}
+          MANIFEST_SHA256: ${{ needs.qa-build.outputs.manifest_sha256 }}
+          SBOM_SHA256: ${{ needs.qa-build.outputs.sbom_sha256 }}
+          EVIDENCE_MANIFEST_SHA256: ${{ needs.qa-build.outputs.evidence_manifest_sha256 }}
+          BUILD_PROVENANCE_SHA256: ${{ needs.qa-build.outputs.build_provenance_sha256 }}
+          ASSURANCE_MODE: ${{ needs.qa-build.outputs.assurance_mode }}
+          RELEASE_STAGE: ${{ needs.qa-build.outputs.release_stage }}
+          GARP_PROFILE: ${{ needs.qa-build.outputs.garp_profile }}
+          RELEASE_GATE: ${{ needs.qa-build.outputs.gate }}
+          LIVE_RELEASE_FILE: ${{ runner.temp }}/live-release.json
         run: |
-          echo "::error::GitHub Pages deployment failed after 3 bounded attempts. P5 R2 already passed; build and artifact upload succeeded, but the Pages service remained unavailable or returned a non-recoverable error."
-          exit 1
+          node scripts/build-ai-studio-dispatch.mjs             "$LIVE_RELEASE_FILE"             "$RUNNER_TEMP/ai-studio-dispatch.json"
+
+          curl --fail-with-body --silent --show-error             -X POST             -H "Accept: application/vnd.github+json"             -H "Authorization: Bearer $AI_STUDIO_DISPATCH_TOKEN"             -H "X-GitHub-Api-Version: 2022-11-28"             https://api.github.com/repos/Daniel22-dev/AI-Studio-GHRAB/dispatches             --data-binary "@$RUNNER_TEMP/ai-studio-dispatch.json"
+
+          echo "AI Studio dispatch accepted for $SOURCE_REPOSITORY@$SOURCE_SHA version $APP_VERSION"
