@@ -1,14 +1,14 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.47  
+**Aktuální verze:** 1.3.48  
 
-1.3.47 navazuje kumulativně na GARP 2.5.1 R4 z verze 1.3.46. Doplňuje povinné N5 negativní kontroly (privátní JWK, encrypted private PEM, private PGP), plný GARP release gate, Safe Promotion přes candidate → PR → chráněný main, strojově svázanou TRANSITIONAL release identity a řízený AI Studio auto-patch. Pedagogická logika a UI se nemění.
+1.3.48 je metadata-only MASTER cleanup nad ověřeným auto-patch baseline 1.3.47. Pre-release `release-acceptance.json` zůstává pouze ve zdrojích a P5 fail-closed blokuje jeho publikaci do runtime `dist`; živý stav releasu dokládají `release-integrity.json`, chráněný GitHub release chain a AI Studio `release-wave`. Pedagogická logika, UI, AI operace a bezpečnostní baseline se nemění.
 **Platforma:** GHRAB Platform 1.1.2 · etapa P5
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.47
+- **Verze:** 1.3.48
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž
