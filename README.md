@@ -17,7 +17,7 @@ Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
 Obsah tohoto balíčku nahraj přímo do kořene nového repozitáře. Složky `.github`, `src`, `scripts` a `dist` musí být přímo v kořeni, nikoli uvnitř další složky.
 
-V **Settings → Pages** nastav **Source: GitHub Actions**. Každý push do větve `main` provede build, interní testy a nasazení.
+V **Settings → Pages** nastav **Source: GitHub Actions**. Produkční `main` je chráněný; změna se do něj dostává přes Safe Promotion a po GREEN `p5-release-gate` se spustí řízený Pages build, live verifikace a teprve potom případný `app-updated` do AI Studia.
 
 ## Lokální kontrola
 
