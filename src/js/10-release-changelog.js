@@ -5,7 +5,7 @@ const RELEASE = Object.freeze({
   build: '__BUILD__', // build id
   status: 'řízený pilot',
   changes: [
-    '1.3.48: MASTER cleanup — source-only acceptance, P5 runtime guard a ostrý auto-patch 1.3.47 → 1.3.48.',
+    '1.3.48: MASTER cleanup + auto-patch E2E.',
     '1.3.47: GARP 2.5.1 N5 + Safe Promotion + release identity + AI Studio auto-patch enrollment.',
     '1.3.46: GARP R4.',
     '1.3.45: GARP R3.',
