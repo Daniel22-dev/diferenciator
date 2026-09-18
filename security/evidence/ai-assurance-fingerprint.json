@@ -4,7 +4,7 @@
   "appVersion": "1.3.48",
   "algorithm": "SHA-256",
   "inventory": "security/ai-boundary-files.json",
-  "aggregate": "bc4b8d52ad39b01c114f82b08092d5a760c2c1933374d4b1044ee9dfb79d068c",
+  "aggregate": "51e3ab946443b87f01374babfceef0ae9bc13658074a6b0bab4d815aca8b9840",
   "files": [
     {
       "path": "src/config/all-subject-test-matrix.json",
@@ -32,7 +32,7 @@
     },
     {
       "path": "src/js/10-release-changelog.js",
-      "sha256": "44fd5551471034094d4a7311fc5be6f7bd075e686b8ce8f76d1e6ba9aac3df80"
+      "sha256": "eaa8d01f59f1dab6b4824dff37aa7d13b999533a10462c25d471d7341e13b772"
     },
     {
       "path": "src/js/20-zaklad-ui-projekty.js",
