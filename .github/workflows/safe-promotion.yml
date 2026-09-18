@@ -114,13 +114,29 @@ jobs:
             echo "::error::main is not protected; automatic merge is blocked."
             exit 1
           fi
-          if ! jq -e '.protection.required_status_checks.contexts // [] | index("p5-release-gate") != null' <<<"$branch_json" >/dev/null; then
-            echo "::error::main does not require p5-release-gate; automatic merge is blocked."
-            exit 1
-          fi
-          enforcement="$(jq -r '.protection.required_status_checks.enforcement_level // "off"' <<<"$branch_json")"
-          if [ "$enforcement" != "everyone" ]; then
-            echo "::error::main protection still allows an administrator bypass (enforcement=${enforcement}); automatic merge is blocked."
+
+          ruleset_ok="false"
+          while read -r ruleset_id; do
+            [ -n "$ruleset_id" ] || continue
+            ruleset_json="$(gh api "repos/${REPOSITORY}/rulesets/${ruleset_id}")"
+            if jq -e '
+              .enforcement == "active" and
+              .target == "branch" and
+              ((.conditions.ref_name.include // []) | any(. == "~DEFAULT_BRANCH" or . == "refs/heads/main")) and
+              ((.rules // []) | any(.type == "pull_request")) and
+              ((.rules // []) | any(
+                .type == "required_status_checks" and
+                ((.parameters.required_status_checks // []) | any(.context == "p5-release-gate"))
+              )) and
+              ((.bypass_actors // []) | length == 0)
+            ' <<<"$ruleset_json" >/dev/null; then
+              ruleset_ok="true"
+              break
+            fi
+          done < <(gh api "repos/${REPOSITORY}/rulesets" --jq '.[] | select(.enforcement == "active" and .target == "branch") | .id')
+
+          if [ "$ruleset_ok" != "true" ]; then
+            echo "::error::No active default-branch ruleset requires both pull requests and p5-release-gate without bypass actors; automatic merge is blocked."
             exit 1
           fi
 

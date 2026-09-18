@@ -1,0 +1,8 @@
+Diferenciator 1.3.48 — MASTER cleanup candidate
+Date: 2026-09-18
+Base: accepted and deployed 1.3.47 Safe Promotion / auto-patch baseline
+Functional application changes: none
+Cleanup change: source-only pre-release release-acceptance metadata is excluded from public runtime dist; P5 now fails if it is runtime-published.
+Live deployment authority: release-integrity.json + live studio-manifest.json + protected GitHub release chain + AI Studio release-wave.
+Historical evidence boundary: security/evidence/round-1..4 and 1.3.46 PREP evidence remain historical and are not rewritten as current 1.3.48 evidence.
+Target E2E: 1.3.48 must pass exact GitHub candidate P5, protected Safe Promotion, main P5, Pages live verification, app-updated, AI Studio patch eligibility, Studio Safe Promotion and Studio deploy before final closure.
