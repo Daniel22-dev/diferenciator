@@ -41,7 +41,8 @@ for(const rel of [
   'config/deployment.school-server.json',
   'config/deployment.school-server.example.json',
   'config/deployment.school-server-p0.json',
-  'runtime-config.school-server.js'
+  'runtime-config.school-server.js',
+  'config/release-acceptance.json'
 ]) rmSync(join(DIST,rel),{force:true});
 // App-owned JSON is shipped compactly. Canonical vendor artifacts under dist/ghrab stay byte-identical for hash conformance.
 const compactJson=[join(DIST,'ghrab-platform.consumer.json'),join(DIST,'ai-operations.json'),join(DIST,'studio-manifest.json'),join(DIST,'platform-build-info.json')];
