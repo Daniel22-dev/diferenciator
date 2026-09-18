@@ -2,13 +2,13 @@
   "schema": "ghrab-release-acceptance-v1",
   "stage": "P5",
   "appId": "differentiator",
-  "appVersion": "1.3.47",
-  "releaseStatus": "safe-promotion-candidate",
+  "appVersion": "1.3.48",
+  "releaseStatus": "pre-release-source-attestation",
   "primaryRuntime": {
     "mode": "standalone-github-pages",
     "serverRequired": false,
     "offlineCapable": true,
-    "currentUseApproved": true
+    "currentUseApproved": false
   },
   "github": {
     "status": "safe-promotion-gated",
@@ -35,7 +35,7 @@
     "screenReaderPilot": "manual-post-upload-checklist"
   },
   "handoff": {
-    "runtimeOnlyPackageIncluded": true,
+    "runtimeOnlyPackageIncluded": false,
     "sourceRepositoriesExcludedFromSchoolOperationalPackage": true,
     "legalTermsRequireSeparateAgreement": true
   },
@@ -43,7 +43,8 @@
   "runtimeAudit": {
     "required": true,
     "scriptsExecuted": true,
-    "transport": "local-http"
+    "transport": "source-only pre-release attestation; exact-lockfile GitHub CI/deployment pending",
+    "note": "1.3.48 is a metadata-only MASTER cleanup patch. This acceptance document is source-only and must not be copied into public runtime artifacts. Live deployment state is attested by release-integrity.json and AI Studio release-wave."
   },
   "garpReview": {
     "sourceAudit": "AUDIT-DIFERENCIATOR-1.3.30-2026-08-15.txt",
@@ -62,5 +63,13 @@
     "performanceBudgetLimitsRaised": false,
     "adversarialSpecialistGateRequired": true,
     "externalRuntimeAndProviderValidationPending": true
+  },
+  "note": "Source-only P5 acceptance input for Diferenciator 1.3.48; not an authority for live deployment state.",
+  "publication": {
+    "runtimeDistributed": false,
+    "liveStatusAuthority": [
+      "dist/release-integrity.json",
+      "AI Studio release-wave"
+    ]
   }
 }
