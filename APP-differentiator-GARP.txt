@@ -1,6 +1,6 @@
 GARP APPLICATION CARD — DIFFERENTIATOR
 App ID: differentiator
-Version: 1.3.47
+Version: 1.3.48
 GARP target: 2.5.1 SHIELD, TOOLING R2
 Migration mode: Prompt D — delta migration of an existing app
 Data class: D2 — student/school content may occur in imported material and AI prompts/results; no autonomous student grading decision is made.
@@ -9,3 +9,5 @@ Primary deployment target assessed here: school-server PREP artifact (same-origi
 Public direct-provider profile remains present for standalone operation and is not promoted to school-server production approval by this migration.
 Real student data used in this audit: NO.
 Production school-server approval: NO / NOT TESTED until SHIELD-LIVE and RI-LIVE evidence exists.
+
+Cleanup release note: 1.3.48 is a metadata-only MASTER cleanup patch. Public runtime state is authoritative via release-integrity.json and AI Studio release-wave; pre-release acceptance metadata remain source-only.
