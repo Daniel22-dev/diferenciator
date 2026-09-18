@@ -1,14 +1,14 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.46  
+**Aktuální verze:** 1.3.47  
 
-1.3.46 je čtvrté GARP 2.5.1 SHIELD opravné kolo. Uzavírá N20–N22 jako třídu: security guard musí proběhnout dříve než jakékoli routing-sensitive čtení Request/FetchEvent/URL a důvěryhodný sink networkOnlyNoStore je samostatně behaviorálně ověřen na fetch s cache:no-store a nulové Cache API přístupy. Pedagogická logika se nemění.
+1.3.47 navazuje kumulativně na GARP 2.5.1 R4 z verze 1.3.46. Doplňuje povinné N5 negativní kontroly (privátní JWK, encrypted private PEM, private PGP), plný GARP release gate, Safe Promotion přes candidate → PR → chráněný main, strojově svázanou TRANSITIONAL release identity a řízený AI Studio auto-patch. Pedagogická logika a UI se nemění.
 **Platforma:** GHRAB Platform 1.1.2 · etapa P5
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.46
+- **Verze:** 1.3.47
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž

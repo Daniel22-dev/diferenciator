@@ -1,10 +1,11 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.46',
-  date: '2026-09-09',
+  version: '1.3.47',
+  date: '2026-09-18',
   build: '__BUILD__', // build id
   status: 'řízený pilot',
   changes: [
+    '1.3.47: GARP 2.5.1 N5 + Safe Promotion + release identity + AI Studio auto-patch enrollment.',
     '1.3.46: GARP R4.',
     '1.3.45: GARP R3.',
     '1.3.44: GARP.',

@@ -166,6 +166,22 @@ try {
   expect('NC-sourcemap-detected', r.status !== 0);
   await rm(path.join(leak, 'app.js.map'));
 
+  // N5 permanent negative controls required by the ecosystem standard.
+  await writeFile(path.join(leak, 'private-jwk.json'), JSON.stringify({ kty: 'RSA', n: 'synthetic-public', e: 'AQAB', d: 'synthetic-private-material' }));
+  r = run('scan-deployment-leaks.mjs', [leak]);
+  expect('N5-private-JWK-d-detected', r.status !== 0);
+  await rm(path.join(leak, 'private-jwk.json'));
+
+  await writeFile(path.join(leak, 'encrypted-private.txt'), '-----BEGIN ENCRYPTED PRIVATE KEY-----\nSYNTHETIC-N5-ONLY\n-----END ENCRYPTED PRIVATE KEY-----\n');
+  r = run('scan-deployment-leaks.mjs', [leak]);
+  expect('N5-encrypted-private-PEM-detected', r.status !== 0);
+  await rm(path.join(leak, 'encrypted-private.txt'));
+
+  await writeFile(path.join(leak, 'private-pgp.txt'), '-----BEGIN PGP PRIVATE KEY BLOCK-----\nSYNTHETIC-N5-ONLY\n-----END PGP PRIVATE KEY BLOCK-----\n');
+  r = run('scan-deployment-leaks.mjs', [leak]);
+  expect('N5-private-PGP-detected', r.status !== 0);
+  await rm(path.join(leak, 'private-pgp.txt'));
+
   // --- evidence
   const ev = path.join(t, 'evidence'); await mkdir(ev);
   await writeFile(path.join(ev, 'result.txt'), 'PASS synthetic\n');

@@ -177,19 +177,25 @@ for (const name of ['studio-manifest.json', 'app-manifest.json']) {
   const target = path.join(dist, name);
   if (!fs.existsSync(target)) continue;
   const manifest = JSON.parse(fs.readFileSync(target, 'utf8'));
+  // Safe cumulative merge: keep newer/app-specific contract fields and refresh only
+  // canonical values owned by the current Platform consumer. Never replace the
+  // entire object, otherwise Studio-critical metadata can be silently discarded.
   manifest.platform = {
+    ...(manifest.platform || {}),
+    schema: manifest.platform?.schema || 'ghrab-platform-app-integration-v1',
     contract: consumer.platform.contract,
+    requiredPlatformRange: consumer.platform.requiredRange,
     platformVersion: consumer.platform.version,
-    requiredRange: consumer.platform.requiredRange,
     brandVersion: consumer.brand.version,
     themeContract: 'ghrab-theme-v1',
-    storageContract: 'ghrab-storage-namespace-v1',
-    bridgeContract: consumer.bridge.contract,
-    artifactContract: consumer.artifact.schema,
+    swContract: 1,
+    studioBridge: 2,
+    artifactEnvelope: 1,
+    storagePrefix: `ghrab.${consumer.appId}.`,
+    cacheName: consumer.cache.name,
     accessibilityContract: consumer.quality.accessibilityContract,
     performanceContract: consumer.quality.performanceContract,
     moduleContract: consumer.quality.moduleContract,
-    cacheName: consumer.cache.name,
   };
   fs.writeFileSync(target, `${JSON.stringify(manifest, null, 2)}\n`);
 }

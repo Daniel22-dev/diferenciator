@@ -2,8 +2,8 @@
   "schema": "ghrab-release-acceptance-v1",
   "stage": "P5",
   "appId": "differentiator",
-  "appVersion": "1.3.46",
-  "releaseStatus": "security-candidate-awaiting-independent-review",
+  "appVersion": "1.3.47",
+  "releaseStatus": "safe-promotion-candidate",
   "primaryRuntime": {
     "mode": "standalone-github-pages",
     "serverRequired": false,
@@ -11,16 +11,17 @@
     "currentUseApproved": true
   },
   "github": {
-    "status": "not-yet-uploaded",
-    "uploadDeferredUntilEcosystemComplete": true,
+    "status": "safe-promotion-gated",
+    "uploadDeferredUntilEcosystemComplete": false,
     "postUploadValidationRequired": true,
+    "deploymentBranch": "main",
+    "candidateBranch": "candidate",
     "requiredChecks": [
-      "project-tests",
-      "p5-release-gate",
-      "all-subject-gate",
-      "live-pages-smoke",
-      "pwa-update-from-previous-release"
-    ]
+      "p5-release-gate"
+    ],
+    "promotionModel": "candidate-to-main-pr",
+    "autoMergeAfterGreen": true,
+    "directMainPushAllowed": false
   },
   "schoolServer": {
     "status": "prepared-not-connected",
@@ -38,7 +39,7 @@
     "sourceRepositoriesExcludedFromSchoolOperationalPackage": true,
     "legalTermsRequireSeparateAgreement": true
   },
-  "revision": "P5-R3",
+  "revision": "P5-R4-GARP25-N5-SAFE-PROMOTION",
   "runtimeAudit": {
     "required": true,
     "scriptsExecuted": true,
