@@ -1,18 +1,18 @@
 {
   "schema": "ghrab-ai-assurance-fingerprint-v2",
   "appId": "differentiator",
-  "appVersion": "1.3.46",
+  "appVersion": "1.3.47",
   "algorithm": "SHA-256",
   "inventory": "security/ai-boundary-files.json",
-  "aggregate": "e6447a59ff46f373ecef59fa4cac30afe1f35c5a55170676e51cc09876b593e0",
+  "aggregate": "c5c7ee65a226cde4d12e45ead8cfafbb23071e4a1319e49bf8aaf3bd8720cdcf",
   "files": [
     {
       "path": "src/config/all-subject-test-matrix.json",
-      "sha256": "d3ab407fbca6f122050d334e4c085faa8c0cb29a999b8fcb8fc84f2cc74cbab7"
+      "sha256": "89660e29f474534dbdd193efd7bb3f795db395f067e395edb88437f7fedffe7d"
     },
     {
       "path": "src/config/data-manifest.json",
-      "sha256": "2640b43ad2e08fa5e0bbe4e47201fdb1e62c642516df7dcc7a706de616bd185b"
+      "sha256": "8637a94b930c5d5afacbfcb6320f79c30571dd9d798f9608dfa22bddb4c06802"
     },
     {
       "path": "src/config/deployment.json",
@@ -32,7 +32,7 @@
     },
     {
       "path": "src/js/10-release-changelog.js",
-      "sha256": "b2ca1be3d25eee9d9cfc6fec452bdb86309af5bc9ad5106a86931f3a2afc5af1"
+      "sha256": "4bdba8e4ea40838e9de93131589f9d43e879718027a3820a1149db400d6348d2"
     },
     {
       "path": "src/js/20-zaklad-ui-projekty.js",
@@ -48,7 +48,7 @@
     },
     {
       "path": "src/js/31-ai-core-integration.js",
-      "sha256": "850610066febf6cec60afbef9e298d7a7a90f8c884dbc507362a1fe1e1990a54"
+      "sha256": "a88698fa55b397f5cdf92e76e4807f9d27de6158c75600ee14838483938eb20c"
     },
     {
       "path": "src/js/35-stem-safety.js",
@@ -56,7 +56,7 @@
     },
     {
       "path": "src/js/36-all-subject-safety.js",
-      "sha256": "11ddf087f3e4b15ed5968d1b286dd3f7e8722af8a36018d9481b6c84f671fc4f"
+      "sha256": "812d8857f80a5f98b8930664ecab8686d698e537f353c2cb435e1e1e404fae7d"
     },
     {
       "path": "src/js/40-vystup-pdf-kvalita.js",

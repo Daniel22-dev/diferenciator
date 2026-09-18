@@ -111,7 +111,7 @@ check('HANDOFF-URL-STRIP-QUERY-FRAGMENT',studioUrl({studioUrl:'https://school.ex
 const manifest=JSON.parse(read('src/config/data-manifest.json'));
 const stores=manifest.stores||[];
 const exact=(kind,p)=>stores.some(s=>s.kind===kind&&Array.isArray(s.patterns)&&s.patterns.includes(p));
-check('MANIFEST-APP-VERSION',manifest.appVersion==='1.3.46','data manifest version matches candidate');
+check('MANIFEST-APP-VERSION',manifest.appVersion==='1.3.47','data manifest version matches candidate');
 check('MANIFEST-KEY-STORES',exact('sessionStorage','ghrab.differentiator.ai.key.session.v1')&&exact('localStorage','ghrab.differentiator.ai.key.local.v1'),'direct-mode credential stores declared');
 check('MANIFEST-DELETION-CONTROLS',Array.isArray(manifest.deletion?.clientControls)&&['clearWorkingData()','clearPreferenceData()','clearKey()'].every(x=>manifest.deletion.clientControls.includes(x)),'declared deletion controls exist by name');
 
