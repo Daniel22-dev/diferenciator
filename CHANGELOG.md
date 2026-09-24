@@ -1,3 +1,11 @@
+## 1.3.49 — GARP 2.7 r2 / G-02 migration (2026-09-24)
+
+- Aktivní bezpečnostní autorita převedena na GARP 2.7 r2 / G-02; GARP 2.5.1/N5 zůstává povinnou regresní vrstvou.
+- Přidány sémantické policy/contract, architecture-integrity, capability inventory, mutation a auto-patch/FOUNDATION brány.
+- Zachováno D2 / AGENTIC=NO, sedm AI operací bez provider tools, Platform 1.1.2 a AI Core 1.0.0.
+- School-server LIVE zůstává DEFERRED/NOT_TESTED; budoucí školní profil výslovně vyžaduje LIVE validaci.
+- Bez záměrné změny pedagogické logiky, UI a výstupního workflow.
+
 ## 1.3.48 — MASTER cleanup a auto-patch E2E (2026-09-18)
 
 - Bez změny aplikační logiky, pedagogického workflow, UI nebo AI operací.
