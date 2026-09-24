@@ -1,4 +1,4 @@
-const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.48'});
+const DPL_AI_APP=Object.freeze({id:'differentiator',version:'1.3.49'});
 const DPL_WORKSHEET_SCHEMA=Object.freeze({type:'object',properties:{worksheet_title:{type:'string'},student_instructions:{type:'string'},tasks:{type:'string'},answer_key:{type:'string'},teacher_note:{type:'string'}},required:['worksheet_title','student_instructions','tasks','answer_key','teacher_note'],additionalProperties:false});
 const DPL_AI_SCHEMAS=Object.freeze({'differentiator.text.v1':Object.freeze({type:'object',required:['text'],properties:{text:{type:'string'}},additionalProperties:false}),'differentiator.object.v1':DPL_WORKSHEET_SCHEMA});
 const dplOp=(s,d,i,m)=>({outputSchemaId:s,defaultModelProfile:d,allowedModelProfiles:['economy','balanced','quality'],inputTypes:i,streaming:false,requiredCapabilities:[],expectedOutputs:1,maxOutputTokensHint:m});
