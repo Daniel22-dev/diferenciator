@@ -5,7 +5,7 @@ import path from 'node:path';
 const root=path.resolve('.');
 const lifecycle=fs.readFileSync(path.join(root,'src/js/21-suite-session-lifecycle.js'),'utf8');
 const platform=fs.readFileSync(path.join(root,'vendor/ghrab-platform-1.1.2/ghrab-platform.js'),'utf8');
-const report={schema:'ghrab-suite-session-qa-v1',appId:'differentiator',appVersion:'1.3.48',platformVersion:'1.1.2',syntheticOnly:true,mode:'deterministic-multi-context-simulation',cases:[]};
+const report={schema:'ghrab-suite-session-qa-v1',appId:'differentiator',appVersion:'1.3.49',platformVersion:'1.1.2',syntheticOnly:true,mode:'deterministic-multi-context-simulation',cases:[]};
 const add=(id,pass,detail={})=>report.cases.push({id,pass,...detail});
 class Store{constructor(shared){this.map=shared||new Map();this.failRemoveKey='';this.failSetKey=''}getItem(k){k=String(k);return this.map.has(k)?this.map.get(k):null}setItem(k,v){k=String(k);if(k===this.failSetKey)throw new Error('synthetic-set-failure:'+k);this.map.set(k,String(v))}removeItem(k){k=String(k);if(k===this.failRemoveKey)throw new Error('synthetic-remove-failure:'+k);this.map.delete(k)}clear(){this.map.clear()}key(i){return [...this.map.keys()][i]??null}get length(){return this.map.size}}
 const sharedMap=new Map();let contexts=[];
