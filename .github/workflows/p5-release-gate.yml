@@ -42,8 +42,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends poppler-utils
           pdftotext -v
-      - name: Run full P5 R2 + GARP 2.5.1 + N5 release gate
+      - name: Run full P5 R2 + cumulative GARP 2.7 release gate
         run: npm run qa:p5:ci
+        env:
+          GARP27_EXTERNAL_TRUST_SHA256: 71b677132ef3ba04281d2da450c9af7d322674a6ad6e452b44b24ecfe6df5976
+      - name: Enforce GARP 2.7 foundation admission and legacy regressions
+        run: npm run qa:garp27:foundation
+        env:
+          GARP27_EXTERNAL_TRUST_SHA256: 71b677132ef3ba04281d2da450c9af7d322674a6ad6e452b44b24ecfe6df5976
       - name: Validate final Pages release identity
         run: npm run prepare:pages
       - name: Upload audit evidence

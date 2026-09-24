@@ -1,0 +1,56 @@
+{
+  "schema": "garp27-policy-v1",
+  "garpVersion": "2.7",
+  "appId": "differentiator",
+  "appVersion": "1.3.49",
+  "identity": {
+    "standaloneProfile": "Signed-permit client bootstrap is bound to appId=differentiator; browser-controlled state is not sufficient authority for a future protected school-server operation.",
+    "schoolProfile": "Server-session enforcement is prepared in the school deployment profile and remains deferred until an approved school runtime is connected.",
+    "rule": "Role, ownership and session claims originating only from client storage never authorize a future protected server-side action."
+  },
+  "requestApiAi": {
+    "registry": "src/ai-operations.json",
+    "registeredOperations": 7,
+    "agentic": "NO",
+    "controls": "GHRAB AI Core operation registry, fixed teacher-selected model profiles, bounded request and output contracts, no provider tools, no autonomous tool loop and no model-triggered application side effects."
+  },
+  "egress": {
+    "standalone": "The current GitHub Pages profile permits explicit direct-gemini transport with a session-scoped teacher key and no automatic fallback.",
+    "school": "The school profile permits only school-gateway transport, forbids local provider keys and requires LIVE validation when that profile is connected.",
+    "crossApp": "Cross-application interaction is limited to platform access, lifecycle, handoff, manifest and verified release-notification contracts."
+  },
+  "files": {
+    "currentBoundary": "Teacher-controlled text, office documents, PDFs, scans, images, GeoJSON and multimedia are untrusted inputs and pass existing size, type, parsing, sanitization and bounded-processing controls before application or AI use.",
+    "serverBoundary": "Server-side quarantine and server document processing are not claimed in the current release and remain deferred with the school-server phase."
+  },
+  "dataLifecycle": {
+    "classification": "D2 educational content may include student-related material; pseudonymisation is not treated as anonymisation and real sensitive student data must not be used to claim LIVE approval.",
+    "storage": "Namespaced localStorage and sessionStorage plus PWA CacheStorage are inventoried in src/config/data-manifest.json and covered by suite-session cleanup.",
+    "retention": "Current standalone retention follows the data manifest and explicit end-work/browser controls; future server retention is not active.",
+    "deletion": "Client cleanup removes working data, credential remnants and target-scoped handoff state while preserving documented non-content preferences and security tombstones."
+  },
+  "release": {
+    "activeAuthority": "GARP-2.7",
+    "promotion": "candidate -> P5 plus GARP 2.5.1 regressions and GARP 2.7 gates -> protected candidate-to-main pull request -> exact release identity -> verified Pages deployment -> app-updated notification",
+    "publicAssurance": "GitHub Pages remains the current standalone deployment; school-server SHIELD-LIVE and RI-LIVE are not claimed.",
+    "rollback": "Existing release-integrity binding, Safe Promotion ancestry checks and prior verified releases remain the rollback baseline."
+  },
+  "inventory": {
+    "source": "security/garp27/capability-inventory.json",
+    "architecturePolicy": "security/garp27/architecture-policy.json",
+    "changeRule": "Any new AI operation, provider tool, egress mode, import class, privileged browser capability, storage authority or release authority requires inventory and matching test updates before admission."
+  },
+  "securityHealth": {
+    "localCi": "GARP 2.7 contract, semantic policy admission, architecture-integrity, mutation and auto-patch gates run together with retained GARP 2.5.1 and P5 controls.",
+    "live": "NOT_TESTED for school runtime until approved infrastructure supplies trusted runtime evidence.",
+    "failureMode": "Harness errors, empty scope, stale or mismatched evidence, missing controls and trust-anchor drift never become PASS."
+  },
+  "incident": {
+    "current": "Bounded error reporting, fail-closed access behavior, release evidence and Safe Promotion remain active; diagnostic content is minimized by existing policy.",
+    "future": "Central watchdog, server monitoring and infrastructure containment remain deferred until the school runtime is approved."
+  },
+  "recovery": {
+    "current": "Safe Promotion, exact release identity, deterministic lockfile build inputs, prior release history, client cleanup and release-integrity tooling remain the recovery baseline.",
+    "future": "Server restore, trust-root custody and live recovery drills remain NOT_TESTED until the school runtime is approved."
+  }
+}

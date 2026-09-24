@@ -1,13 +1,12 @@
-GARP APPLICATION CARD — DIFFERENTIATOR
+CURRENT STATUS NOTE — 2026-09-24
 App ID: differentiator
-Version: 1.3.48
-GARP target: 2.5.1 SHIELD, TOOLING R2
-Migration mode: Prompt D — delta migration of an existing app
+Current source candidate: 1.3.49 (GARP 2.7 r2 / G-02 migration; no intentional pedagogical/UI/runtime workflow change).
+Active security authority: GARP 2.7 r2 / 2026-09-23-r2.
+Legacy GARP 2.5.1/N5 remains a mandatory regression baseline; its historical evidence is preserved and is not rewritten as current GARP 2.7 evidence.
 Data class: D2 — student/school content may occur in imported material and AI prompts/results; no autonomous student grading decision is made.
-Agentic classification: NO — AI calls generate/analyse content; no tool/MCP/shell capability or autonomous action loop is exposed to the model.
-Primary deployment target assessed here: school-server PREP artifact (same-origin server session + /api/v1/ai/generate gateway).
-Public direct-provider profile remains present for standalone operation and is not promoted to school-server production approval by this migration.
-Real student data used in this audit: NO.
-Production school-server approval: NO / NOT TESTED until SHIELD-LIVE and RI-LIVE evidence exists.
-
-Cleanup release note: 1.3.48 is a metadata-only MASTER cleanup patch. Public runtime state is authoritative via release-integrity.json and AI Studio release-wave; pre-release acceptance metadata remain source-only.
+Agentic classification: NO — registered AI operations generate/analyse content; no provider tool, MCP/shell capability, autonomous tool loop or model-triggered side-effect executor is exposed.
+Primary current deployment: standalone GitHub Pages with explicit direct-gemini transport and teacher-supplied session key.
+Prepared school profile: same-origin server session + school-gateway; local provider keys forbidden; school-server LIVE validation required when connected.
+School-server phase: DEFERRED_BY_OWNER_DECISION; SHIELD-LIVE / RI-LIVE: NOT_TESTED.
+Real student data used in this migration audit: NO.
+Current GARP 2.7 adapter and migration status: security/garp27/README.md and security/garp27/MIGRATION-ASSESSMENT.md.

@@ -2,7 +2,7 @@
   "schema": "ghrab-release-acceptance-v1",
   "stage": "P5",
   "appId": "differentiator",
-  "appVersion": "1.3.48",
+  "appVersion": "1.3.49",
   "releaseStatus": "pre-release-source-attestation",
   "primaryRuntime": {
     "mode": "standalone-github-pages",
@@ -39,12 +39,12 @@
     "sourceRepositoriesExcludedFromSchoolOperationalPackage": true,
     "legalTermsRequireSeparateAgreement": true
   },
-  "revision": "P5-R4-GARP25-N5-SAFE-PROMOTION",
+  "revision": "P5-R4-GARP27-R2-G02-SAFE-PROMOTION",
   "runtimeAudit": {
     "required": true,
     "scriptsExecuted": true,
     "transport": "source-only pre-release attestation; exact-lockfile GitHub CI/deployment pending",
-    "note": "1.3.48 is a metadata-only MASTER cleanup patch. This acceptance document is source-only and must not be copied into public runtime artifacts. Live deployment state is attested by release-integrity.json and AI Studio release-wave."
+    "note": "1.3.49 migrates the active security authority to GARP 2.7 r2 / G-02 while preserving GARP 2.5.1 as a regression baseline. This source-only attestation is not live server evidence; deployment remains attested by release-integrity.json and AI Studio release-wave."
   },
   "garpReview": {
     "sourceAudit": "AUDIT-DIFERENCIATOR-1.3.30-2026-08-15.txt",
@@ -62,9 +62,11 @@
     ],
     "performanceBudgetLimitsRaised": false,
     "adversarialSpecialistGateRequired": true,
-    "externalRuntimeAndProviderValidationPending": true
+    "externalRuntimeAndProviderValidationPending": true,
+    "activeAuthority": "GARP-2.7",
+    "legacyRegressionBaseline": "GARP-2.5.1"
   },
-  "note": "Source-only P5 acceptance input for Diferenciator 1.3.48; not an authority for live deployment state.",
+  "note": "Source-only P5 acceptance input for Diferenciator 1.3.49 under GARP 2.7 r2 / G-02; not an authority for LIVE school-server state.",
   "publication": {
     "runtimeDistributed": false,
     "liveStatusAuthority": [
