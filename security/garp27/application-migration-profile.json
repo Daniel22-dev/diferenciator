@@ -2,7 +2,7 @@
   "schema": "garp27-application-migration-profile-v1",
   "garpVersion": "2.7",
   "appId": "differentiator",
-  "appVersion": "1.3.49",
+  "appVersion": "1.3.50",
   "serverApproval": "DEFERRED_BY_OWNER_DECISION",
   "requiredComponents": [
     {"componentId":"AG-01-policy","required":true,"serverDependent":false},
@@ -22,7 +22,7 @@
   "maxEvidenceAgeHours": 168,
   "releaseIdentity": {
     "appId": "differentiator",
-    "appVersion": "1.3.49",
+    "appVersion": "1.3.50",
     "sourceCommit": "0000000000000000000000000000000000000000"
   },
   "releaseIdentityResolution": "The foundation gate uses GITHUB_SHA in GitHub CI; local archive review uses a deterministic SHA-1 surrogate over security-relevant source files and labels that identity explicitly."

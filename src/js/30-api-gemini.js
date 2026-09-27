@@ -120,10 +120,26 @@ bindGuideButton('#helpTopBtn');
 $('#guideClose').addEventListener('click',closeGuide);
 $('#guide').addEventListener('click',e=>{if(e.target.id==='guide')closeGuide()});
 
+function openAbout(){
+  renderChangelog();
+  const overlay=$('#aboutOverlay'), modal=overlay&&overlay.querySelector('.about-modal');
+  if(!overlay)return;
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden','false');
+  document.body.classList.add('modal-open');
+  if(modal)modal.focus();
+}
+function closeAbout(){
+  const overlay=$('#aboutOverlay');if(!overlay)return;
+  overlay.classList.remove('show');
+  overlay.setAttribute('aria-hidden','true');
+  document.body.classList.remove('modal-open');
+}
 renderChangelog();
-$('#changelogBtn').addEventListener('click',()=>$('#changelogOverlay').classList.add('show'));
-$('#changelogClose').addEventListener('click',()=>$('#changelogOverlay').classList.remove('show'));
-$('#changelogOverlay').addEventListener('click',e=>{if(e.target.id==='changelogOverlay')$('#changelogOverlay').classList.remove('show')});
+['#aboutBtn','#aboutTopBtn'].forEach(id=>{const btn=$(id);if(btn)btn.addEventListener('click',openAbout)});
+$('#aboutClose').addEventListener('click',closeAbout);
+$('#aboutOverlay').addEventListener('click',e=>{if(e.target.id==='aboutOverlay')closeAbout()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#aboutOverlay')?.classList.contains('show'))closeAbout()});
 
 
 const FullscreenControl={

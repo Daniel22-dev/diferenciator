@@ -1,3 +1,11 @@
+## 1.3.50 — O aplikaci (2026-09-27)
+
+- Přidána samostatná sekce **O aplikaci** s identitou a účelem, autorem a vývojovým garantem, školním projektem, určením/přístupem, technickým stavem a provozními zásadami.
+- Dosavadní samostatné **Změny** byly odstraněny; posledních 10 změn je nově v rozbalovacím **Katalogu změn** uvnitř sekce O aplikaci.
+- Vstup do O aplikaci je dostupný z horní lišty i z nabídky Nástroje a nápověda.
+- Bez změny AI operací, transportu, datové klasifikace a bezpečnostní autority GARP 2.7 r2.
+- Hlavní stylesheet je načítán jako samostatný PWA-cacheovaný asset místo vložení do `index.html`, aby release zůstal pod zmrazeným limitem velikosti vstupního HTML bez navyšování performance budgetu.
+
 ## 1.3.49 — GARP 2.7 r2 / G-02 migration (2026-09-24)
 
 - Aktivní bezpečnostní autorita převedena na GARP 2.7 r2 / G-02; GARP 2.5.1/N5 zůstává povinnou regresní vrstvou.

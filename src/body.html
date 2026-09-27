@@ -14,6 +14,7 @@
           <button class="theme-toggle" id="themeToggle" type="button" aria-label="Přepnout denní/noční režim" title="Denní / noční režim">🌙</button>
           <button class="icon-btn fullscreen-toggle" id="fullscreenToggle" type="button" aria-label="Zapnout režim celé obrazovky" title="Celá obrazovka">⛶</button>
           <a class="icon-btn manual-launch-btn" href="./manual/" target="_self" aria-label="Otevřít interaktivní manuál celé aplikace" title="Interaktivní manuál celé aplikace">📖</a>
+          <button class="icon-btn about-top-btn" id="aboutTopBtn" type="button" aria-label="Otevřít sekci O aplikaci" title="O aplikaci">ⓘ</button>
           <button class="icon-btn help-top-btn" id="helpTopBtn" type="button" aria-label="Otev&#345;&#237;t n&#225;pov&#283;du" title="Jak to funguje">?</button>
         </div>
       </div>
@@ -239,7 +240,7 @@
       <div class="guide-step"><b>3</b><span><strong>Zkontroluj a vyber úroveň</strong>Oprav načtený text a zvol jednu cílovou verzi nebo vytvoř celou sadu.</span></div>
       <div class="guide-step"><b>4</b><span><strong>Vytvoř a ověř verzi</strong>Výstup zkontroluj, uprav, zobraz řešení a až potom stáhni PDF.</span></div>
     </div>
-    <div class="tipline"> Tip: CEFR odhad zapínej jen u jazykových materiálů. U ostatních předmětů ho nech vypnutý, aby appka používala jen úrovně obtížnosti. Nápovědu, changelog a interní testy najdeš dole v rozbalovací liště Nástroje; před vydáním nové verze musí interní testy skončit bez chyb. Aplikace je učitelský nástroj; pokud chceš rozpracovanou práci uchovat, použij dole Exportovat projekt.</div>
+    <div class="tipline"> Tip: CEFR odhad zapínej jen u jazykových materiálů. U ostatních předmětů ho nech vypnutý, aby appka používala jen úrovně obtížnosti. Nápovědu, sekci O aplikaci a interní testy najdeš dole v rozbalovací liště Nástroje; před vydáním nové verze musí interní testy skončit bez chyb. Aplikace je učitelský nástroj; pokud chceš rozpracovanou práci uchovat, použij dole Exportovat projekt.</div>
     <button class="btn" id="guideClose">Rozumím</button>
   </div>
 </div>
@@ -381,19 +382,81 @@
   </div>
 </div>
 
-<div class="overlay" id="changelogOverlay">
-  <div class="modal changelog-modal">
-    <div class="changelog-head">
+<div class="overlay" id="aboutOverlay" aria-hidden="true">
+  <div class="modal about-modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" tabindex="-1">
+    <div class="about-head">
       <div>
-        <h2>Changelog</h2>
-        <p class="muted">Posledních 10 změn v aplikaci. Nejnovější úpravy jsou nahoře.</p>
+        <p class="about-eyebrow">IDENTITA A PROJEKT</p>
+        <h2 id="aboutTitle">O aplikaci</h2>
+        <p class="muted">Karta Diferenciátoru: k čemu slouží, kdo za něj odpovídá, jaké má provozní zásady a co se v něm mění.</p>
       </div>
-      <span class="version-badge" id="currentVersionBadge">verze</span>
+      <button class="btn ghost small" id="aboutClose" type="button">Zavřít</button>
     </div>
-    <div class="change-list" id="changelogList"></div>
-    <div class="modal-actions">
-      <button class="btn small" id="changelogClose">Zavřít</button>
+
+    <div class="about-overview-grid">
+      <article class="about-card about-identity-card">
+        <div class="about-brand-mark" aria-hidden="true">DI</div>
+        <p class="about-wordmark">DIFERENCIÁTOR</p>
+        <h3>Pracovní listy a testy</h3>
+        <p class="about-identity-lead">Pedagogický nástroj pro smysluplnou diferenciaci jednoho výchozího materiálu.</p>
+        <p>Pomáhá učiteli vytvořit jednodušší, referenční a obtížnější variantu při zachování výukového cíle a s následnou kontrolou výstupu před použitím ve výuce.</p>
+      </article>
+
+      <div class="about-facts-grid">
+        <article class="about-card about-fact-card">
+          <p class="about-eyebrow">AUTOR A VÝVOJOVÝ GARANT</p>
+          <h3>Daniel Baláž</h3>
+          <p>Koncepce, pedagogické vedení, návrh funkcí a vývoj aplikace Diferenciátor.</p>
+        </article>
+        <article class="about-card about-fact-card">
+          <p class="about-eyebrow">ŠKOLNÍ PROJEKT</p>
+          <h3>Gymnázium, Ostrava-Hrabůvka</h3>
+          <p>Součást školního ekosystému AI Studio GHRAB pro podporu práce učitelů s výukovými materiály.</p>
+        </article>
+        <article class="about-card about-fact-card">
+          <p class="about-eyebrow">PŘÍSTUP A URČENÍ</p>
+          <h3>Pro učitele</h3>
+          <p>Diferenciátor je učitelský nástroj. Výstupy jsou návrhy k odborné kontrole, ne automatické rozhodnutí o žákovi ani náhrada pedagogického úsudku.</p>
+        </article>
+        <article class="about-card about-fact-card">
+          <p class="about-eyebrow">TECHNICKÝ STAV</p>
+          <h3 id="aboutVersionTitle">v1.3.50 · PWA</h3>
+          <p>Platforma 1.1.2 · AI Core 1.0.0 · GARP 2.7 r2. Aktuální samostatný provoz je připraven pro řízený pilot; školní serverový profil čeká na LIVE validaci při nasazení.</p>
+        </article>
+      </div>
     </div>
+
+    <section class="about-principles" aria-labelledby="aboutPrinciplesTitle">
+      <div class="about-section-heading">
+        <p class="about-eyebrow">PROVOZNÍ ZÁSADY</p>
+        <h3 id="aboutPrinciplesTitle">Co je dobré vědět</h3>
+      </div>
+      <div class="about-principles-grid">
+        <article class="about-card about-principle-card">
+          <span aria-hidden="true">01</span>
+          <div><h4>Diferenciace drží výukový cíl</h4><p>Jednotlivé varianty mají měnit především míru opory, formulaci a hloubku zpracování. Nemají bez pokynu učitele svévolně měnit ověřované učivo.</p></div>
+        </article>
+        <article class="about-card about-principle-card">
+          <span aria-hidden="true">02</span>
+          <div><h4>Finální kontrola zůstává na učiteli</h4><p>AI výstup i automatická kontrola jsou pomocné nástroje. Před použitím ve třídě nebo exportem do PDF je potřeba ověřit zadání, řešení, jazyk a věcnou správnost.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <details class="about-changelog" id="aboutChangelog">
+      <summary>
+        <span>
+          <span class="about-eyebrow">HISTORIE VYDÁNÍ</span>
+          <strong>Katalog změn</strong>
+          <small>Rozbalte posledních deset uživatelsky důležitých změn Diferenciátoru.</small>
+        </span>
+        <span class="about-changelog-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="about-changelog-body">
+        <div class="about-changelog-meta"><span class="version-badge" id="currentVersionBadge">verze</span><p>Zobrazené jsou hlavní změny. Podrobné technické poznámky a interní QA evidence zůstávají ve vývojové dokumentaci.</p></div>
+        <div class="change-list" id="changelogList"></div>
+      </div>
+    </details>
   </div>
 </div>
 

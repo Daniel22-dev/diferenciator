@@ -18,12 +18,12 @@ for(const f of [CORE_FILE,CORE_MANIFEST])if(!existsSync(join(CORE_DIR,f)))fail('
 const coreManifest=JSON.parse(readFileSync(join(CORE_DIR,CORE_MANIFEST),'utf8'));if(coreManifest.coreVersion!==CORE_VERSION||coreManifest.artifacts?.[CORE_FILE]?.sha256!==sha(join(CORE_DIR,CORE_FILE)))fail('GHRAB AI Core neprošel SHA-256 kontrolou');
 rmSync(DIST,{recursive:true,force:true});mkdirSync(DIST,{recursive:true});cpSync(SRC,DIST,{recursive:true});
 const tplPath=join(DIST,'index.template.html');let tpl=readFileSync(tplPath,'utf8');for(const token of Object.values(TOKENS))if(!tpl.includes(token))fail('šablona neobsahuje token');
-const css=readFileSync(join(DIST,'styles.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/\r?\n\s*/g,'').replace(/\s{2,}/g,' '),body=readFileSync(join(DIST,'body.html'),'utf8'),jsDir=join(DIST,'js');
+const css=readFileSync(join(DIST,'styles.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'').replace(/\r?\n\s*/g,'').replace(/\s{2,}/g,' '),body=readFileSync(join(DIST,'body.html'),'utf8'),jsDir=join(DIST,'js');writeFileSync(join(DIST,'styles.css'),css);
 const jsFiles=readdirSync(jsDir).filter(f=>f.endsWith('.js')).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})),internalTestFile='50-interni-testy.js',appJsFiles=jsFiles.filter(f=>f!==internalTestFile);const appJs=appJsFiles.map(f=>readFileSync(join(jsDir,f),'utf8')).join('\n;\n');if(jsFiles.includes(internalTestFile)){const tests=readFileSync(join(jsDir,internalTestFile));writeFileSync(join(DIST,'internal-tests.js.gz'),gzipSync(tests,{level:9}))}
 if(/(?:window|globalThis)\.GHRAB_AI\s*=|registerAdapter\s*\(/.test(appJs))fail('aplikační kód obsahuje vlastní implementaci GHRAB_AI');
 const js=readFileSync(join(CORE_DIR,CORE_FILE),'utf8')+'\n;\n'+appJs;
-const out=tpl.split(TOKENS.css).join(css).split(TOKENS.body).join(body).split(TOKENS.js).join(js);if(out.includes('==SEM_BUILD_VLOZI_'))fail('ve výstupu zůstal build token');
-writeFileSync(join(DIST,'index.html'),out);rmSync(tplPath);rmSync(join(DIST,'styles.css'));rmSync(join(DIST,'body.html'));rmSync(jsDir,{recursive:true});rmSync(join(DIST,'README_PWA.md'),{force:true});
+const out=tpl.split(TOKENS.css).join('').split(TOKENS.body).join(body).split(TOKENS.js).join(js);if(out.includes('==SEM_BUILD_VLOZI_'))fail('ve výstupu zůstal build token');
+writeFileSync(join(DIST,'index.html'),out);rmSync(tplPath);rmSync(join(DIST,'body.html'));rmSync(jsDir,{recursive:true});rmSync(join(DIST,'README_PWA.md'),{force:true});
 let hash=String(process.env.GHRAB_BUILD_HASH||'').trim();if(hash&&!/^[0-9a-f]{7,40}$/i.test(hash))fail('GHRAB_BUILD_HASH musí být 7-40 hex znaků');if(!hash){try{hash=execSync('git rev-parse --short HEAD',{cwd:ROOT,stdio:['ignore','pipe','ignore']}).toString().trim()}catch{}}
 function* htmlFiles(dir){for(const n of readdirSync(dir)){const p=join(dir,n);if(statSync(p).isDirectory())yield* htmlFiles(p);else if(n.endsWith('.html'))yield p}}
 if(hash){const re=/(build:\s*)(['"])__BUILD__\2/g;for(const f of htmlFiles(DIST)){const x=readFileSync(f,'utf8');writeFileSync(f,x.replace(re,`$1$2${hash}$2`))}}
