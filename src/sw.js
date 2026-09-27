@@ -7,6 +7,7 @@ const CORE_ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./styles.css",
   "./access/access-gate.css",
   "./access/reporter-bootstrap.js",
   "./access/error-reporter.js",

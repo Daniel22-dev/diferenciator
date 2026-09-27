@@ -4,6 +4,7 @@
 - Dosavadní samostatné **Změny** byly odstraněny; posledních 10 změn je nově v rozbalovacím **Katalogu změn** uvnitř sekce O aplikaci.
 - Vstup do O aplikaci je dostupný z horní lišty i z nabídky Nástroje a nápověda.
 - Bez změny AI operací, transportu, datové klasifikace a bezpečnostní autority GARP 2.7 r2.
+- Hlavní stylesheet je načítán jako samostatný PWA-cacheovaný asset místo vložení do `index.html`, aby release zůstal pod zmrazeným limitem velikosti vstupního HTML bez navyšování performance budgetu.
 
 ## 1.3.49 — GARP 2.7 r2 / G-02 migration (2026-09-24)
 

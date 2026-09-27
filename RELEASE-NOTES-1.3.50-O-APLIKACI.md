@@ -17,3 +17,7 @@ Samostatné tlačítko **Změny** a původní changelogový modal byly odstraně
 - AI Core: 1.0.0
 - bezpečnostní autorita: GARP 2.7 r2 / G-02
 - školní server LIVE: DEFERRED / NOT_TESTED
+
+## Performance gate
+
+Hlavní stylesheet je od 1.3.50 distribuován jako samostatný `styles.css` a je součástí PWA core cache. Tím se zmenšuje `index.html` bez zvýšení zmrazených performance limitů a bez změny vzhledu nebo offline chování.
