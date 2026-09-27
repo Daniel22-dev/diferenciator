@@ -2,7 +2,7 @@
   "schema": "garp27-capability-inventory-v1",
   "garpVersion": "2.7",
   "appId": "differentiator",
-  "appVersion": "1.3.49",
+  "appVersion": "1.3.50",
   "dataClass": "D2",
   "agentic": false,
   "aiOperations": [

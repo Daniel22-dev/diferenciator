@@ -68,7 +68,12 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
     [...body.matchAll(/<[^>]+\bid=["']([^"']+)["'][^>]+\bdata-model-profile=["'][^"']+["'][^>]*>/g)].map(m=>m[1])
   );
   const profileDelegationWired=code.includes('[data-model-profile]');
-  const unused=ids.filter(id=>!allow.has(id)&&!code.includes(id)&&!(profileDelegationWired&&dataDrivenProfileIds.has(id)));
+  const htmlLinked=id=>{
+    const attrs=['aria-labelledby','aria-describedby','aria-controls','for'];
+    return attrs.some(attr=>body.includes(attr+'="'+id+'"')||body.includes(attr+"='"+id+"'"))
+      || body.includes('href="#'+id+'"') || body.includes("href='#"+id+"'");
+  };
+  const unused=ids.filter(id=>!allow.has(id)&&!code.includes(id)&&!htmlLinked(id)&&!(profileDelegationWired&&dataDrivenProfileIds.has(id)));
   if(unused.length)bad('T5: nenapojená HTML ID: '+unused.join(', '));
   else ok(`T5: ${ids.length} HTML ID napojeno nebo výslovně statických`);
 }

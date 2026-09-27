@@ -1,14 +1,14 @@
 # Diferenciátor pracovních listů a testů
 
-**Aktuální verze:** 1.3.49  
+**Aktuální verze:** 1.3.50  
 
-1.3.49 převádí aktivní bezpečnostní autoritu na **GARP 2.7 r2 / G-02**. GARP 2.5.1/N5 zůstává povinnou regresní vrstvou; D2 / AGENTIC=NO, Platform 1.1.2, AI Core 1.0.0, sedm AI operací, pedagogická logika i UI se nemění. Školní LIVE vrstva zůstává `DEFERRED/NOT_TESTED`.
+1.3.50 přidává sjednocenou sekci **O aplikaci** s identitou, účelem, autorem a vývojovým garantem, školním projektem, určením, technickým stavem, provozními zásadami a rozbalovacím katalogem změn. Bezpečnostní autorita zůstává **GARP 2.7 r2 / G-02**, GARP 2.5.1/N5 je regresní baseline; D2 / AGENTIC=NO, Platform 1.1.2, AI Core 1.0.0 a sedm AI operací se nemění. Školní LIVE vrstva zůstává `DEFERRED/NOT_TESTED`.
 **Platforma:** GHRAB Platform 1.1.2 · etapa P5
 
 
 Samostatný repozitář aplikace pro Gymnázium, Ostrava-Hrabůvka.
 
-- **Verze:** 1.3.49
+- **Verze:** 1.3.50
 - **Doporučený název repozitáře:** `diferenciator`
 - **GitHub Pages:** `https://daniel22-dev.github.io/diferenciator/`
 - **Vlastník:** Daniel Baláž

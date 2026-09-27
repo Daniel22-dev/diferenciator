@@ -454,7 +454,7 @@ function clearWorkingData(options={}){
 }
 
 
-$('#foot').innerHTML='<div class="footer-tools"><div class="tools-wrap"><button class="footer-tools-btn" id="footerToolsBtn" type="button" aria-expanded="false" aria-controls="footerToolsMenu">Nástroje a nápověda ▴</button><div class="footer-tools-menu" id="footerToolsMenu"><button id="exportProjectBtn" type="button" title="Uloží rozpracovaný stav bez API klíče do souboru JSON">💾 Exportovat projekt</button><button id="importProjectBtn" type="button" title="Načte dříve exportovaný projekt">📂 Načíst projekt</button><button id="dataManageBtn" type="button" title="Správa lokálních dat v tomto prohlížeči">🧹 Správa dat</button><button class="test-toggle" id="testToggle" type="button" title="Otevře interní testovací nástroj" aria-expanded="false">🧪 Testy</button><button id="changelogBtn" type="button" title="Zobrazí poslední změny v aplikaci">📝 Změny</button><button id="helpBtn" type="button">❔ Jak to funguje?</button></div></div><div class="footer-tools-hint">Nápověda, projekty, správa dat a release testy jsou dostupné tady.</div></div><div data-ghrab-footer-branding></div>';
+$('#foot').innerHTML='<div class="footer-tools"><div class="tools-wrap"><button class="footer-tools-btn" id="footerToolsBtn" type="button" aria-expanded="false" aria-controls="footerToolsMenu">Nástroje a nápověda ▴</button><div class="footer-tools-menu" id="footerToolsMenu"><button id="exportProjectBtn" type="button" title="Uloží rozpracovaný stav bez API klíče do souboru JSON">💾 Exportovat projekt</button><button id="importProjectBtn" type="button" title="Načte dříve exportovaný projekt">📂 Načíst projekt</button><button id="dataManageBtn" type="button" title="Správa lokálních dat v tomto prohlížeči">🧹 Správa dat</button><button class="test-toggle" id="testToggle" type="button" title="Otevře interní testovací nástroj" aria-expanded="false">🧪 Testy</button><button id="aboutBtn" type="button" title="Informace o aplikaci a katalog změn">ⓘ O aplikaci</button><button id="helpBtn" type="button">❔ Jak to funguje?</button></div></div><div class="footer-tools-hint">O aplikaci, nápověda, projekty, správa dat a release testy jsou dostupné tady.</div></div><div data-ghrab-footer-branding></div>';
 window.GHRAB_PLATFORM?.mountFooter?.($('#foot'));
 
 function parseChangeEntry(entry){
@@ -466,7 +466,8 @@ function parseChangeEntry(entry){
   return {title:'Změna',version:'',body:text};
 }
 function renderChangelog(){
-  const list=$('#changelogList'), badge=$('#currentVersionBadge');
+  const list=$('#changelogList'), badge=$('#currentVersionBadge'), title=$('#aboutVersionTitle');
+  if(title)title.textContent='v'+RELEASE.version+' · PWA';
   if(badge)badge.textContent='Verze '+RELEASE.version+' · '+RELEASE.date+((RELEASE.build&&RELEASE.build!=='__BUILD__')?(' · build '+RELEASE.build):'');
   if(!list)return;
   list.innerHTML=RELEASE.changes.slice(0,10).map(change=>{
