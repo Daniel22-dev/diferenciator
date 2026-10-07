@@ -75,12 +75,8 @@ jobs:
         run: |
           sudo apt-get install -y --no-install-recommends poppler-utils
           pdftotext -v
-      - name: Run full P5 R2 + cumulative GARP 2.7 release gate
-        run: npm run qa:p5:ci
-        env:
-          GARP27_EXTERNAL_TRUST_SHA256: c001d5a1cd66cd152a7b918f68f0201e458d431e49443ea658f3d8d126837114
-      - name: Enforce GARP 2.7 foundation admission and legacy regressions
-        run: npm run qa:garp27:foundation
+      - name: Run P5 core and GARP 2.7 Foundation in isolated parallel worktrees
+        run: node scripts/run-p5-foundation-parallel.mjs
         env:
           GARP27_EXTERNAL_TRUST_SHA256: c001d5a1cd66cd152a7b918f68f0201e458d431e49443ea658f3d8d126837114
       - name: Validate final Pages release identity
@@ -92,6 +88,7 @@ jobs:
           name: p5-r2-${{ github.sha }}
           path: |
             qa-results
+            audit/evidence/garp27-current
             dist/qa-p5-*.json
             dist/qa-p3-browser-report.json
             dist/quality-report.json
