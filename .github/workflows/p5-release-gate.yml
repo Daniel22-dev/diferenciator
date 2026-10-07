@@ -41,13 +41,7 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-1.61.1-${{ hashFiles('package-lock.json') }}
-      - name: Probe cached Playwright Chromium runtime
-        id: playwright-runtime-probe
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        continue-on-error: true
-        run: node scripts/probe-playwright-runtime.mjs
-      - name: Install Playwright Chromium system dependencies when required
-        if: steps.playwright-cache.outputs.cache-hit != 'true' || steps.playwright-runtime-probe.outcome != 'success'
+      - name: Install Playwright Chromium system dependencies
         shell: bash
         run: |
           set -euo pipefail
@@ -74,13 +68,6 @@ jobs:
             "$HOME/.cache/ms-playwright/"*) ;;
             *) echo "::error::Unexpected Playwright browser path: $CHROMIUM_PATH"; exit 1 ;;
           esac
-          if ! node scripts/probe-playwright-runtime.mjs; then
-            echo "::warning::Playwright cache executable failed the exact runtime probe; reinstalling."
-            rm -rf "$HOME/.cache/ms-playwright"
-            npx playwright install --no-shell chromium
-            node scripts/probe-playwright-runtime.mjs
-            CHROMIUM_PATH="$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")"
-          fi
           "$CHROMIUM_PATH" --version
           echo "CHROMIUM_PATH=$CHROMIUM_PATH" >> "$GITHUB_ENV"
       - name: Install PDF audit dependencies
