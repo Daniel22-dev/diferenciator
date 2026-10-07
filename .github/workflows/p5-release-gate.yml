@@ -35,13 +35,39 @@ jobs:
           node -e "const p=require('./node_modules/playwright/package.json'); if(p.version!=='1.61.1') process.exit(1)"
       - name: Run repository secret scan
         run: npm run qa:secrets
-      - name: Install pinned Playwright Chromium
+      - name: Restore exact Playwright Chromium cache
+        id: playwright-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-1.61.1-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright Chromium system dependencies
         shell: bash
         run: |
           set -euo pipefail
-          npx playwright install --with-deps --no-shell chromium
+          npx playwright install-deps chromium
+      - name: Install pinned Playwright Chromium on cache miss
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --no-shell chromium
+      - name: Verify pinned Playwright Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
           CHROMIUM_PATH="$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")"
+          if [ ! -x "$CHROMIUM_PATH" ]; then
+            echo "::warning::Playwright cache was unusable; reinstalling the exact pinned Chromium."
+            rm -rf "$HOME/.cache/ms-playwright"
+            npx playwright install --no-shell chromium
+            CHROMIUM_PATH="$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")"
+          fi
           test -x "$CHROMIUM_PATH"
+          case "$CHROMIUM_PATH" in
+            "$HOME/.cache/ms-playwright/"*) ;;
+            *) echo "::error::Unexpected Playwright browser path: $CHROMIUM_PATH"; exit 1 ;;
+          esac
           "$CHROMIUM_PATH" --version
           echo "CHROMIUM_PATH=$CHROMIUM_PATH" >> "$GITHUB_ENV"
       - name: Install PDF audit dependencies
