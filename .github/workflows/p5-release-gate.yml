@@ -47,7 +47,6 @@ jobs:
       - name: Install PDF audit dependencies
         shell: bash
         run: |
-          sudo apt-get update
           sudo apt-get install -y --no-install-recommends poppler-utils
           pdftotext -v
       - name: Run full P5 R2 + cumulative GARP 2.7 release gate
