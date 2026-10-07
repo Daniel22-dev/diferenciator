@@ -308,16 +308,20 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
   else ok('T27: direct runtime hlídá kompatibilní thinking level pro Důkladný profil');
 }
 
-// T28: every CI workflow that directly runs the full P5 gate must provision the PDF text extractor used by qa:stem.
+// T28: every automatic workflow that reaches the full P5 gate, directly or through the audited parallel helper, must provision the PDF text extractor used by qa:stem.
 {
   const workflowDir='.github/workflows';
   const workflows=readdirSync(join(ROOT,workflowDir)).filter(x=>/\.ya?ml$/i.test(x)).map(x=>workflowDir+'/'+x);
-  const p5Workflows=workflows.filter(file=>read(file).includes('npm run qa:p5:ci'));
+  const parallelPath='scripts/run-p5-foundation-parallel.mjs';
+  const parallel=existsSync(join(ROOT,parallelPath))?read(parallelPath):'';
+  const helperOwnsP5=parallel.includes("['run', 'qa:p5:ci']")&&parallel.includes("['run', 'qa:garp27:foundation']");
+  const reachesFullP5=yml=>yml.includes('npm run qa:p5:ci')||(yml.includes('node scripts/run-p5-foundation-parallel.mjs')&&helperOwnsP5);
+  const p5Workflows=workflows.filter(file=>reachesFullP5(read(file)));
   const missing=p5Workflows.filter(file=>{const yml=read(file);return !yml.includes('poppler-utils')||!yml.includes('pdftotext -v');});
   const stem=read('scripts/qa-stem-browser.mjs');
   const explicitFailure=stem.includes('function pdfText(path)')&&stem.includes('qa:stem vyžaduje pdftotext')&&stem.includes('r.status!==0');
-  if(!p5Workflows.length||missing.length||!explicitFailure)bad('T28: CI STEM PDF toolchain není explicitně zajištěn'+(missing.length?': '+missing.join(', '):''));
-  else ok('T28: každý přímý P5 CI gate explicitně instaluje poppler-utils a qa:stem hlásí chybějící/selhaný pdftotext');
+  if(!p5Workflows.length||missing.length||!explicitFailure||!helperOwnsP5)bad('T28: CI STEM PDF toolchain není explicitně zajištěn'+(missing.length?': '+missing.join(', '):''));
+  else ok('T28: každý workflow dosažitelný k plnému P5 gate explicitně instaluje poppler-utils a qa:stem hlásí chybějící/selhaný pdftotext');
 }
 
 // T29: current development CI must never consume Gemini quota or require provider secrets.
@@ -458,20 +462,31 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
 }
 
 
-// T38: legacy P3/P4 must not duplicate the automated full P5 gate; deploy waits for a successful P5 push and only rebuilds the artifact.
+// T38: legacy P3/P4 must not duplicate the automated full P5 gate; the full gate may be reached through the audited parallel helper, and deploy only rebuilds the verified artifact.
 {
+  const workflowDir='.github/workflows';
+  const workflowFiles=readdirSync(join(ROOT,workflowDir)).filter(x=>/\.ya?ml$/i.test(x));
   const p3=read('.github/workflows/p3-quality.yml'),p4=read('.github/workflows/p4-release.yml'),deploy=read('.github/workflows/deploy.yml'),p5=read('.github/workflows/p5-release-gate.yml');
+  const parallelPath='scripts/run-p5-foundation-parallel.mjs';
+  const parallel=existsSync(join(ROOT,parallelPath))?read(parallelPath):'';
+  const helperOwnsP5=parallel.includes("['run', 'qa:p5:ci']")&&parallel.includes("['run', 'qa:garp27:foundation']")&&parallel.includes('Promise.all');
+  const reachesFullP5=yml=>yml.includes('npm run qa:p5:ci')||(yml.includes('node scripts/run-p5-foundation-parallel.mjs')&&helperOwnsP5);
+  const automaticFullGates=workflowFiles.filter(file=>{
+    const yml=read(join(workflowDir,file));
+    return (/\n\s+push:/m.test(yml)||/\n\s+pull_request:/m.test(yml))&&reachesFullP5(yml);
+  });
   const problems=[];
   for(const [name,yml] of [['P3',p3],['P4',p4]]){
     if(!/on:\s*\n\s+workflow_dispatch:/m.test(yml))problems.push(name+' nemá ruční workflow_dispatch');
     if(/\n\s+push:/m.test(yml)||/\n\s+pull_request:/m.test(yml))problems.push(name+' se stále spouští automaticky na push/PR');
   }
-  if(!/\n\s+push:/m.test(p5)||!/\n\s+pull_request:/m.test(p5)||!p5.includes('npm run qa:p5:ci'))problems.push('P5 R2 není jediný zachovaný automatický plný release gate');
-  if(deploy.includes('npm run qa:p5:ci'))problems.push('deploy znovu spouští celý P5 gate');
+  if(!/\n\s+push:/m.test(p5)||!/\n\s+pull_request:/m.test(p5)||!reachesFullP5(p5)||!helperOwnsP5)problems.push('P5 R2 nemá auditovanou cestu k plnému release gate');
+  if(automaticFullGates.length!==1||automaticFullGates[0]!=='p5-release-gate.yml')problems.push('automatický plný release gate není unikátní: '+automaticFullGates.join(', '));
+  if(reachesFullP5(deploy))problems.push('deploy znovu spouští celý P5 gate');
   if(!deploy.includes('workflow_run:')||!deploy.includes('P5 R2 pre-production release gate')||!deploy.includes("github.event.workflow_run.conclusion == 'success'")||!deploy.includes('github.event.workflow_run.head_sha'))problems.push('deploy není navázán na úspěšný P5 run stejného commitu');
   if(!deploy.includes('npm run build')||!deploy.includes('npm run qa:platform'))problems.push('deploy nemá lehký rebuild + platform conformance');
   if(problems.length)bad('T38: CI workflow dedup: '+problems.join('; '));
-  else ok('T38: P3/P4 jsou ruční, P5 je jediný automatický plný gate a deploy čeká na jeho úspěch bez opakování P5');
+  else ok('T38: P3/P4 jsou ruční, P5 je jediný automatický plný gate přes auditovaný helper a deploy čeká na jeho úspěch bez opakování P5');
 }
 
 
