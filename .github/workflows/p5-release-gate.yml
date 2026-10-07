@@ -38,8 +38,12 @@ jobs:
       - name: Install pinned Playwright Chromium
         shell: bash
         run: |
-          npx playwright install --with-deps chromium
-          node -e "console.log('CHROMIUM_PATH=' + require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
+          set -euo pipefail
+          npx playwright install --with-deps --no-shell chromium
+          CHROMIUM_PATH="$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")"
+          test -x "$CHROMIUM_PATH"
+          "$CHROMIUM_PATH" --version
+          echo "CHROMIUM_PATH=$CHROMIUM_PATH" >> "$GITHUB_ENV"
       - name: Install PDF audit dependencies
         shell: bash
         run: |
