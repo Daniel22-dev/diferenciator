@@ -71,6 +71,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.SAFE_PROMOTION_TOKEN }}
+          REPO_SYNC_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
           CHECKED_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
@@ -78,6 +79,10 @@ jobs:
 
           if [ -z "${GH_TOKEN:-}" ]; then
             echo "::error::Missing SAFE_PROMOTION_TOKEN. Promotion is fail-closed; merge was not attempted."
+            exit 1
+          fi
+          if [ -z "${REPO_SYNC_TOKEN:-}" ]; then
+            echo "::error::Missing repository GITHUB_TOKEN. Candidate synchronization is fail-closed."
             exit 1
           fi
 
@@ -159,6 +164,6 @@ jobs:
             exit 1
           fi
 
-          gh api --method PATCH "repos/${REPOSITORY}/git/refs/heads/candidate"             -f sha="$merge_sha"             -F force=false >/dev/null
+          GH_TOKEN="$REPO_SYNC_TOKEN" gh api --method PATCH "repos/${REPOSITORY}/git/refs/heads/candidate"             -f sha="$merge_sha"             -F force=false >/dev/null
 
           echo "Safe Promotion merged PR #${pr_number} from candidate into protected main and fast-forwarded candidate to ${merge_sha}."
