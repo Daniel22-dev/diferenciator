@@ -30,6 +30,7 @@ try{
 const marker='ghrab-playwright-runtime-probe';
 const result=spawnSync(resolvedExecutable,[
   '--headless=new',
+  '--no-sandbox',
   '--disable-gpu',
   '--disable-background-networking',
   '--disable-component-update',
