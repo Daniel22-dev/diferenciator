@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { createServer } from 'node:http';
-import { spawn, execFileSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -15,39 +14,11 @@ import { dirname, extname, join, normalize, relative, resolve, sep } from 'node:
 import { homedir, tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as sleep } from 'node:timers/promises';
+import {cleanupChromium,findChromiumExecutable,spawnChromium} from './lib/chromium-process.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG_PATH = join(ROOT, 'reporter-test.config.json');
-function findChromium() {
-  const explicit = process.env.CHROMIUM_PATH || process.env.CHROME_PATH;
-  const candidates = [
-    explicit,
-    '/usr/bin/chromium',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/google-chrome',
-    '/usr/bin/google-chrome-stable',
-  ].filter(Boolean);
-  for (const candidate of candidates) {
-    if (existsSync(candidate)) return candidate;
-  }
-  const playwrightRoot = process.env.PLAYWRIGHT_BROWSERS_PATH && process.env.PLAYWRIGHT_BROWSERS_PATH !== '0'
-    ? process.env.PLAYWRIGHT_BROWSERS_PATH
-    : join(homedir(), '.cache', 'ms-playwright');
-  if (existsSync(playwrightRoot)) {
-    const versions = readdirSync(playwrightRoot)
-      .filter((name) => name.startsWith('chromium-'))
-      .sort()
-      .reverse();
-    for (const version of versions) {
-      for (const relativePath of ['chrome-linux64/chrome', 'chrome-linux/chrome']) {
-        const candidate = join(playwrightRoot, version, relativePath);
-        if (existsSync(candidate)) return candidate;
-      }
-    }
-  }
-  return explicit || '/usr/bin/chromium';
-}
-const CHROMIUM = findChromium();
+const CHROMIUM = findChromiumExecutable();
 const config = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
 const packageJson = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
 const TEST_SENSITIVE_EMAIL = ['student.fixture', 'example.test'].join(String.fromCharCode(64));
@@ -513,19 +484,34 @@ async function navigate(client, url) {
   await client.call('Page.navigate', { url });
   await waitFor(client, 'document.readyState === "complete" || document.readyState === "interactive"', `Navigation failed: ${url}`, 300);
 }
+function readStoredZip(base64,label){
+  const archive=Buffer.from(base64,'base64'),entries=new Map();
+  let offset=0;
+  while(offset+4<=archive.length&&archive.readUInt32LE(offset)===0x04034b50){
+    if(offset+30>archive.length)throw new Error(`${label}: neúplná lokální ZIP hlavička`);
+    const flags=archive.readUInt16LE(offset+6),method=archive.readUInt16LE(offset+8),compressedSize=archive.readUInt32LE(offset+18),size=archive.readUInt32LE(offset+22),nameLength=archive.readUInt16LE(offset+26),extraLength=archive.readUInt16LE(offset+28);
+    if(flags&0x0008)throw new Error(`${label}: ZIP data descriptor není v testovacím parseru podporován`);
+    if(method!==0||compressedSize!==size)throw new Error(`${label}: očekáván nekomprimovaný ZIP z reportéru`);
+    const nameStart=offset+30,nameEnd=nameStart+nameLength,dataStart=nameEnd+extraLength,dataEnd=dataStart+compressedSize;
+    if(dataEnd>archive.length)throw new Error(`${label}: ZIP položka přesahuje velikost archivu`);
+    const name=archive.subarray(nameStart,nameEnd).toString('utf8');
+    if(!name||entries.has(name))throw new Error(`${label}: ZIP obsahuje prázdný nebo duplicitní název`);
+    entries.set(name,archive.subarray(dataStart,dataEnd));
+    offset=dataEnd;
+  }
+  if(!entries.size)throw new Error(`${label}: ZIP neobsahuje čitelné lokální položky`);
+  return entries;
+}
 function inspectZip(base64, label, { expectedScreenshots = 1, forbidden = [], requiredTypes = [] } = {}) {
-  const dir = mkdtempSync(join(tmpdir(), `ghrab-reporter-zip-${process.pid}-`));
-  const zipPath = join(dir, `${label}.zip`);
-  writeFileSync(zipPath, Buffer.from(base64, 'base64'));
-  const names = execFileSync('unzip', ['-Z1', zipPath], { encoding: 'utf8' }).trim().split(/\r?\n/).filter(Boolean);
+  const entries=readStoredZip(base64,label),names=[...entries.keys()];
   for (const required of ['00-PREHLED-HLASENI.html', 'hlaseni.txt', 'technicke-udaje.json']) {
     if (!names.includes(required)) throw new Error(`${label}: ZIP neobsahuje ${required}`);
   }
   const screenshots = names.filter((name) => /^screenshot-\d\d\.jpg$/.test(name));
   if (screenshots.length !== expectedScreenshots) throw new Error(`${label}: očekáváno ${expectedScreenshots} screenshotů, nalezeno ${screenshots.length}`);
-  const metadataText = execFileSync('unzip', ['-p', zipPath, 'technicke-udaje.json'], { encoding: 'utf8' });
-  const reportText = execFileSync('unzip', ['-p', zipPath, 'hlaseni.txt'], { encoding: 'utf8' });
-  const overview = execFileSync('unzip', ['-p', zipPath, '00-PREHLED-HLASENI.html'], { encoding: 'utf8' });
+  const metadataText = entries.get('technicke-udaje.json').toString('utf8');
+  const reportText = entries.get('hlaseni.txt').toString('utf8');
+  const overview = entries.get('00-PREHLED-HLASENI.html').toString('utf8');
   const metadata = JSON.parse(metadataText);
   if (metadata.appId !== config.appId || metadata.appVersion !== config.version) throw new Error(`${label}: nesprávná identita aplikace`);
   if (!metadata.reportId || !metadata.createdAt) throw new Error(`${label}: chybí ID nebo čas`);
@@ -535,7 +521,6 @@ function inspectZip(base64, label, { expectedScreenshots = 1, forbidden = [], re
   for (const type of requiredTypes) if (!types.has(type)) throw new Error(`${label}: chybí technická chyba typu ${type}`);
   const allText = `${metadataText}\n${reportText}\n${overview}`;
   for (const secret of forbidden) if (allText.includes(secret)) throw new Error(`${label}: citlivý testovací údaj unikl do ZIPu: ${secret}`);
-  rmSync(dir, { recursive: true, force: true });
   return { names, metadata, allText };
 }
 
@@ -553,7 +538,7 @@ async function runBrowserTests() {
   const debugPort = 12000 + (process.pid % 2000);
   const profile = mkdtempSync(join(tmpdir(), `ghrab-chromium-profile-${process.pid}-`));
   const downloadDir = mkdtempSync(join(tmpdir(), `ghrab-browser-downloads-${process.pid}-`));
-  const chrome = spawn(CHROMIUM, [
+  const chrome = spawnChromium(CHROMIUM, [
     '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
     '--disable-default-apps', '--no-first-run', '--no-proxy-server',
     '--disable-background-networking', '--disable-component-update',
@@ -950,10 +935,9 @@ async function runBrowserTests() {
     }
   } finally {
     try { client?.close(); } catch {}
-    chrome.kill('SIGKILL');
+    await cleanupChromium(chrome, profile);
     server.close();
     await sleep(250);
-    rmSync(profile, { recursive: true, force: true, maxRetries: 4, retryDelay: 100 });
     rmSync(downloadDir, { recursive: true, force: true, maxRetries: 4, retryDelay: 100 });
   }
 }

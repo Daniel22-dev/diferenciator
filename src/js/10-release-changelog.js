@@ -1,10 +1,11 @@
 
 const RELEASE = Object.freeze({
-  version: '1.3.50',
-  date: '2026-09-27',
+  version: '1.3.51',
+  date: '2026-10-08',
   build: '__BUILD__', // build id
   status: 'řízený pilot',
   changes: [
+    '1.3.51: Sdílený limit AI požadavků se vynucuje napříč celým workflow; bezpečnostní a browserové testy jsou stabilizované pro Windows, Linux a macOS.',
     '1.3.50: Přidána sekce O aplikaci; samostatné Změny jsou nově součástí rozbalovacího Katalogu změn uvnitř této sekce.',
     '1.3.49: GARP 2.7 r2.',
     '1.3.48: Cleanup.',

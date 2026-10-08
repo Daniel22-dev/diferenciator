@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
-import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
 import {waitChromiumPageTarget} from './lib/chromium-debug.mjs';
+import {cleanupChromium,createChromiumProfile,findChromiumExecutable,spawnChromium} from './lib/chromium-process.mjs';
 
 const root = path.resolve('.');
 const dist = path.join(root, 'dist');
@@ -16,12 +16,7 @@ const configuredPages = Array.isArray(consumer?.quality?.runtimeAudit?.pages) ? 
 const settleMs = Number(process.env.GHRAB_RUNTIME_SETTLE_MS || 900);
 const outPath = path.join(dist, 'qa-p5-runtime-report.json');
 
-function chromiumPath() {
-  for (const candidate of [process.env.CHROMIUM_PATH, '/usr/bin/chromium', '/usr/lib/chromium/chromium', '/usr/bin/google-chrome'].filter(Boolean)) {
-    if (fs.existsSync(candidate)) return candidate;
-  }
-  throw new Error('Chromium není dostupné. Nastavte CHROMIUM_PATH nebo nainstalujte Chromium.');
-}
+const chromiumPath=findChromiumExecutable;
 async function walk(directory) {
   if (!fs.existsSync(directory)) return [];
   const result = [];
@@ -134,9 +129,8 @@ class Cdp {
   clearEvents(){this.events=[];}
   close(){try{this.ws.close();}catch{}}
 }
-const debugPort=12100+(process.pid%500), profile=`/tmp/ghrab-p5-runtime-${process.pid}`;
-fs.rmSync(profile,{recursive:true,force:true});
-const chrome=spawn(chromiumPath(),['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--disable-background-networking','--disable-extensions','--no-first-run','--mute-audio','--remote-allow-origins=*',`--remote-debugging-port=${debugPort}`,`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore',detached:true});
+const debugPort=12100+(process.pid%500),profile=createChromiumProfile('ghrab-p5-runtime');
+const chrome=spawnChromium(chromiumPath(),['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--disable-background-networking','--disable-extensions','--no-first-run','--mute-audio','--remote-allow-origins=*',`--remote-debugging-port=${debugPort}`,`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore'});
 let client;
 const pageReports=[];
 const auditExpr = `(()=>{
@@ -200,10 +194,7 @@ try {
   }
 } finally {
   client?.close(); server.close();
-  if(chrome.exitCode===null){try{process.kill(-chrome.pid,'SIGTERM')}catch{}}
-  await Promise.race([new Promise(resolve=>chrome.once('exit',resolve)),sleep(1500)]);
-  if(chrome.exitCode===null){try{process.kill(-chrome.pid,'SIGKILL')}catch{}}
-  await sleep(100); fs.rmSync(profile,{recursive:true,force:true,maxRetries:5,retryDelay:100});
+  await cleanupChromium(chrome,profile);
 }
 const issueRows=pageReports.flatMap(p=>p.widths.flatMap(w=>w.audit.issues.map(i=>({...i,page:p.page,width:w.width}))));
 const exceptionRows=pageReports.flatMap(p=>p.widths.flatMap(w=>w.exceptions.map(detail=>({page:p.page,width:w.width,detail}))));

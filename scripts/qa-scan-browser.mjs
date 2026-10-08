@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 import {readFileSync,existsSync,rmSync} from 'node:fs';
 import {join,resolve} from 'node:path';
-import {spawn} from 'node:child_process';
 import {setTimeout as sleep} from 'node:timers/promises';
 import {waitChromiumPageTarget} from './lib/chromium-debug.mjs';
+import {cleanupChromium,createChromiumProfile,findChromiumExecutable,spawnChromium} from './lib/chromium-process.mjs';
 
 const SCHOOL=process.argv.includes('--school');
 const BUILD=resolve(SCHOOL?'dist-school-server':(process.env.BUILD_DIR||'dist'));
 if(!existsSync(join(BUILD,'index.html')))throw new Error('Chybí build '+BUILD);
 
-function chromiumPath(){for(const p of [process.env.CHROMIUM_PATH,'/usr/bin/chromium','/usr/bin/google-chrome'].filter(Boolean))if(existsSync(p))return p;throw new Error('Chromium není dostupné')}
+const chromiumPath=findChromiumExecutable;
 async function waitJson(url){for(let i=0;i<150;i++){try{const r=await fetch(url);if(r.ok)return r.json()}catch{}await sleep(50)}throw new Error('Chromium debug timeout')}
 function inlineHtml(){
   const runtime=readFileSync(join(BUILD,'runtime-config.js'),'utf8').replace(/<\/script/gi,'<\\/script');
@@ -30,8 +30,8 @@ class Cdp{
   close(){try{this.ws.close()}catch{}}
 }
 
-const port=11200+(process.pid%300),profile=`/tmp/dpl-scan-${process.pid}`;
-const chrome=spawn(chromiumPath(),['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--disable-background-networking','--no-first-run',`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore',detached:true});
+const port=11200+(process.pid%300),profile=createChromiumProfile('dpl-scan');
+const chrome=spawnChromium(chromiumPath(),['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--disable-background-networking','--no-first-run',`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore'});
 let c;
 try{
   await waitJson(`http://127.0.0.1:${port}/json/version`);
@@ -91,8 +91,5 @@ try{
   if(!ok)process.exitCode=1;
 }finally{
   c?.close();
-  if(chrome.exitCode===null){try{process.kill(-chrome.pid,'SIGTERM')}catch{}}
-  await Promise.race([new Promise(r=>chrome.once('exit',r)),sleep(1000)]);
-  if(chrome.exitCode===null){try{process.kill(-chrome.pid,'SIGKILL')}catch{}}
-  rmSync(profile,{recursive:true,force:true,maxRetries:4,retryDelay:50});
+  await cleanupChromium(chrome,profile);
 }

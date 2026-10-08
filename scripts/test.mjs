@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-import { readFileSync, existsSync, rmSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn } from "node:child_process";
 import { setTimeout as sleep } from "node:timers/promises";
-import { createRequire } from "node:module";
-const require=createRequire(import.meta.url);
+import {cleanupChromium,createChromiumProfile,findChromiumExecutable,spawnChromium} from './lib/chromium-process.mjs';
+import {waitChromiumPageTarget} from './lib/chromium-debug.mjs';
 
 const ROOT=join(dirname(fileURLToPath(import.meta.url)),".."),BASE=join(ROOT,"dist"),INTERNAL_TEST_SOURCE=join(ROOT,'src','js','50-interni-testy.js');
 const REPO="diferenciator",APP_ID="differentiator",CACHE_PREFIX="ghrab-differentiator-v";
@@ -25,13 +24,12 @@ function testHtml(raw){
     .replace(/<script type="module" data-ghrab-access-bootstrap>[\s\S]*?<\/script>/,'')
     .replace('</body>',()=>{const tests=readFileSync(INTERNAL_TEST_SOURCE,'utf-8').replace(/<\/script/gi,'<\\/script');return `<script data-ghrab-internal-tests>${tests};TestSystem.init();<\/script></body>`});
 }
-function findChromium(){const candidates=[process.env.CHROMIUM_PATH,process.env.CHROME_PATH,"/usr/bin/chromium","/usr/bin/google-chrome","/usr/bin/google-chrome-stable"].filter(Boolean);try{candidates.push(require("playwright").chromium.executablePath())}catch{}for(const p of candidates)if(p&&existsSync(p))return p;throw new Error("Chromium není dostupné. Spusť `npx playwright install chromium` nebo nastav CHROMIUM_PATH/CHROME_PATH.")}
 async function waitJson(url){for(let i=0;i<150;i++){try{const r=await fetch(url);if(r.ok)return await r.json()}catch{}await sleep(100)}throw new Error("Chromium remote debugging se nespustil")}
 async function runBrowser(raw){
-  const port=9450+(process.pid%300),profile=join("/tmp",`diferenciator-test-${process.pid}`),chrome=spawn(findChromium(),["--headless=new","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--disable-default-apps","--no-first-run",`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,"about:blank"],{stdio:["ignore","ignore","ignore"]});
+  const port=9450+(process.pid%300),profile=createChromiumProfile('diferenciator-test'),chrome=spawnChromium(findChromiumExecutable(),["--headless=new","--no-sandbox","--disable-gpu","--disable-dev-shm-usage","--disable-default-apps","--no-first-run",`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,"about:blank"],{stdio:["ignore","ignore","ignore"]});
   let ws;
   try{
-    await waitJson(`http://127.0.0.1:${port}/json/version`);const pages=await waitJson(`http://127.0.0.1:${port}/json`),page=pages.find(x=>x.type==="page");
+    await waitJson(`http://127.0.0.1:${port}/json/version`);const page=await waitChromiumPageTarget(port);
     ws=new WebSocket(page.webSocketDebuggerUrl);await new Promise((res,rej)=>{ws.onopen=res;ws.onerror=rej});let seq=0;const pending=new Map();
     ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);m.error?p.reject(new Error(JSON.stringify(m.error))):p.resolve(m.result)}};
     const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}))});
@@ -40,7 +38,7 @@ async function runBrowser(raw){
     await call("Page.setDocumentContent",{frameId:tree.frameTree.frame.id,html});let report="";
     for(let i=0;i<250;i++){const r=await call("Runtime.evaluate",{expression:'document.querySelector("#__TEST_REPORT__")?.textContent||""',returnByValue:true});report=r.result?.value||"";if(report)break;await sleep(100)}
     if(!report)throw new Error("Chromium test report timeout");return JSON.parse(report);
-  }finally{try{ws?.close()}catch{}chrome.kill("SIGKILL");await sleep(200);rmSync(profile,{recursive:true,force:true,maxRetries:3,retryDelay:100})}
+  }finally{try{ws?.close()}catch{}await cleanupChromium(chrome,profile)}
 }
 
 const raw=readFileSync(join(BASE,"index.html"),"utf-8"),runtime=await runBrowser(raw);

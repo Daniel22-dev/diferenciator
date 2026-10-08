@@ -2,9 +2,9 @@
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
 import { performance as nodePerformance } from 'node:perf_hooks';
 import { setTimeout as sleep } from 'node:timers/promises';
+import {cleanupChromium,createChromiumProfile,findChromiumExecutable,spawnChromium} from './lib/chromium-process.mjs';
 
 const root = path.resolve('.');
 const dist = path.join(root, 'dist');
@@ -14,12 +14,7 @@ const budget = quality.runtimeBudget || {};
 const widths = [1280, 390, 320];
 const maxPages = Number(process.env.GHRAB_REFLOW_MAX_PAGES || 40);
 
-function chromiumPath() {
-  for (const candidate of [process.env.CHROMIUM_PATH, '/usr/lib/chromium/chromium', '/usr/bin/chromium', '/usr/bin/google-chrome'].filter(Boolean)) {
-    if (fs.existsSync(candidate)) return candidate;
-  }
-  throw new Error('Chromium není dostupné');
-}
+const chromiumPath=findChromiumExecutable;
 async function waitJson(url) {
   for (let i = 0; i < 600; i += 1) {
     try { const response = await fetch(url); if (response.ok) return await response.json(); } catch {}
@@ -124,15 +119,14 @@ const selected = pages.slice(0, maxPages);
 if (!selected.length) throw new Error('Nebyla nalezena žádná distribuovaná HTML stránka pro reflow test.');
 
 const port = 10800 + (process.pid % 500);
-const profile = `/tmp/ghrab-p3-reflow-${process.pid}`;
-fs.rmSync(profile, { recursive: true, force: true });
-const chrome = spawn(chromiumPath(), [
+const profile = createChromiumProfile('ghrab-p3-reflow');
+const chrome = spawnChromium(chromiumPath(), [
   '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
   '--disable-background-networking', '--disable-extensions', '--no-first-run',
   '--disable-features=Translate,MediaRouter', '--mute-audio',
   '--remote-allow-origins=*',
   `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, 'about:blank',
-], { stdio: 'ignore', detached: true });
+], { stdio: 'ignore' });
 const results = [];
 const debugBase = `http://127.0.0.1:${port}`;
 
@@ -228,11 +222,7 @@ try {
   await waitJson(`${debugBase}/json/version`);
   for (const page of selected) results.push(await measurePage(page));
 } finally {
-  if (chrome.exitCode === null) { try { process.kill(-chrome.pid, 'SIGTERM'); } catch {} }
-  await Promise.race([new Promise((resolve) => chrome.once('exit', resolve)), sleep(1500)]);
-  if (chrome.exitCode === null) { try { process.kill(-chrome.pid, 'SIGKILL'); } catch {} }
-  await sleep(100);
-  try { fs.rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); } catch (error) { console.warn(`[P3 reflow] Dočasný profil se nepodařilo odstranit: ${error.message}`); }
+  await cleanupChromium(chrome,profile);
 }
 
 const allRuns = results.flatMap((page) => page.widths.map((run) => ({ page: page.page, ...run })));
