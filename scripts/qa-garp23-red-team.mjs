@@ -3,8 +3,9 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
-import {spawn} from 'node:child_process';
+import os from 'node:os';
 import {setTimeout as sleep} from 'node:timers/promises';
+import {cleanupChromium,createChromiumProfile,findChromiumExecutable,spawnChromium} from './lib/chromium-process.mjs';
 
 const ROOT=path.resolve('.');
 const DIST=path.join(ROOT,'dist');
@@ -16,7 +17,7 @@ const A=`GARP-AIRED-A-${ID}`;
 const B=`GARP-AIRED-B-${ID}`;
 const STORAGE=`GARP-STORAGE-CANARY-${ID}`;
 const results=[];
-const evidenceDir=process.env.GARP_EVIDENCE_DIR||'/tmp';fs.mkdirSync(evidenceDir,{recursive:true});
+const evidenceDir=process.env.GARP_EVIDENCE_DIR||os.tmpdir();fs.mkdirSync(evidenceDir,{recursive:true});
 const check=(id,condition,detail='')=>results.push({id,status:condition?'PASS':'FAIL',detail});
 const js=v=>JSON.stringify(v);
 
@@ -34,15 +35,14 @@ function safeFile(urlPath){let rel=decodeURIComponent(urlPath).replace(/^\/difer
 const server=http.createServer(async(req,res)=>{const u=new URL(req.url,'http://127.0.0.1');if(u.pathname==='/AI-Studio-GHRAB/access/app-guard.js'){res.writeHead(200,{'content-type':'text/javascript; charset=utf-8','cache-control':'no-store'});res.end(guard);return;}if(u.pathname.startsWith('/AI-Studio-GHRAB/')){res.writeHead(404);res.end('synthetic missing studio asset');return;}const file=safeFile(u.pathname);if(!file){res.writeHead(403);res.end('forbidden');return;}try{const st=await fsp.stat(file);if(!st.isFile())throw new Error();const data=await fsp.readFile(file);res.writeHead(200,{'content-type':MIME[path.extname(file).toLowerCase()]||'application/octet-stream','cache-control':'no-store'});res.end(data);}catch{res.writeHead(404);res.end('not found');}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const appPort=server.address().port,base=`http://127.0.0.1:${appPort}/diferenciator/`;
-const chromiumPath=[process.env.CHROMIUM_PATH,'/usr/lib/chromium/chromium','/usr/bin/chromium','/usr/bin/google-chrome'].filter(Boolean).find(p=>fs.existsSync(p));
-if(!chromiumPath)throw new Error('Chromium unavailable');
-const debugPort=11000+(process.pid%2000),profile=`/tmp/garp23-differentiator-${process.pid}`;fs.rmSync(profile,{recursive:true,force:true});
-const chrome=spawn(chromiumPath,['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--disable-background-networking','--no-first-run',`--remote-debugging-port=${debugPort}`,`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore',detached:true});
+const chromiumPath=findChromiumExecutable();
+const debugPort=11000+(process.pid%2000),profile=createChromiumProfile('garp23-differentiator');
+const chrome=spawnChromium(chromiumPath,['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--disable-background-networking','--no-first-run',`--remote-debugging-port=${debugPort}`,`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore'});
 class Cdp{constructor(url){this.ws=new WebSocket(url);this.seq=0;this.pending=new Map();this.events=[];this.ready=new Promise((res,rej)=>{this.ws.onopen=res;this.ws.onerror=rej});this.ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&this.pending.has(m.id)){const p=this.pending.get(m.id);this.pending.delete(m.id);m.error?p.reject(new Error(JSON.stringify(m.error))):p.resolve(m.result);}else if(m.method)this.events.push(m);};}async call(method,params={}){await this.ready;return await new Promise((resolve,reject)=>{const id=++this.seq;this.pending.set(id,{resolve,reject});this.ws.send(JSON.stringify({id,method,params}));});}async eval(expression){const r=await this.call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true,userGesture:true});if(r.exceptionDetails)throw new Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result?.value;}close(){try{this.ws.close()}catch{}}}
 async function waitFetch(url,opts){for(let i=0;i<180;i++){try{const r=await fetch(url,opts);if(r.ok)return await r.json();}catch{}await sleep(50);}throw new Error('Chromium debug timeout');}
 let browserCdp;const pages=[];
 async function newPage(){const {targetId}=await browserCdp.call('Target.createTarget',{url:'about:blank'});let target;for(let i=0;i<120;i++){const list=await fetch(`http://127.0.0.1:${debugPort}/json/list`).then(r=>r.json()).catch(()=>[]);target=list.find(x=>x.id===targetId&&x.webSocketDebuggerUrl);if(target)break;await sleep(50);}if(!target)throw new Error('target not found');const p=new Cdp(target.webSocketDebuggerUrl);await p.call('Runtime.enable');await p.call('Page.enable');pages.push({p,targetId});return p;}
-async function nav(p,url){await p.call('Page.navigate',{url});for(let i=0;i<240;i++){try{if(await p.eval(`document.readyState==='complete'`))return;}catch{}await sleep(50);}throw new Error('navigation timeout '+url);}
+async function nav(p,url){const target=new URL(url).href,navigation=await p.call('Page.navigate',{url:target});if(navigation?.errorText)throw new Error('navigation failed '+target+': '+navigation.errorText);for(let i=0;i<240;i++){try{if(await p.eval(`location.href===${js(target)}&&document.readyState==='complete'`))return;}catch{}await sleep(50);}throw new Error('navigation timeout '+target);}
 async function waitEval(p,expr,loops=240){for(let i=0;i<loops;i++){try{const v=await p.eval(expr);if(v)return v;}catch{}await sleep(50);}throw new Error('waitEval timeout: '+expr.slice(0,100));}
 async function waitApp(p){try{await waitEval(p,`Boolean(document.querySelector('#pasteText')&&window.GHRAB_AI&&typeof callGemini==='function'&&typeof dplEnsureAiCore==='function')`);}catch(error){const state=await p.eval(`({href:location.href,access:document.documentElement.dataset.ghrabAccess,ready:document.readyState,paste:!!document.querySelector('#pasteText'),ai:typeof window.GHRAB_AI,call:typeof callGemini,ensure:typeof dplEnsureAiCore,body:document.body.innerText.slice(0,500)})`).catch(()=>null);console.error('GARP waitApp debug',JSON.stringify(state));console.error('CDP events',JSON.stringify(p.events.slice(-20)));throw error;}}
 async function installMock(p){await p.eval(`(()=>{dplEnsureAiCore();window.__garpCaptured=[];window.__garpUsage=[];window.addEventListener('ghrab:ai-usage',e=>window.__garpUsage.push(e.detail));GHRAB_AI.__testing.setTestHooks({isEnabled:()=>true,directGemini:async payload=>{window.__garpCaptured.push(payload);return {text:'SAFE SYNTHETIC RESULT'};}});return true})()`);}
@@ -61,8 +61,8 @@ try{
     console.log(JSON.stringify(report,null,2));
   }
   if(!runtimeBlocked){
-  await nav(p,base+'?garpGuard=deny');await sleep(300);check('RT01-DENY',!(await p.eval(`Boolean(document.querySelector('#pasteText'))`)),'protectApp=false neodemkl chráněný bundle');
-  await nav(p,base+'?garpGuard=throw');await sleep(400);const failure=await p.eval(`({access:document.documentElement.dataset.ghrabAccess,app:!!document.querySelector('#pasteText'),protected:!!document.querySelector('script[data-ghrab-protected]')})`);check('RT01-GUARD-FAIL',failure.access==='denied'&&!failure.app&&failure.protected,'výpadek guardu skončil fail-closed access gate');
+  await nav(p,base+'?garpGuard=deny');await waitEval(p,`document.documentElement.dataset.ghrabAccess==='denied'`);const denied=await p.eval(`({access:document.documentElement.dataset.ghrabAccess,call:typeof globalThis.callGemini,locked:!!document.querySelector('script[type="application/ghrab-protected"][data-ghrab-protected]'),studioAccess:!!window.__GHRAB_STUDIO_ACCESS__})`);check('RT01-DENY',denied.access==='denied'&&denied.call==='undefined'&&denied.locked&&!denied.studioAccess,'protectApp=false neodemkl chráněný bundle: '+JSON.stringify(denied));
+  await nav(p,base+'?garpGuard=throw');await waitEval(p,`document.documentElement.dataset.ghrabAccess==='denied'&&Boolean(document.querySelector('.ghrab-access-gate'))`);const failure=await p.eval(`({access:document.documentElement.dataset.ghrabAccess,call:typeof globalThis.callGemini,gate:!!document.querySelector('.ghrab-access-gate'),studioAccess:!!window.__GHRAB_STUDIO_ACCESS__})`);check('RT01-GUARD-FAIL',failure.access==='denied'&&failure.call==='undefined'&&failure.gate&&!failure.studioAccess,'výpadek guardu skončil fail-closed access gate');
   await nav(p,base);await waitApp(p);await installMock(p);
 
   await p.eval(`localStorage.setItem('garp.unrelated.local',${js(STORAGE)});sessionStorage.setItem('garp.unrelated.session',${js(STORAGE)});true`);
@@ -83,7 +83,7 @@ try{
   const consoleText=await p.eval(`window.__garpConsoleText||''`).catch?.(()=> '')||''; // app itself does not install content console capture; source/runtime scan covers console separately.
   check('RT14-CONSOLE-STATIC',true,'runtime source review + dedicated reporter tests cover console; no app content logging path found');
 
-  await p.eval(`(()=>{window.__garpXss=0;applyProject({app:'Diferenciátor pracovních listů a testů',schemaVersion:1,form:{subject:'Synthetic'},sheets:[{tierKey:'core',text:'<img src=x onerror="window.__garpXss=1">',parts:{title:'<svg onload="window.__garpXss=2">',instructions:'[x](javascript:window.__garpXss=3)',tasks:'<img src=x onerror="window.__garpXss=4">',answerKey:'',teacherNote:'<script>window.__garpXss=5</script>'},structured:true}]});return true})()`);await sleep(120);const xss=await p.eval(`({value:window.__garpXss,html:document.querySelector('#results')?.innerHTML||''})`);check('RT07-XSS',xss.value===0&&!/onerror\s*=|onload\s*=|javascript:/i.test(xss.html),'malicious import/AI-like HTML zůstal inertní');
+  await p.eval(`(()=>{window.__garpXss=0;applyProject({app:'Diferenciátor pracovních listů a testů',schemaVersion:1,form:{subject:'Synthetic'},sheets:[{tierKey:'core',text:'<img src=x onerror="window.__garpXss=1">',parts:{title:'<svg onload="window.__garpXss=2">',instructions:'[x](javascript:window.__garpXss=3)',tasks:'<img src=x onerror="window.__garpXss=4">',answerKey:'',teacherNote:'<script>window.__garpXss=5</script>'},structured:true}]});return true})()`);await sleep(120);const xss=await p.eval(`(()=>{const root=document.querySelector('#results');return{value:window.__garpXss,dangerous:root?root.querySelectorAll('script,[onerror],[onload],a[href^="javascript:"],iframe,object,embed').length:-1}})()`);check('RT07-XSS',xss.value===0&&xss.dangerous===0,'malicious import/AI-like HTML zůstal inertní');
 
   const importAudit=await p.eval(`(()=>{let bad=false;try{normalizeProject({app:'wrong',schemaVersion:1})}catch{bad=true}const huge='X'.repeat(250000),n=normalizeProject({app:'Diferenciátor pracovních listů a testů',schemaVersion:1,form:{pasteText:huge},sheets:[]});return{bad,len:n.form.pasteText.length}})()`);check('RT08-IMPORT',importAudit.bad&&importAudit.len<250000,'neplatný projekt odmítnut, velký text omezen');
 
@@ -95,5 +95,5 @@ try{
   }
 } finally {
   for(const {p,targetId} of pages){p.close();try{await browserCdp?.call('Target.closeTarget',{targetId})}catch{}}
-  browserCdp?.close();if(chrome.exitCode===null){try{process.kill(-chrome.pid,'SIGTERM')}catch{}}await Promise.race([new Promise(r=>chrome.once('exit',r)),sleep(1200)]);if(chrome.exitCode===null){try{process.kill(-chrome.pid,'SIGKILL')}catch{}}fs.rmSync(profile,{recursive:true,force:true,maxRetries:5,retryDelay:100});await new Promise(r=>server.close(r));
+  browserCdp?.close();await cleanupChromium(chrome,profile);await new Promise(r=>server.close(r));
 }

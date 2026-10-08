@@ -75,7 +75,7 @@ async function generateVersions(keys,triggerBtn){
   if(!$('#mSubject').value.trim())$('#mSubject').value=$('#subject').value.trim();
   const buttons=[$('#genBtn'),$('#genAllBtn')].filter(Boolean),labels=buttons.map(b=>b.innerHTML);
   buttons.forEach(b=>b.disabled=true);triggerBtn.innerHTML='<span class="mini"></span> Vytvářím…';
-  const results=$('#results'),successful=[],failures=[],previous=new Map(),working=new Map();
+  const results=$('#results'),successful=[],failures=[],previous=new Map(),working=new Map(),workflowId=dplCreateAiWorkflowId('generate-versions');
   try{
     setProgress(keys.length>1?'Připravuji celou sadu…':'Připravuji verzi…',true);
     show($('#resultsPanel'));
@@ -87,7 +87,7 @@ async function generateVersions(keys,triggerBtn){
     safeScrollIntoView($('#resultsPanel'),{behavior:'smooth',block:'start'});
     for(let i=0;i<keys.length;i++){
       const key=keys[i],sheet=working.get(key);
-      try{await generateIntoSheet(sheet,key,base,i,keys.length);successful.push(sheet)}
+      try{await generateIntoSheet(sheet,key,base,i,keys.length,workflowId);successful.push(sheet)}
       catch(err){
         failures.push((TIERS[key]&&TIERS[key].name||key)+': '+friendlyApiMessage(err));
         const old=previous.get(key);if(old)sheet.replaceWith(old);else sheet.remove();
@@ -109,6 +109,7 @@ async function generateVersions(keys,triggerBtn){
     errBox($('#configErr'),friendlyApiMessage(err));
     if(!results.children.length)hide($('#resultsPanel'));
   }finally{
+    dplCloseAiWorkflow(workflowId);
     buttons.forEach((b,i)=>{b.disabled=false;b.innerHTML=labels[i]});
   }
 }

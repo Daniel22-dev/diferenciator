@@ -78,7 +78,7 @@ jobs:
       - name: Run P5 core and GARP 2.7 Foundation in isolated parallel worktrees
         run: node scripts/run-p5-foundation-parallel.mjs
         env:
-          GARP27_EXTERNAL_TRUST_SHA256: c001d5a1cd66cd152a7b918f68f0201e458d431e49443ea658f3d8d126837114
+          GARP27_EXTERNAL_TRUST_SHA256: 38f7710f732d745ddbb099f478ee9c1c004d467c40fbcd148b5d0e756b941ef1
       - name: Validate final Pages release identity
         run: npm run prepare:pages
       - name: Upload audit evidence

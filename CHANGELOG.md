@@ -1,3 +1,10 @@
+## 1.3.51 — AI budget a multiplatformní hardening (2026-10-08)
+
+- Limit 12 provider požadavků se nyní vynucuje napříč celým workflow generování, strukturální opravy a revize; před transportem se rezervuje nejhorší možná spotřeba a chybějící usage účtování končí fail-closed.
+- Chromium QA, GARP foundation a error-reporter testy jsou přenositelné mezi Windows, Linuxem a macOS, včetně bezpečného ukončení procesních stromů a úklidu dočasných profilů.
+- Zpřesněny GARP 2.3/2.5/2.7 regresní a mutační kontroly, accessibility detekce a trust/fingerprint vazby.
+- Beze změny sedmi AI operací, datové klasifikace D2, AGENTIC=NO a transportních profilů; school-server LIVE zůstává `DEFERRED/NOT_TESTED`.
+
 ## 1.3.50 — O aplikaci (2026-09-27)
 
 - Přidána samostatná sekce **O aplikaci** s identitou a účelem, autorem a vývojovým garantem, školním projektem, určením/přístupem, technickým stavem a provozními zásadami.

@@ -459,7 +459,7 @@ function attachSheetTools(sheet){
   tools.append(main,more);
 }
 
-async function repairWorksheetJson(raw,validation,base,key){
+async function repairWorksheetJson(raw,validation,base,key,workflowId){
   const t=TIERS[key]||TIERS.core;
   const instructions=[
     'Převeď datovou odpověď modelu na platný JSON podle schématu. Věcný obsah neměň; oprav jen strukturu. Chybí-li answer_key, vytvoř stručný klíč. Vrať jen JSON.',
@@ -468,10 +468,10 @@ async function repairWorksheetJson(raw,validation,base,key){
   ].join('\n\n');
   const count=Math.max(0,Number(validation&&validation.issues&&validation.issues.length)||0);
   const data='DETERMINISTICKÁ VALIDACE APLIKACE: zjištěno '+count+' problémů.\n\nPŮVODNÍ ZADÁNÍ:\n'+String(base||'').slice(0,8000)+'\n\nODPOVĚĎ K OPRAVĚ:\n'+String(raw||'');
-  return callGemini([{text:data,label:'source'}],{json:true,operation:'worksheet-structure-repair',appInstructions:instructions});
+  return callGemini([{text:data,label:'source'}],{json:true,operation:'worksheet-structure-repair',appInstructions:instructions,workflowId});
 }
 
-async function generateIntoSheet(sheet,key,base,idx,total){
+async function generateIntoSheet(sheet,key,base,idx,total,workflowId){
   const t=TIERS[key];
   setSheetStatus(sheet,'generuji…','busy');
   sheet.querySelector('.body').innerHTML='<span class="muted"><span class="mini"></span> generuji…</span>';
@@ -480,13 +480,13 @@ async function generateIntoSheet(sheet,key,base,idx,total){
   const structureBox=sheet.querySelector('.structurebox');if(structureBox){structureBox.innerHTML='';structureBox.classList.remove('show')}
   setProgress((total>1?'Verze '+(idx+1)+' z '+total+': ':'Generuji ')+t.name.toLowerCase()+' verzi…',true);
   const r={};makePromptForTier(key,base,total,r);const sourceAssets=preservedSourceVisualAssets(),generationParts=[{text:r.s,label:'source'},{text:r.c,label:'teacher-context'},...generationVisualParts()];
-  const out=await callGemini(generationParts,{json:true,operation:'worksheet-generation',appInstructions:r.i});
+  const out=await callGemini(generationParts,{json:true,operation:'worksheet-generation',appInstructions:r.i,workflowId});
   let parsed=ensureMediaSourceMarker(normalizeParsedVisuals(parseWorksheetResponse(out),sourceAssets));
   let validation=validateWorksheetResponse(parsed);
   if(!validation.ok){
     try{
       setProgress('Opravuji strukturu výstupu…',true);
-      const fixed=await repairWorksheetJson(out,validation,base,key);
+      const fixed=await repairWorksheetJson(out,validation,base,key,workflowId);
       const fixedParsed=ensureMediaSourceMarker(normalizeParsedVisuals(parseWorksheetResponse(fixed),sourceAssets));
       const fixedValidation=validateWorksheetResponse(fixedParsed);
       if(fixedParsed&&String(fixedParsed.worksheet||'').trim()&&(fixedValidation.ok||fixedValidation.issues.length<validation.issues.length)){
@@ -627,12 +627,12 @@ async function applySelectedQualitySuggestions(){
   const parsedAudit=parseQualityAudit(qualityActiveSheet._quality),already=new Set((qualityActiveSheet._qualityApplied||[]).map(Number)),indexes=[...document.querySelectorAll('#qualityBody .qa-choice:checked:not(:disabled)')].map(cb=>Number(cb.dataset.qaIndex)).filter(i=>Number.isInteger(i)&&!already.has(i)),selected=indexes.map(i=>parsedAudit.find(x=>x.index===i)).filter(Boolean);
   if(!selected.length)return;
   if(!requireApiKeyForAction('zapracování vybraných bodů kontroly'))return;
-  const btn=$('#qualityApply'),oldNodes=[...btn.childNodes].map(n=>n.cloneNode(true)),sheet=qualityActiveSheet,snapshot=snapshotSheet(sheet),wasFinal=sheet._qualityStage==='final'||sheet._qualityStage==='final-revised';btn.disabled=true;const spin=document.createElement('span');spin.className='mini';btn.replaceChildren(spin,document.createTextNode(' Zapracovávám…'));
+  const btn=$('#qualityApply'),oldNodes=[...btn.childNodes].map(n=>n.cloneNode(true)),sheet=qualityActiveSheet,snapshot=snapshotSheet(sheet),wasFinal=sheet._qualityStage==='final'||sheet._qualityStage==='final-revised',workflowId=dplCreateAiWorkflowId('quality-revision');btn.disabled=true;const spin=document.createElement('span');spin.className='mini';btn.replaceChildren(spin,document.createTextNode(' Zapracovávám…'));
   try{
-    const raw=await callGemini([...QualityRevision.dataParts(sheet,selected),...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{json:true,operation:'worksheet-quality-revision',appInstructions:QualityRevision.makePrompt(sheet)});
+    const raw=await callGemini([...QualityRevision.dataParts(sheet,selected),...sheetVisualAiParts(sheet),...sheetMediaAiParts(sheet)],{json:true,operation:'worksheet-quality-revision',appInstructions:QualityRevision.makePrompt(sheet),workflowId});
     let parsed=normalizeParsedVisuals(parseWorksheetResponse(raw),sheet._visualAssets||[]),validation=validateWorksheetResponse(parsed);
     if(!validation.ok){
-      try{const fixed=await repairWorksheetJson(raw,validation,$('#baseText').value.trim(),sheet._tierKey),fp=normalizeParsedVisuals(parseWorksheetResponse(fixed),sheet._visualAssets||[]),fv=validateWorksheetResponse(fp);if(fp&&String(fp.worksheet||'').trim()&&(fv.ok||fv.issues.length<validation.issues.length)){parsed=fp;validation=fv}}catch(_){}
+      try{const fixed=await repairWorksheetJson(raw,validation,$('#baseText').value.trim(),sheet._tierKey,workflowId),fp=normalizeParsedVisuals(parseWorksheetResponse(fixed),sheet._visualAssets||[]),fv=validateWorksheetResponse(fp);if(fp&&String(fp.worksheet||'').trim()&&(fv.ok||fv.issues.length<validation.issues.length)){parsed=fp;validation=fv}}catch(_){}
     }
     if(!String(parsed&&parsed.worksheet||'').trim())throw makeAppError('Model nevrátil použitelnou upravenou verzi. Původní výstup zůstal zachovaný.','INCOMPLETE_RESPONSE');
     parsed=normalizeParsedScoring(parsed,sheetScoringMode(sheet));parsed=ensureMediaSourceMarker(normalizeParsedVisuals(parsed,sheet._visualAssets||[]));validation=withDeterministicOutputValidation(validateWorksheetResponse(parsed),parsed);const mediaSafety=mediaStudentSafetyIssues(parsed,$('#baseText').value.trim());if(mediaSafety.length)throw makeAppError('Úprava by odhalila zdrojový přepis v žákovské části: '+mediaSafety.join(' '),'MEDIA_TRANSCRIPT_LEAK');sheet._manualScores={};
@@ -642,7 +642,7 @@ async function applySelectedQualitySuggestions(){
     else{setSheetStatus(sheet,'opravy zapracovány · finální kontrola volitelná','ok');showMessage('Vybrané návrhy zapracovány','Další kontrola není povinná. Pokud chceš nezávislý druhý průchod, otevři Kontrolu a jednou použij „Finální kontrola“. Jinak výsledek ručně ověř a můžeš přejít k řešení nebo PDF.');}
     $('#qualityOverlay').classList.remove('show');qualityActiveSheet=null;
   }catch(err){restoreSheetSnapshot(sheet,snapshot);showMessage('Úprava se nepodařila',friendlyApiMessage(err)+' Původní verze zůstala zachovaná.');}
-  finally{btn.disabled=false;btn.replaceChildren(...oldNodes)}
+  finally{dplCloseAiWorkflow(workflowId);btn.disabled=false;btn.replaceChildren(...oldNodes)}
 }
 $('#qualityClose').addEventListener('click',()=>$('#qualityOverlay').classList.remove('show'));
 $('#qualityOverlay').addEventListener('click',e=>{if(e.target.id==='qualityOverlay')$('#qualityOverlay').classList.remove('show')});

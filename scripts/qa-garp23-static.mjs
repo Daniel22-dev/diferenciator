@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
 import crypto from 'node:crypto';
@@ -111,7 +112,7 @@ check('HANDOFF-URL-STRIP-QUERY-FRAGMENT',studioUrl({studioUrl:'https://school.ex
 const manifest=JSON.parse(read('src/config/data-manifest.json'));
 const stores=manifest.stores||[];
 const exact=(kind,p)=>stores.some(s=>s.kind===kind&&Array.isArray(s.patterns)&&s.patterns.includes(p));
-check('MANIFEST-APP-VERSION',manifest.appVersion==='1.3.50','data manifest version matches candidate');
+check('MANIFEST-APP-VERSION',manifest.appVersion==='1.3.51','data manifest version matches candidate');
 check('MANIFEST-KEY-STORES',exact('sessionStorage','ghrab.differentiator.ai.key.session.v1')&&exact('localStorage','ghrab.differentiator.ai.key.local.v1'),'direct-mode credential stores declared');
 check('MANIFEST-DELETION-CONTROLS',Array.isArray(manifest.deletion?.clientControls)&&['clearWorkingData()','clearPreferenceData()','clearKey()'].every(x=>manifest.deletion.clientControls.includes(x)),'declared deletion controls exist by name');
 
@@ -148,7 +149,7 @@ check('CANARY-BUILD-SWEEP',hits.length===0,hits.length?`unexpected exact marker 
 
 const failed=results.filter(r=>r.status==='FAIL');
 const report={schema:'garp-2.3-static-evidence-v1',appVersion:JSON.parse(read('package.json')).version,markerFingerprint:crypto.createHash('sha256').update(`${STUDENT}|${EMAIL}|${AIRED}`).digest('hex').slice(0,16),airStructuralVariants:variants.length,mutationFamilies:[...new Set(variants.map(v=>v.family))],callSites,results,status:failed.length?'FAIL':'PASS'};
-const outDir=process.env.GARP_EVIDENCE_DIR||'/tmp';
+const outDir=process.env.GARP_EVIDENCE_DIR||os.tmpdir();
 fs.mkdirSync(outDir,{recursive:true});
 fs.writeFileSync(path.join(outDir,'qa-garp23-static-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));

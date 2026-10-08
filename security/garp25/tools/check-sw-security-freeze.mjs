@@ -8,6 +8,11 @@ import { readFile, readdir, lstat } from 'node:fs/promises';
 import path from 'node:path';
 import { Script, createContext } from 'node:vm';
 
+// Keep VM evaluation bounded without making the security gate depend on host speed.
+// A 50 ms ceiling was too tight on Windows and produced false negatives partway
+// through the authoritative critical-asset matrix.
+const BOUNDED_EVAL_TIMEOUT_MS = 500;
+
 const [swPath, deployDirArg, listArg] = process.argv.slice(2);
 if (!swPath || !deployDirArg) {
   console.error('Usage: node check-sw-security-freeze.mjs <sw.js> <deployment-dir> [security-critical-list.json]');
@@ -380,7 +385,7 @@ function behavioralCriticalGuard() {
   if (forbidden.test(source)) return { status: 'FAIL', reason: 'guard-function-not-safe-for-bounded-eval', cases, checkedAuthoritative: 0 };
   try {
     const context = createContext(Object.create(null));
-    new Script(`${source}; this.__ghrabGuard = isSecurityCriticalRequest;`).runInContext(context, { timeout: 50 });
+    new Script(`${source}; this.__ghrabGuard = isSecurityCriticalRequest;`).runInContext(context, { timeout: BOUNDED_EVAL_TIMEOUT_MS });
     const fn = context.__ghrabGuard;
     if (typeof fn !== 'function') return { status: 'FAIL', reason: 'guard-function-not-callable', cases, checkedAuthoritative: 0 };
     const scopePath = '/__ghrab_scope__/';
@@ -553,7 +558,7 @@ function fetchHandlerRegistrationSummary() {
     set(value){ onfetchAssignments.push({ callable: typeof value === 'function', source: 'global.set' }); }
   });
   let error = null;
-  try { new Script(sw).runInContext(createContext(sandbox), { timeout: 50 }); }
+  try { new Script(sw).runInContext(createContext(sandbox), { timeout: BOUNDED_EVAL_TIMEOUT_MS }); }
   catch (e) { error = String(e); }
   const fetchRegistrations = registrations.filter(r => r.type === 'fetch');
   const invalidFetchHandlers = fetchRegistrations.filter(r => !r.callable).length + onfetchAssignments.filter(r => !r.callable).length;
@@ -607,7 +612,7 @@ function behavioralFetchRouteGuard() {
           keys: () => { state.routeEffects.push({ phase: state.phase, route: 'caches.keys' }); if (state.phase === 'pre-guard') state.preGuardEffects.add('caches.keys'); return []; }
         })
       });
-      new Script(evalSource).runInContext(context, { timeout: 50 });
+      new Script(evalSource).runInContext(context, { timeout: BOUNDED_EVAL_TIMEOUT_MS });
       const handler = context.__ghrabFetchHandler;
       if (typeof handler !== 'function') return { status: 'FAIL', reason: 'fetch-handler-not-callable', cases, checkedAuthoritative: criticalCases.length };
       let returned = null, error = null;
@@ -699,7 +704,7 @@ async function behavioralNetworkOnlyNoStoreGuard() {
       caches: cachesMock,
       fetch: (req, options) => { fetchCalls.push({ sameRequest: req === request, options: options ? { cache: options.cache } : null }); return Object.freeze({ ok: true, __ghrabFetch: true }); }
     });
-    new Script(`${source}; this.__ghrabNetworkOnlyNoStore = networkOnlyNoStore;`).runInContext(context, { timeout: 50 });
+    new Script(`${source}; this.__ghrabNetworkOnlyNoStore = networkOnlyNoStore;`).runInContext(context, { timeout: BOUNDED_EVAL_TIMEOUT_MS });
     const fn = context.__ghrabNetworkOnlyNoStore;
     if (typeof fn !== 'function') return { status: 'FAIL', reason: 'network-only-sink-not-callable', fetchCalls, cacheCalls };
     let result, error = null;
