@@ -9,6 +9,7 @@
     "pretest": "npm run build",
     "test": "npm run qa:profiles && npm run qa:regressions && npm run qa:all-subjects && npm run qa:profiles:browser && npm run qa:visuals && npm run qa:scan && npm run qa:stem && npm run qa:all-subjects:browser && npm run qa:office-rich && npm run qa:multimedia && npm run qa:multimedia:browser && npm run qa:specialists && npm run qa:renderers && node scripts/test.mjs && npm run test:manual-pdf:structure",
     "test:reporter": "node scripts/test-error-reporter.mjs",
+    "test:stage06": "node --test tests/stage06-outbound.test.mjs tests/stage06-ui.test.mjs",
     "build:school-server": "npm run build && node scripts/build-school-profile.mjs && node security/garp25/tools/check-sw-security-freeze.mjs dist-school-server/sw.js dist-school-server security/security-critical-assets.json",
     "verify:platform": "node scripts/ghrab-platform-conformance.mjs",
     "postbuild": "node scripts/ghrab-platform-conformance.mjs && node security/garp25/tools/check-sw-security-freeze.mjs dist/sw.js dist security/security-critical-assets.json",

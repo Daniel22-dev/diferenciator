@@ -16,6 +16,7 @@ const CORE_ASSETS = [
   "./modules/office-rich.js",
   "./modules/educational-renderers.js",
   "./modules/map-presets.js",
+  "./modules/stage06-outbound-material.js",
   "./icons/icon-32.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
