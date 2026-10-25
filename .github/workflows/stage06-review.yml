@@ -15,6 +15,7 @@ on:
       - "scripts/qa-p3-quality.mjs"
       - "security/vendored-consistency.json"
       - "security/evidence/ai-assurance-fingerprint.json"
+      - "src/studio-manifest.template.json"
       - ".github/workflows/stage06-review.yml"
   workflow_dispatch:
 
@@ -44,6 +45,9 @@ jobs:
           node --input-type=module -e "import fs from 'node:fs';const c=JSON.parse(fs.readFileSync('ghrab-platform.consumer.json','utf8'));const v=JSON.parse(fs.readFileSync('security/vendored-consistency.json','utf8'));const x=v.components.find(x=>x.id==='platform-js');if(x.canonical!=='vendor/ghrab-platform-'+c.platform.version+'/ghrab-platform.js')throw Error('Vendor canonical root drift');const t=fs.readFileSync('scripts/ghrab-platform-conformance.mjs','utf8');if(!t.includes('api.satisfies(consumer.platform.version,consumer.platform.requiredRange)'))throw Error('Version not dynamic');"
       - name: Assert AI-boundary fingerprint matches exact source files
         run: node scripts/generate-ai-assurance-fingerprint.mjs --check
+      - name: Verify published Studio manifest is aligned with signed Platform consumer
+        run: |
+          node --input-type=module -e "import fs from 'node:fs';const c=JSON.parse(fs.readFileSync('ghrab-platform.consumer.json','utf8'));const m=JSON.parse(fs.readFileSync('src/studio-manifest.template.json','utf8'));if(m.compatibility.platformRange!==c.platform.requiredRange||m.platform.platformVersion!==c.platform.version||m.platform.requiredPlatformRange!==c.platform.requiredRange)throw Error('Stage06 manifest drift')"
       - name: Verify Platform 1.1.3 immutable release manifest
         run: |
           node --input-type=module -e "import fs from 'node:fs';import crypto from 'node:crypto';const root='vendor/ghrab-platform-1.1.3/';const m=JSON.parse(fs.readFileSync(root+'ghrab-platform-manifest-1.1.3.json','utf8'));if(m.platformVersion!=='1.1.3')process.exit(1);for(const [f,meta] of Object.entries(m.artifacts)){const bytes=fs.readFileSync(root+f);if(bytes.length!==meta.bytes||crypto.createHash('sha256').update(bytes).digest('hex')!==meta.sha256)throw Error('Vendored artifact invalid: '+f)}"
