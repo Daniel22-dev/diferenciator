@@ -1,0 +1,38 @@
+name: Stage06 outbound and Bridge v2 review (lightweight)
+
+on:
+  pull_request:
+    branches: [candidate]
+    paths:
+      - "src/js/26-ai-studio-outbound.js"
+      - "src/modules/stage06-outbound-material.js"
+      - "src/js/40-vystup-pdf-kvalita.js"
+      - "src/sw.js"
+      - "ghrab-platform.consumer.json"
+      - "vendor/ghrab-platform-1.1.3/**"
+      - "tests/stage06-*"
+      - ".github/workflows/stage06-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stage06-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Syntax, material mapper, UI, and actual vendored cross-app Bridge
+        run: |
+          node --check src/modules/stage06-outbound-material.js
+          node --check src/js/26-ai-studio-outbound.js
+          node --test tests/stage06-outbound.test.mjs tests/stage06-ui.test.mjs tests/stage06-bridge-cross-app.test.mjs
+      - name: Verify Platform 1.1.3 immutable release manifest
+        run: |
+          node --input-type=module -e "import fs from 'node:fs';import crypto from 'node:crypto';const root='vendor/ghrab-platform-1.1.3/';const m=JSON.parse(fs.readFileSync(root+'ghrab-platform-manifest-1.1.3.json','utf8'));if(m.platformVersion!=='1.1.3')process.exit(1);for(const [f,meta] of Object.entries(m.artifacts)){const bytes=fs.readFileSync(root+f);if(bytes.length!==meta.bytes||crypto.createHash('sha256').update(bytes).digest('hex')!==meta.sha256)throw Error('Vendored artifact invalid: '+f)}"
