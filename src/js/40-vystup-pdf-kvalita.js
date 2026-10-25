@@ -456,6 +456,8 @@ function attachSheetTools(sheet){
     mk('Upravit',b=>toggleEdit(sheet,b),'soft','Umožní ručně přepsat text listu. Po skutečné změně se zahodí řešení, kontrola kvality i poznámka pro učitele.'),
     mk('Kopírovat',b=>copyText(sheet._text,b,'Zkopírováno','Kopírovat'),'soft','Zkopíruje celý text listu do schránky.')
   );
+  if (typeof window.__GHRAB_STAGE06_OUTBOUND__?.attach === 'function')
+    window.__GHRAB_STAGE06_OUTBOUND__.attach(sheet,more);
   tools.append(main,more);
 }
 
