@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import fs from 'node:fs';
 import { webcrypto, createHash } from 'node:crypto';
+import { mapSelectedWorksheet } from '../src/modules/stage06-outbound-material.js';
+import { saveMaterialToStudio } from './fixtures/studio-prod-021253-save-to-studio.mjs';
+import { validateMaterialPackage } from './fixtures/studio-prod-021253-material-validator.mjs';
 
 const platformSource=fs.readFileSync(new URL('../vendor/ghrab-platform-1.1.3/ghrab-platform.js',import.meta.url),'utf8');
 // Byte-identical to AI Studio production main (0.21.253) at SHA 501d7086.
@@ -143,4 +146,131 @@ test('RELEASE: old production Studio 1.1.2 is not a safe cross-version sender to
   }),/version-range/,'old sender must remain blocked rather than silently misroute');
   assert.equal(stored.getItem('ghrab.platform.handoff.v2'),null);
   assert.equal(differentiator.bridge.take({target:'differentiator'}),null);
+});
+
+
+const studioProductionFixtures=[
+  ['studio-prod-021253-save-to-studio.mjs','a494f8436e849aae7d4ad8f93f09b1594f7eef07'],
+  ['studio-prod-021253-material-validator.mjs','8e38aaf5b02bf8a078d5ad074b4bbecf1ab317b8']
+];
+for(const [name,expected] of studioProductionFixtures){
+  const bytes=fs.readFileSync(new URL('./fixtures/'+name,import.meta.url));
+  const sha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+  assert.equal(sha,expected,'exact Studio 0.21.253 production fixture drift: '+name);
+}
+function selectedWorksheet(overrides={}){
+  return {
+    form:{subject:'English',meta:{topic:'Recycling',subject:'English',className:'2.B'},
+      advanced:{learningGoal:'Explain the importance of recycling'}},
+    sheet:{_tierKey:'core',_text:'Read the text. Why recycle paper?',_cefrLabel:'B1',
+      _parts:{title:'Recycling',answerKey:'SECRET-ANSWER-123',teacherNote:'SECRET-TEACHER-NOTE'},
+      _key:'SECRET-TEACHER-KEY',_visualAssets:[],_mediaSource:null},
+    id:'dif-production-acceptance-1',now:'2026-10-25T14:00:00.000Z',
+    appVersion:'1.3.51',privacyConfirmed:true,...overrides
+  };
+}
+function withSourcePlatform(platform,run){
+  const previous={platform:globalThis.GHRAB_PLATFORM,location:globalThis.location};
+  globalThis.GHRAB_PLATFORM=platform;
+  globalThis.location={href:'https://school.example/diferenciator/'};
+  try{return run();}
+  finally{
+    if(previous.platform===undefined) delete globalThis.GHRAB_PLATFORM;
+    else globalThis.GHRAB_PLATFORM=previous.platform;
+    if(previous.location===undefined) delete globalThis.location;
+    else globalThis.location=previous.location;
+  }
+}
+
+test('REAL CONTRACT: Differentiator worksheet maps into byte-pinned production Studio Material v1 validator',()=>{
+  const exported=mapSelectedWorksheet(selectedWorksheet());
+  assert.equal(validateMaterialPackage(exported).valid,true);
+  assert.equal(exported.title,'Recycling (Běžná)');
+  assert.equal(exported.subject,'English');
+  assert.equal(exported.level,'B1');
+  assert.equal(exported.yearGroup,'2.B');
+  assert.deepEqual(exported.objectives,['Explain the importance of recycling']);
+  assert.equal(exported.content.sourceText,'Read the text. Why recycle paper?');
+  assert.deepEqual(exported.content.tasks,[],'no invented structured questions');
+  assert.equal(exported.provenance.containsPersonalData,false);
+  assert.equal(exported.quality.status,'ai-draft');
+  const raw=JSON.stringify(exported);
+  for(const secret of ['SECRET-ANSWER-123','SECRET-TEACHER-NOTE','SECRET-TEACHER-KEY'])assert.ok(!raw.includes(secret),secret);
+});
+
+test('REAL CONTRACT: actual Studio published helper transfers validated worksheet to Studio 0.21.253 via v2 only',()=>{
+  stored.clear();
+  const differentiator=instantiate('differentiator','1.3.51',stored,'1.1.3');
+  const oldStudio=instantiate('ai-studio','0.21.253',stored,'1.1.2');
+  const exported=mapSelectedWorksheet(selectedWorksheet());
+  const accepted=withSourcePlatform(differentiator,()=>
+    saveMaterialToStudio({material:exported,studioUrl:'https://school.example/AI-Studio-GHRAB/',
+      sourceAppId:'differentiator',sourceAppVersion:'1.3.51',navigate:false}));
+  assert.equal(accepted.ok,true);
+  assert.equal(accepted.targetUrl,'https://school.example/AI-Studio-GHRAB/library/?studioHandoff=1');
+  assert.equal(accepted.packet?.material?.id,exported.id);
+  assert.equal(accepted.packet?.packet?.schema,'ghrab-studio-handoff-v2');
+  assert.equal(stored.getItem('ghrab.handoff.v1'),null,'legacy payload must not be required in runtime');
+  const livePacket=oldStudio.bridge.take({target:'ai-studio'});
+  assert.equal(livePacket?.sourceAppId,'differentiator');
+  assert.equal(livePacket.material.id,exported.id);
+  assert.equal(validateMaterialPackage(livePacket.material).valid,true,'exact production schema validates');
+  const workspace=new Map();
+  workspace.set(livePacket.material.id,livePacket.material);
+  assert.equal(workspace.get(exported.id).content.sourceText,exported.content.sourceText);
+  assert.equal(oldStudio.bridge.take({target:'ai-studio'}),null,'replay rejected');
+  assert.equal(stored.getItem('ghrab.platform.handoff.v2'),null,'no pending packet remains');
+});
+
+test('REAL CONTRACT: Studio 1.1.3 -> Differentiator 1.1.3 -> Studio 1.1.3 real Platform roundtrip',()=>{
+  stored.clear();
+  const newStudio=instantiate('ai-studio','0.21.255',stored,'1.1.3');
+  const differentiator=instantiate('differentiator','1.3.51',stored,'1.1.3');
+  const original=mapSelectedWorksheet(selectedWorksheet({id:'dif-round-trip-source'}));
+  const inbound=newStudio.bridge.create({target:'differentiator',sourceAppId:'ai-studio',
+    sourceAppVersion:'0.21.255',targetVersionRange:'>=1.3.51 <2.0.0',
+    material:original,writeLegacy:false});
+  assert.equal(inbound?.target,'differentiator');
+  const imported=differentiator.bridge.take({target:'differentiator'});
+  assert.equal(imported?.material?.id,original.id);
+  assert.equal(differentiator.bridge.take({target:'differentiator'}),null);
+  const derived=mapSelectedWorksheet(selectedWorksheet({
+    id:'dif-round-trip-result',
+    sheet:{...selectedWorksheet().sheet,
+      _text:imported.material.content.sourceText+' Extra practice with your partner.'}
+  }));
+  const returned=withSourcePlatform(differentiator,()=>
+    saveMaterialToStudio({material:derived,studioUrl:'https://school.example/AI-Studio-GHRAB/',
+      sourceAppId:'differentiator',sourceAppVersion:'1.3.51',navigate:false}));
+  assert.equal(returned.ok,true);
+  const reimported=newStudio.bridge.take({target:'ai-studio'});
+  assert.equal(reimported?.material?.id,'dif-round-trip-result');
+  assert.equal(reimported?.material?.content.sourceText,
+    'Read the text. Why recycle paper? Extra practice with your partner.');
+  assert.equal(validateMaterialPackage(reimported.material).valid,true);
+  assert.equal(newStudio.bridge.take({target:'ai-studio'}),null);
+});
+
+test('REAL CONTRACT: pending handoff is not overwritten and unsafe sheets never become packets',()=>{
+  stored.clear();
+  const differentiator=instantiate('differentiator','1.3.51',stored,'1.1.3');
+  const first=mapSelectedWorksheet(selectedWorksheet({id:'dif-first'}));
+  const second=mapSelectedWorksheet(selectedWorksheet({id:'dif-second'}));
+  const start=withSourcePlatform(differentiator,()=>saveMaterialToStudio({
+    material:first,studioUrl:'https://school.example/AI-Studio-GHRAB/',
+    sourceAppId:'differentiator',sourceAppVersion:'1.3.51',navigate:false}));
+  assert.equal(start.ok,true);
+  const pending=withSourcePlatform(differentiator,()=>saveMaterialToStudio({
+    material:second,studioUrl:'https://school.example/AI-Studio-GHRAB/',
+    sourceAppId:'differentiator',sourceAppVersion:'1.3.51',navigate:false}));
+  assert.equal(pending.ok,false);
+  assert.equal(pending.reason,'handoff-pending');
+  assert.equal(JSON.parse(stored.getItem('ghrab.platform.handoff.v2')).payload.value.id,first.id);
+  const before=stored.getItem('ghrab.platform.handoff.v2');
+  for(const source of ['teacher@example.test','<img src=x onerror=alert(1)>','[[VISUAL_1]]']){
+    const unsafe=selectedWorksheet({sheet:{...selectedWorksheet().sheet,_text:source}});
+    assert.throws(()=>mapSelectedWorksheet(unsafe));
+  }
+  assert.equal(stored.getItem('ghrab.platform.handoff.v2'),before);
+  assert.equal(instantiate('ai-studio','0.21.253',stored,'1.1.2').bridge.take({target:'ai-studio'})?.material.id,first.id);
 });
