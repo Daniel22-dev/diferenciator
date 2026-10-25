@@ -28,7 +28,8 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
 
 // T1: every direct top-level GHRAB_PLATFORM method call must exist in the shipped vendor API.
 {
-  const vendor=read('vendor/ghrab-platform-1.1.2/ghrab-platform.js');
+  const v=JSON.parse(read('ghrab-platform.consumer.json')).platform.version;
+  const vendor=read(`vendor/ghrab-platform-${v}/ghrab-platform.js`);
   const block=vendor.match(/const api = Object\.freeze\(\{([\s\S]*?)\n\s*\}\);\n\s*\n\s*global\.GHRAB_PLATFORM = api;/)?.[1]||'';
   const exposed=new Set([...block.matchAll(/^\s{4}([A-Za-z_$][\w$]*)\s*(?=[:,])/gm)].map(m=>m[1]));
   const candidates=['src/index.template.html','src/manual/index.html',...readdirSync(join(ROOT,'src/js')).filter(x=>x.endsWith('.js')).map(x=>'src/js/'+x)];
@@ -51,7 +52,8 @@ console.log('Regresní brána Diferenciátoru '+PACKAGE.version);
 {
   const app=JSON.parse(read('src/config/platform-manifest.json'));
   const consumer=JSON.parse(read('ghrab-platform.consumer.json'));
-  const vendor=JSON.parse(read('vendor/ghrab-platform-1.1.2/ghrab-platform-manifest-1.1.2.json'));
+  const v=consumer.platform.version;
+  const vendor=JSON.parse(read(`vendor/ghrab-platform-${v}/ghrab-platform-manifest-${v}.json`));
   const sameVersion=app.platformVersion===consumer.platform.version&&app.platformVersion===vendor.platformVersion;
   const sameRange=app.requiredPlatformRange===consumer.platform.requiredRange;
   if(!sameVersion||!sameRange)bad(`T4: rozpor platformy: app ${app.platformVersion} ${app.requiredPlatformRange}; consumer ${consumer.platform.version} ${consumer.platform.requiredRange}; vendor ${vendor.platformVersion}`);

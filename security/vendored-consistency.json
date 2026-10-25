@@ -2,7 +2,7 @@
   "schema": "ghrab-vendored-consistency-v1",
   "canonicalRoot": "..",
   "components": [
-    { "id": "platform-js", "canonical": "vendor/ghrab-platform-1.1.2/ghrab-platform.js", "severity": "CRITICAL", "required": true },
+    { "id": "platform-js", "canonical": "vendor/ghrab-platform-1.1.3/ghrab-platform.js", "severity": "CRITICAL", "required": true },
     { "id": "platform-css", "canonical": "vendor/ghrab-platform-1.1.2/ghrab-platform.css", "severity": "HIGH", "required": true },
     { "id": "school-logo", "canonical": "vendor/ghrab-platform-1.1.2/school-logo.png", "severity": "HIGH", "required": true },
     { "id": "error-reporter", "canonical": "src/access/error-reporter.js", "severity": "HIGH", "required": true }

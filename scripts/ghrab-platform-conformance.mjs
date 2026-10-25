@@ -167,10 +167,19 @@ try {
   vm.runInNewContext(fs.readFileSync(path.join(vendor, 'ghrab-platform.js'), 'utf8'), context, { filename: 'ghrab-platform.js' });
   const api = context.GHRAB_PLATFORM;
   check(api?.version === consumer.platform.version && api?.contract === consumer.platform.contract, 'runtime identity');
-  check(api.satisfies('1.0.0', consumer.platform.requiredRange) === false, 'runtime previous platform rejected');
-  check(api.satisfies('1.1.2', consumer.platform.requiredRange) === true, 'runtime current accepted');
-  check(api.satisfies('1.2.0', consumer.platform.requiredRange) === true, 'runtime n+1 accepted');
-  check(api.satisfies('2.0.0', consumer.platform.requiredRange) === false, 'runtime major rejected');
+  // Derive the tested contract range from immutable consumer metadata.
+  // Hardcoded 1.1.2 was rejecting the legitimate 1.1.3 vendor.
+  const platformParts=String(consumer.platform.version).split('.').map(Number);
+  const [platformMajor,platformMinor,platformPatch]=platformParts;
+  const previousPlatform=platformPatch>0
+    ? `${platformMajor}.${platformMinor}.${platformPatch-1}`
+    : `${platformMajor}.${Math.max(0,platformMinor-1)}.0`;
+  const nextMinorPlatform=`${platformMajor}.${platformMinor+1}.0`;
+  const nextMajorPlatform=`${platformMajor+1}.0.0`;
+  check(api.satisfies(previousPlatform,consumer.platform.requiredRange) === false,'runtime previous platform rejected');
+  check(api.satisfies(consumer.platform.version,consumer.platform.requiredRange) === true,'runtime current accepted');
+  check(api.satisfies(nextMinorPlatform,consumer.platform.requiredRange) === true,'runtime n+1 accepted');
+  check(api.satisfies(nextMajorPlatform,consumer.platform.requiredRange) === false,'runtime major rejected');
   check(sampleStore.getItem(legacyKey) === 'original-value', 'storage alias reads migrated value');
   check(sampleStore.getItem(canonicalKey) === 'original-value', 'canonical storage value created');
   sampleStore.setItem(legacyKey, 'updated-value');
