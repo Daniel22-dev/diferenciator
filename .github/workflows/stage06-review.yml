@@ -13,6 +13,7 @@ on:
       - "tests/stage06-*"
       - "scripts/ghrab-platform-conformance.mjs"
       - "scripts/qa-p3-quality.mjs"
+      - "scripts/qa-differentiator-regressions.mjs"
       - "security/vendored-consistency.json"
       - "security/evidence/ai-assurance-fingerprint.json"
       - "src/studio-manifest.template.json"
@@ -45,6 +46,10 @@ jobs:
           node --input-type=module -e "import fs from 'node:fs';const c=JSON.parse(fs.readFileSync('ghrab-platform.consumer.json','utf8'));const v=JSON.parse(fs.readFileSync('security/vendored-consistency.json','utf8'));const x=v.components.find(x=>x.id==='platform-js');if(x.canonical!=='vendor/ghrab-platform-'+c.platform.version+'/ghrab-platform.js')throw Error('Vendor canonical root drift');const t=fs.readFileSync('scripts/ghrab-platform-conformance.mjs','utf8');if(!t.includes('api.satisfies(consumer.platform.version,consumer.platform.requiredRange)'))throw Error('Version not dynamic');"
       - name: Assert AI-boundary fingerprint matches exact source files
         run: node scripts/generate-ai-assurance-fingerprint.mjs --check
+      - name: Verify real source QA selects current immutable Platform vendor
+        run: |
+          node --check scripts/qa-differentiator-regressions.mjs
+          node --input-type=module -e "import fs from 'node:fs';const c=JSON.parse(fs.readFileSync('ghrab-platform.consumer.json','utf8'));const p='vendor/ghrab-platform-'+c.platform.version+'/';const m=JSON.parse(fs.readFileSync(p+'ghrab-platform-manifest-'+c.platform.version+'.json','utf8'));if(m.platformVersion!==c.platform.version)throw Error('Current vendor mismatch');const s=fs.readFileSync('scripts/qa-differentiator-regressions.mjs','utf8');if(!s.includes('const v=consumer.platform.version')||s.includes('vendor/ghrab-platform-1.1.2/ghrab-platform-manifest-1.1.2.json'))throw Error('Stale static QA vendor')"
       - name: Verify published Studio manifest is aligned with signed Platform consumer
         run: |
           node --input-type=module -e "import fs from 'node:fs';const c=JSON.parse(fs.readFileSync('ghrab-platform.consumer.json','utf8'));const m=JSON.parse(fs.readFileSync('src/studio-manifest.template.json','utf8'));if(m.compatibility.platformRange!==c.platform.requiredRange||m.platform.platformVersion!==c.platform.version||m.platform.requiredPlatformRange!==c.platform.requiredRange)throw Error('Stage06 manifest drift')"
