@@ -11,6 +11,8 @@ on:
       - "ghrab-platform.consumer.json"
       - "vendor/ghrab-platform-1.1.3/**"
       - "tests/stage06-*"
+      - "scripts/ghrab-platform-conformance.mjs"
+      - "security/vendored-consistency.json"
       - ".github/workflows/stage06-review.yml"
   workflow_dispatch:
 
@@ -33,6 +35,10 @@ jobs:
           node --check src/modules/stage06-outbound-material.js
           node --check src/js/26-ai-studio-outbound.js
           node --test tests/stage06-outbound.test.mjs tests/stage06-ui.test.mjs tests/stage06-bridge-cross-app.test.mjs
+      - name: Validate platform-version gate and exact canonical vendor path
+        run: |
+          node --check scripts/ghrab-platform-conformance.mjs
+          node --input-type=module -e "import fs from 'node:fs';const c=JSON.parse(fs.readFileSync('ghrab-platform.consumer.json','utf8'));const v=JSON.parse(fs.readFileSync('security/vendored-consistency.json','utf8'));const x=v.components.find(x=>x.id==='platform-js');if(x.canonical!=='vendor/ghrab-platform-'+c.platform.version+'/ghrab-platform.js')throw Error('Vendor canonical root drift');const t=fs.readFileSync('scripts/ghrab-platform-conformance.mjs','utf8');if(!t.includes('api.satisfies(consumer.platform.version,consumer.platform.requiredRange)'))throw Error('Version not dynamic');"
       - name: Verify Platform 1.1.3 immutable release manifest
         run: |
           node --input-type=module -e "import fs from 'node:fs';import crypto from 'node:crypto';const root='vendor/ghrab-platform-1.1.3/';const m=JSON.parse(fs.readFileSync(root+'ghrab-platform-manifest-1.1.3.json','utf8'));if(m.platformVersion!=='1.1.3')process.exit(1);for(const [f,meta] of Object.entries(m.artifacts)){const bytes=fs.readFileSync(root+f);if(bytes.length!==meta.bytes||crypto.createHash('sha256').update(bytes).digest('hex')!==meta.sha256)throw Error('Vendored artifact invalid: '+f)}"
