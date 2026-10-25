@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {Script, createContext} from 'node:vm';
 const src=await readFile(new URL('../src/js/26-ai-studio-outbound.js',import.meta.url),'utf8');
+const ui=await readFile(new URL('../src/modules/stage06-outbound-ui.js',import.meta.url),'utf8');
+const sw=await readFile(new URL('../src/sw.js',import.meta.url),'utf8');
 const make=()=>{
  const created=[]; const notifications=[];
  function button(){return {dataset:{},disabled:false,textContent:'',type:'',className:'',title:'',aria:{},listeners:new Map(),setAttribute(k,v){this.aria[k]=v},addEventListener(e,fn){this.listeners.set(e,fn)}}}
@@ -39,8 +41,11 @@ test('in-progress edit prevents transferring stale text',()=>{
 });
 test('actual producer contract is mounted only inside protected per-sheet UI',()=>{
  assert.match(src,/window\.__GHRAB_STAGE06_OUTBOUND__=Object\.freeze\(\{attach\}\)/);
- assert.match(src,/new URL\('integration\/save-to-studio\.js',base\)/);
- assert.match(src,/sourceAppId:'differentiator'/);
- assert.doesNotMatch(src,/generator-testu|\/Ludus\//i);
- assert.doesNotMatch(src,/localStorage\.(?:setItem|removeItem)\s*\(/);
+ assert.match(src,/import\('\.\/modules\/stage06-outbound-ui\.js'\)/);
+ assert.match(ui,/new URL\('integration\/save-to-studio\.js', base\)/);
+ assert.match(ui,/sourceAppId: 'differentiator'/);
+ assert.match(ui,/ACCESS_REVOKED/);
+ assert.match(sw,/"\.\/modules\/stage06-outbound-ui\.js"/);
+ assert.doesNotMatch(src+ui,/generator-testu|\/Ludus\//i);
+ assert.doesNotMatch(src+ui,/localStorage\.(?:setItem|removeItem)\s*\(/);
 });

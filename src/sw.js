@@ -17,6 +17,7 @@ const CORE_ASSETS = [
   "./modules/educational-renderers.js",
   "./modules/map-presets.js",
   "./modules/stage06-outbound-material.js",
+  "./modules/stage06-outbound-ui.js",
   "./icons/icon-32.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

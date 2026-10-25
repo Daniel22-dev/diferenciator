@@ -122,7 +122,17 @@ const metrics = {
 };
 
 check(fs.existsSync(dist), 'dist.exists');
-check(consumer.platform?.version === '1.1.2', 'platform.version', consumer.platform?.version);
+const platformVersion=String(consumer.platform?.version||'');
+const vendorReleasePath=path.join(root,'vendor',`ghrab-platform-${platformVersion}`,`ghrab-platform-manifest-${platformVersion}.json`);
+const pinnedRelease=fs.existsSync(vendorReleasePath)?readJson(vendorReleasePath):{};
+const builtPlatformPath=path.join(dist,'ghrab','ghrab-platform.js');
+const deployedPlatformHash=fs.existsSync(builtPlatformPath)?crypto.createHash('sha256').update(fs.readFileSync(builtPlatformPath)).digest('hex'):'';
+check(
+  /^\d+\.\d+\.\d+$/.test(platformVersion) &&
+  pinnedRelease.platformVersion===platformVersion &&
+  pinnedRelease.artifacts?.['ghrab-platform.js']?.sha256===deployedPlatformHash,
+  'platform.version', platformVersion
+);
 check(quality.accessibilityContract === 'ghrab-a11y-v1', 'contract.a11y', quality.accessibilityContract);
 check(quality.performanceContract === 'ghrab-performance-v1', 'contract.performance', quality.performanceContract);
 check(quality.moduleContract === 'ghrab-lazy-modules-v1', 'contract.modules', quality.moduleContract);
